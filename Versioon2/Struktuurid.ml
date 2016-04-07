@@ -21,10 +21,6 @@ type algoSamm = Algus
 	| Lopp
 	| L2bi;;
 
-let i = ref(Algus);; (* counter algoritmi sammude jaoks*)
-
-let tekst = ref("");;	(* algoritmi sammudel kuvatav tekst *)
-
 type vaadeldavus = Vaatlemata	(* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
 	| Vaadeldav
 	| Valitud
@@ -40,15 +36,11 @@ type tipp = {
 let string_of_tipp(tipp) =
 	"Tipp {" ^ tipp.nimi ^ ", " ^ string_of_int(!(tipp.x)) ^ ", " ^ string_of_int(!(tipp.y)) ^ "}";;
 
-type noolesuund = Puudub
-	| EsimesestTeise
-	| TeisestEsimesse;;
-
 type serv = {
 	tipp1 : tipp ref;
 	tipp2 : tipp ref;
 	kaal : int option;
-	nool : noolesuund;
+	nool : bool; (*kui true, siis alati esimesest teise*)
 	sv : vaadeldavus ref;
 }
 

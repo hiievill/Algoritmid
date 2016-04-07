@@ -1,8 +1,9 @@
 open Struktuurid;;
 open Laiuti;;
-
+open AlgoBaas;;
 
 let algus() =
+	(*AlgoBaas.graafiKontroll(...);*)
 	tekst := "Sügavuti eesjärjestuses läbimise algoritm alustab";
 	i := EsimeneTipp;;
 

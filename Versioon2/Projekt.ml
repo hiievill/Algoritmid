@@ -1,10 +1,5 @@
 open Graphics;;
 open Struktuurid;;
-open Laiuti;;
-open SygavutiEes;;
-open SygavutiLopp;;
-open Prim;;
-open Kruskal;;
 
 let aknaLaius = 600;;
 let aknaKorgus = 650;;
@@ -48,6 +43,12 @@ let looTipud(tipuandmeteList) =
 	List.map looTipp tipuandmeteList;;
 	
 let leiaVastavaNimegaTipp n tipp = (n = tipp.nimi);;
+
+let sobivKaal(kaal) =
+	match kaal with
+		| None -> true
+		| Some k -> k < max_int && k > min_int;; 
+		(* tegelt peaks kuvamise kenaduse huvides ka 2-kohaliseks piirama? Või kaugust kaarest suurendama? *)
 	
 let looServ(servaandmed, tipud) =
 	match servaandmed with
@@ -55,16 +56,20 @@ let looServ(servaandmed, tipud) =
 			try
 				let t1 = List.find (leiaVastavaNimegaTipp t1nimi) tipud in
 				let t2 = List.find (leiaVastavaNimegaTipp t2nimi) tipud in
-				Some {
-					tipp1 = ref(t1);
-					tipp2 = ref(t2);
-					kaal = k;
-					nool = noolTipust;
-					sv = ref(Vaatlemata);
-				}
+				if sobivKaal(k) = false
+					then failwith("Kaal peab olema väiksem kui maksimaalne ja suurem kui minimaalne täisarv.")
+				else (
+  				Some {
+  					tipp1 = ref(t1);
+  					tipp2 = ref(t2);
+  					kaal = k;
+  					nool = noolTipust;
+  					sv = ref(Vaatlemata);
+  				}
+				)
 			with
 				| Not_found -> (
-					print_endline("Sellise nimega tippu pole."); (*TODO: kummagi tipu jaoks eraldi?*)
+					prerr_string("Sellise nimega tippu pole."); (*TODO: kummagi tipu jaoks eraldi?*)
 					None
 				)
 		);;
@@ -155,7 +160,9 @@ let leiaRistuvSirge(a, c, e, f) =
 let kaheTipuVahel(p, t1x, t2x) =
 	p > min t1x t2x && p < max t1x t2x;;
 		
-let kuvaNool(fromTipp, toTipp) =
+let kuvaNool(serv) =
+	let fromTipp = serv.tipp1 in
+	let toTipp = serv.tipp2 in
 	let x1 = float_of_int(!(!fromTipp.x)) in
 	let y1 = float_of_int(!(!fromTipp.y)) in
 	let x2 = float_of_int(!(!toTipp.x)) in
@@ -188,19 +195,6 @@ let kuvaNool(fromTipp, toTipp) =
 								let ny = if kaheTipuVahel(e1, x1, x2) then ny1 else ny2 in
 								fill_poly [|int_of_float(p1), int_of_float(p2); int_of_float(p3), int_of_float(p4); int_of_float(nx), int_of_float(ny)|];;
 		
-let kuvaEriNool(serv) =
-	match serv with
-		| {tipp1 = a; tipp2 = b; nool = n; sv = v} ->
-			 
-			match n with
-				| Puudub -> ()
-				| EsimesestTeise -> kuvaNool(a, b)
-				| TeisestEsimesse -> kuvaNool(b, a);;
-				(*| Kahesuunaline -> (
-					kuvaNool(a, b);
-					kuvaNool(b, a)
-				);;*)
-		
 let kuvaServJaNool(serv) =
 	if (!algoL2bi && !(serv.sv) = Vaadeldud || !algoL2bi = false)
 		then (
@@ -212,9 +206,8 @@ let kuvaServJaNool(serv) =
     			| Vaadeldud -> rgb 78 247 59
     	);
     	kuvaServ(serv);
-    	kuvaEriNool(serv);
-		)
-	else ();;
+			if serv.nool = true then kuvaNool(serv);
+		);;
 		
 let kuvaTipud(tipud) = 
 	List.iter kuvaTipp tipud;;
@@ -248,18 +241,19 @@ let kuvaVahe() = (*kirjaaken ja graafiakent lahutav joon *)
 let kuvaTekst() =
 	set_color black;
 	moveto 0 100;
-	draw_string !tekst;;
+	draw_string !(AlgoBaas.tekst);;
 	
 let kuvaPilt(tipud, servad) =
 	clear_graph();
-	(*kuvaServad(servad);
-	kuvaNooled(servad);*)
 	kuvaServadJaNooled(servad);
 	kuvaTipud(tipud);
 	kuvaNimed(tipud);
 	kuvaKaalud(servad);
 	kuvaVahe();
 	kuvaTekst();;
+	(*set_line_width 3;
+	draw_arc 100 100 100 100 (180) (270);
+	draw_arc 100 100 100 100 0 (90);;*)
 
 let liigutatavTipp = ref(None);;
 
@@ -275,23 +269,24 @@ let samm(algtipp, tipud, servad, algo) =
 		| SygavutiEes -> SygavutiEes.sygavutiEes(algtipp, tipud, servad)
 		| SygavutiLopp -> SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
 		| Kruskal -> Kruskal.kruskal(tipud, servad)
+		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
 		| _ -> ();;
 
 let syndmused(algtipp, tipud, servad, algo) =
 	let hiirVajutatud = ref(false) in
 	while true do
-		let e = Graphics.wait_next_event [Graphics.Button_down; Graphics.Button_up; Graphics.Mouse_motion; Graphics.Key_pressed] in
-		if e.Graphics.keypressed 
+		let e = wait_next_event [Button_down; Button_up; Mouse_motion; Key_pressed] in
+		if e.keypressed 
 			then 
 				match e.key with
-					| 'q' -> Graphics.close_graph()
+					| 'q' -> close_graph()
 					| 'n' -> (
 						samm(algtipp, tipud, servad, algo);
 						kuvaPilt(tipud, servad)
 					)
 					| _ -> ()
 		else
-			if e.Graphics.button
+			if e.button
 				then 
 					if !hiirVajutatud
 						then (
@@ -299,8 +294,8 @@ let syndmused(algtipp, tipud, servad, algo) =
 								then 		(* liigutame valitud tippu *)
 									match !liigutatavTipp with
 										| Some t -> (
-											t.x := piiridesX(e.Graphics.mouse_x);
-											t.y := piiridesY(e.Graphics.mouse_y);
+											t.x := piiridesX(e.mouse_x);
+											t.y := piiridesY(e.mouse_y);
 											kuvaPilt(tipud, servad)
 										)
 										| _ -> print_endline("Midagi viga.")
@@ -308,7 +303,7 @@ let syndmused(algtipp, tipud, servad, algo) =
 					else (	(* kui hiire alla vajutame ja parajasti mõne tipu peal oleme, siis valime selle *)
 						hiirVajutatud := true;
 						try
-							let valitudTipp = List.find (hiirTipul e.Graphics.mouse_x e.Graphics.mouse_y) tipud in
+							let valitudTipp = List.find (hiirTipul e.mouse_x e.mouse_y) tipud in
 							liigutatavTipp := Some valitudTipp
 						with
 							| Not_found -> ()
@@ -366,15 +361,15 @@ let main() =
 			("F", 400, 70)
 		]) in
 		let servad = looServad([
-			("A", "B", Some(6), EsimesestTeise);
-			("B", "C", Some(5), EsimesestTeise);
-			("C", "D", Some(8), EsimesestTeise);
-			("A", "C", Some(3), EsimesestTeise);
-			("A", "F", Some(8), TeisestEsimesse);
-			("D", "F", Some(1), EsimesestTeise);
-			("E", "D", Some(9), TeisestEsimesse);
+			("A", "B", Some(6), true);
+			("B", "C", Some(5), true);
+			("C", "D", Some(8), true);
+			("A", "C", Some(3), true);
+			("F", "A", Some(8), true);
+			("D", "F", Some(1), true);
+			("D", "E", Some(9), true);
 		], tipud) in
-		let algo = Kruskal in
+		let algo = Dijkstra in
 		let algtipp = List.hd tipud in (* ajutine - peab saama ise valida *)
 		open_graph (" " ^ string_of_int(aknaLaius) ^ "x" ^ string_of_int(aknaKorgus));
 		set_window_title "Graafialgoritmid";

@@ -1,5 +1,6 @@
 open Struktuurid;;
 open Laiuti;;
+open AlgoBaas;;
 
 let j2rgmisedServad = ref([]);;
 let lisatavadTipud = ref([]);;
@@ -10,6 +11,7 @@ let leiaVaadeldavTipp(serv) = (*analoogiline nagu leiaLisatavTipp*)
 		| {tipp1 = t1; tipp2 = t2;} -> if !((!t1).tv) = Vaadeldav then !t1 else !t2;;
 
 let algus() =
+	(*AlgoBaas.graafiKontroll(...);*)
 	tekst := "Sügavuti lõppjärjestuses läbimise algoritm alustab";
 	i := EsimeneTipp;;
 
@@ -81,10 +83,7 @@ let servaLisamine(algtipp, servad) =
 	);;
 
 let lopp() = 
-	tekst := "Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.";
-	(*tekst := "Tippude läbimise järjekord: " ^ String.concat ", " (List.map (fun t -> t.nimi) !kylastatudTipud);*)
-	algoL2bi := true;
-	i := L2bi;;
+	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.");;
 
 let sygavutiLopp(algtipp, tipud, servad) = 
 	match !i with

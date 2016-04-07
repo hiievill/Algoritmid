@@ -1,4 +1,5 @@
 open Struktuurid;;
+open AlgoBaas;;
 
 let valitudServ = ref(None);;
 
@@ -66,18 +67,19 @@ let muudaServa v1 v2 serv =
 			)
 		);;
 
-let algus() =
+let algus(servad) =
+	AlgoBaas.graafiKontroll(servad, true, false, true);
 	tekst := "Kruskali algoritm alustab.";
 	i := ServaVaatlus;;
 
+(* leiame *)
 let servaVaatlus(servad) =
 	let vs = List.filter (fun s -> !(s.sv) = Vaatlemata) servad in (*vaatlemata servad*)
 	match List.length vs with
-		| 0 -> print_endline("Mingi viga, nii ei tohiks juhtuda.") (* TODO!! *)
+		| 0 -> print_endline("Mingi viga, nii ei tohiks juhtuda.") (* TODO!! See kontroll varem.*)
 		| 1 -> vaatle(List.hd vs)
 		| _ -> (
-    	let lvs = List.fold_left (fun s1 s2 -> if s1.kaal < s2.kaal then s1 else s2) (List.hd vs) (List.tl vs) in
-    		(*lühim vaatlemata serv*)
+			let lvs = AlgoBaas.leiaLyhimServ(vs) in (*lühim vaatlemata serv*)
     	vaatle(lvs)
 		);;
 
@@ -98,14 +100,12 @@ let servaLisamine(servad, tipud) =
 	else i := ServaVaatlus;;
 
 let lopp() =
-	tekst := "Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
-	algoL2bi := true;
-	i := L2bi;;
+	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud minimaalse toesepuu.");;
 
 
 let kruskal(tipud, servad) = 
 	match !i with
-		| Algus -> algus()
+		| Algus -> algus(servad)
 		| ServaVaatlus -> servaVaatlus(servad)
 		| ServaValik -> servaValik(servad)
 		| ServaLisamine -> servaLisamine(servad, tipud)

@@ -1,18 +1,5 @@
 open Struktuurid;;
-
-(*type primiSamm = Algus
-	| EsimeneTipp
-	| ServaVaatlus		(*vaatleme võimalikke servi, mida lisada*)
-	| ServaValik		(*valime neist lühima *)
-	| ServaLisamine		(*lisame selle ja talle vastava tipu puusse *)
-	| Lopp				(*kuvame tekkinud minimaalse toesepuu*)
-	| L2bi;;
-
-let i = ref(Algus);; (* counter algoritmi sammude jaoks*)*)
-
-let algus() =
-	tekst := "Primi algoritm alustab.";
-	i := EsimeneTipp;;
+open AlgoBaas;;
 
 (* kui serva üks tipp on vaadeldud ja teine mitte, märgime serva ja vaatlemata tipu vaadeldavateks*)
 let vaatle(serv) =
@@ -28,18 +15,6 @@ let vaatle(serv) =
 					(!t1).tv := Vaadeldav;
 					serv.sv := Vaadeldav
 				);;
-				
-
-	
-let rec leiaLyhimServ(servad) =
-	match servad with
-		| x::xs -> (
-			let lyhim = leiaLyhimServ(xs) in
-			match lyhim with
-				| Some lyhimServ -> if x.kaal < lyhimServ.kaal then Some x else lyhim
-				| None -> Some x
-		)
-		| [] -> None;;
 
 (* tagastab true, kui serv on vaadeldav *)
 let servVaadeldav(serv) = !(serv.sv) = Vaadeldav;;
@@ -74,6 +49,11 @@ let lopetaTipuVaatlus(tipp) =
 		
 let lopetaServaVaatlus(serv) =
 	if !(serv.sv) = Vaadeldav then serv.sv := Vaatlemata;;
+
+let algus(servad) =
+	AlgoBaas.graafiKontroll(servad, true, false, true);
+	tekst := "Primi algoritm alustab.";
+	i := EsimeneTipp;;
 		
 let esimeneTipp(algtipp, tipud) =
 	tekst := "Märgime algtipu külastatuks. Sellest hakkame toesepuud ehitama.";
@@ -89,13 +69,9 @@ let servaVaatlus(servad) =
 				
 let servaValik(servad) = 
 	let vaadeldavadServad = List.filter servVaadeldav servad in
-	let lyhim = leiaLyhimServ(vaadeldavadServad) in
-	match lyhim with
-		| None -> print_endline("Midagi on viga.");
-		| Some lyhimServ ->	(
-			valiServ(lyhimServ);
-			tekst := "Valime lühima serva.";
-		);
+	let lyhim = AlgoBaas.leiaLyhimServ(vaadeldavadServad) in
+	valiServ(lyhim);
+	tekst := "Valime lühima serva.";
 	i := ServaLisamine;;
 
 let servaLisamine(tipud, servad) =
@@ -103,20 +79,17 @@ let servaLisamine(tipud, servad) =
 	List.iter lopetaTipuVaatlus tipud;
 	List.iter lopetaServaVaatlus servad;
 	tekst := "Loeme serva ja vastava tipu külastatuks ning ühendame tekkinud puuga.";
-	if List.for_all tippVaadeldud tipud (*TODO: või pole kuhugi enam minna*)
+	if List.for_all tippVaadeldud tipud
 		then i := Lopp
 	else i := ServaVaatlus;;
 
 let lopp() = 
-	tekst := "Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
-	algoL2bi := true;
-	i := L2bi;;
+	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud minimaalse toesepuu.");;
 	
-(*TODO: peaks kontrollima ka seda, et graaf ikka sidus oleks? Ja et kõikidel servadel (mitteneg) kaalud oleks. *)
 (*tipp - tipp, millest läbimängu alustame; tipud - kõik graafis esinevad tipud; servad - kõik graafis esinevad servad *)
 let prim(algtipp, tipud, servad) = 
 	match !i with
-		| Algus -> algus()
+		| Algus -> algus(servad)
 		| EsimeneTipp -> esimeneTipp(algtipp, tipud)
 		| ServaVaatlus -> servaVaatlus(servad)
 		| ServaValik -> servaValik(servad)

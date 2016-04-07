@@ -1,23 +1,25 @@
 open Struktuurid;;
+open AlgoBaas;;
 
 let j2rgmisedServad = ref([]);;
 
 let kylastatudTipud = ref([]);;
+
+let string_of_tippude_j2rjekord() =
+	"Tippude läbimise järjekord: " ^ String.concat ", " (List.map (fun t -> t.nimi) !kylastatudTipud);;
 
 let rec leiaJ2rgServad(tipp, servad) = 
 	match servad with
 		| x::xs -> (
 			match x with 
 				| {tipp1 = t1; tipp2 = t2; nool = n} -> 
-					if n = Puudub (*mittesuunatud graafide puhul*)
+					if n = false (*mittesuunatud graafide puhul*)
 						then (
 							if !t1 = tipp && !((!t2).tv) = Vaatlemata || !t2 = tipp && !((!t1).tv) = Vaatlemata
 								then x :: leiaJ2rgServad(tipp, xs)
 							else leiaJ2rgServad(tipp, xs)
 						)
-					else if n = EsimesestTeise && !t1 = tipp && !((!t2).tv) = Vaatlemata
-						then  x :: leiaJ2rgServad(tipp, xs)
-					else if n = TeisestEsimesse && !t2 = tipp && !((!t1).tv) = Vaatlemata
+					else if n = true && !t1 = tipp && !((!t2).tv) = Vaatlemata
 						then  x :: leiaJ2rgServad(tipp, xs)
 					else leiaJ2rgServad(tipp, xs)
 			)
@@ -46,6 +48,7 @@ let lisaServ(lisatavServ) =
 
 
 let algus() =
+	(*AlgoBaas.graafiKontroll(...);*)
 	tekst := "Laiuti läbimise algoritm alustab";
 	i := EsimeneTipp;;
 	
@@ -85,10 +88,7 @@ let servaLisamine(tipud, servad) =
 	else i := ServaValik;;
 
 let lopp() =
-	tekst := "Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.";
-	tekst := "Tippude läbimise järjekord: " ^ String.concat ", " (List.map (fun t -> t.nimi) !kylastatudTipud);
-	algoL2bi := true;
-	i := L2bi;;
+	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu. \n" ^ string_of_tippude_j2rjekord());;
 		
 let laiuti(algtipp, tipud, servad) = 
 	match !i with
