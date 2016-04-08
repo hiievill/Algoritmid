@@ -270,6 +270,7 @@ let samm(algtipp, tipud, servad, algo) =
 		| SygavutiLopp -> SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
 		| Kruskal -> Kruskal.kruskal(tipud, servad)
 		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
+		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
 		| _ -> ();;
 
 let syndmused(algtipp, tipud, servad, algo) =
@@ -318,22 +319,7 @@ let syndmused(algtipp, tipud, servad, algo) =
 	
 let main() =
 	try
-		(* Näide 1 - lihtsalt graaf, mis kogu graafika võimalusi kujutab *)
-		(*let tipud = looTipud([
-			("A", 200, 200);
-			("B", 250, 40);
-			("C", 30, 300);
-			("D", 540, 410)
-		]) in
-		let servad = looServad([
-			("A", "B", Some(20), EsimesestTeise);
-			("B", "C", Some(5), Puudub);
-			("C", "D", None, Kahesuunaline);
-			("A", "C", Some(17), TeisestEsimesse);
-		], tipud) in*)
-
-
-
+		
 		(* Näide 2 - Prim *)
 		(*let tipud = looTipud([
 			("A", 100, 300);
@@ -365,11 +351,11 @@ let main() =
 			("B", "C", Some(5), true);
 			("C", "D", Some(8), true);
 			("A", "C", Some(3), true);
-			("F", "A", Some(8), true);
+			("A", "F", Some(8), true);
 			("D", "F", Some(1), true);
 			("D", "E", Some(9), true);
 		], tipud) in
-		let algo = Dijkstra in
+		let algo = TopoKahn in
 		let algtipp = List.hd tipud in (* ajutine - peab saama ise valida *)
 		open_graph (" " ^ string_of_int(aknaLaius) ^ "x" ^ string_of_int(aknaKorgus));
 		set_window_title "Graafialgoritmid";
