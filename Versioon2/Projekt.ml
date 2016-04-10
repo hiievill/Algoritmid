@@ -1,5 +1,6 @@
 open Graphics;;
 open Struktuurid;;
+open AlgoBaas;;
 
 let aknaLaius = 600;;
 let aknaKorgus = 650;;
@@ -262,6 +263,7 @@ let hiirTipul hx hy tipp =
 		| {nimi = n; x = tx; y = ty} -> sqrt ((float_of_int(hx - !tx)) ** 2. +. (float_of_int(hy - !ty)) ** 2.) <= float_of_int(tipuRaadius);;
 
 		
+(* TODO: Prim.samm, Laiuti.samm jne *)
 let samm(algtipp, tipud, servad, algo) =
 	match algo with
 		| Prim -> Prim.prim(algtipp, tipud, servad)
@@ -271,6 +273,7 @@ let samm(algtipp, tipud, servad, algo) =
 		| Kruskal -> Kruskal.kruskal(tipud, servad)
 		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
 		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
+		| TopoLopp -> TopoLopp.topoLopp(algtipp, tipud, servad)
 		| _ -> ();;
 
 let syndmused(algtipp, tipud, servad, algo) =
@@ -355,7 +358,7 @@ let main() =
 			("D", "F", Some(1), true);
 			("D", "E", Some(9), true);
 		], tipud) in
-		let algo = TopoKahn in
+		let algo = SygavutiLopp in
 		let algtipp = List.hd tipud in (* ajutine - peab saama ise valida *)
 		open_graph (" " ^ string_of_int(aknaLaius) ^ "x" ^ string_of_int(aknaKorgus));
 		set_window_title "Graafialgoritmid";

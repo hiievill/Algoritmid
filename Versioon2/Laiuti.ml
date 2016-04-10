@@ -5,9 +5,6 @@ let j2rgmisedServad = ref([]);;
 
 let kylastatudTipud = ref([]);;
 
-let string_of_tippude_j2rjekord() =
-	"Tippude läbimise järjekord: " ^ String.concat ", " (List.map (fun t -> t.nimi) !kylastatudTipud);;
-
 let rec leiaJ2rgServad(tipp, servad) = 
 	match servad with
 		| x::xs -> (
@@ -88,7 +85,7 @@ let servaLisamine(tipud, servad) =
 	else i := ServaValik;;
 
 let lopp() =
-	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu. \n" ^ string_of_tippude_j2rjekord());;
+	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu. \n" ^ string_of_tippude_j2rjekord(!kylastatudTipud));;
 		
 let laiuti(algtipp, tipud, servad) = 
 	match !i with

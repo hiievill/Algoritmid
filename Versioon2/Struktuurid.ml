@@ -1,6 +1,4 @@
 
-let algoL2bi = ref(false);; (* või selle asemel algo lõpus ebavajalikud servad ära kustutada? *)
-
 type algoritm = Laiuti
 	| SygavutiEes
 	| SygavutiLopp

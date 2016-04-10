@@ -2,95 +2,130 @@ open Struktuurid;;
 open Laiuti;;
 open AlgoBaas;;
 
-let j2rgmisedServad = ref([]);;
-let lisatavadTipud = ref([]);;
-let vaadeldavTipp = ref(None);;
+let vaadeldavadTipud = ref([]);;
 
-let leiaVaadeldavTipp(serv) = (*analoogiline nagu leiaLisatavTipp*)
+let kylastatudTipud = ref([]);;
+
+(* fn, mis tagastab, kas antud tipust väljub vastav serv ning serv ja teine tipp on vaatlemata *)
+let sobiv(tipp, serv) =
 	match serv with
-		| {tipp1 = t1; tipp2 = t2;} -> if !((!t1).tv) = Vaadeldav then !t1 else !t2;;
+		| {tipp1 = t1; tipp2 = t2; nool = n; sv = v} -> (
+			!v = Vaatlemata && (
+				match n with
+					| true -> !t1 = tipp && !(!t2.tv) = Vaatlemata
+					| false -> !t1 = tipp && !(!t2.tv) = Vaatlemata || !t2 = tipp && !(!t1.tv) = Vaatlemata
+			)
+		);;
+
+(* TODO: eelmisega kokku võtta? *)
+let sobiv2(tipp, serv) =
+	match serv with
+		| {tipp1 = t1; tipp2 = t2; nool = n; sv = v} -> (
+			!v = Vaadeldav && (
+				match n with
+					| true -> !t2 = tipp && !(!t1.tv) = Vaadeldav
+					| false -> !t1 = tipp && !(!t2.tv) = Vaadeldav || !t2 = tipp && !(!t1.tv) = Vaadeldav
+			)
+		);;
+	
+
+(* fn, mis võtab argumendiks vaadeldud tipu ja tagastab kõik temast väljuvad vaatlemata servad *)
+let leiaVaatlemataServad(tipp, servad) =
+	List.filter ((fun t s -> sobiv(t, s)) tipp) servad;;
+
+(* märgime serva ja uue tipu vaadeldavaks ja paneme uue tipu vaadeldavate tippude etteotsa *)
+(* TODO: peaks vaatlema ka neid servi, mis viivad juba vaadeldud tippudeni? *)
+let vaatleServa(serv) =
+	match serv with
+		| {tipp1 = t1; tipp2 = t2; sv = v;} -> (
+			v := Vaadeldav;
+			if !(!t1.tv) = Vaatlemata
+				then (
+					!t1.tv := Vaadeldav;
+					vaadeldavadTipud := [!t1] @ !vaadeldavadTipud;
+				)
+			else (
+				assert (!(!t2.tv) = Vaatlemata);
+				!t2.tv := Vaadeldav;
+				vaadeldavadTipud := [!t2] @ !vaadeldavadTipud;
+			)
+		);;
+
+(* funktsioon, mis märgib tipu ja talle vastava serva Valituks *)
+let valiTipp(tipp, servad) =
+	let vastavServ = List.find ((fun t s -> sobiv2(t, s)) tipp) servad in
+	(* TODO: kui vastavat serva ei leidu? *)
+	vastavServ.sv := Valitud;
+	tipp.tv := Valitud;;
+	
+(* funktsioon, mis märgib tipu ja talle vastava serva Vaadelduks ja kustutab tipu vaadeldavate hulgast *)
+let lisaTipp(tipp, servad) =
+	assert (List.hd !vaadeldavadTipud = tipp); (* vajalik? *)
+	vaadeldavadTipud := List.tl !vaadeldavadTipud;
+	tipp.tv := Vaadeldud;
+	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;;
 
 let algus() =
-	(*AlgoBaas.graafiKontroll(...);*)
-	tekst := "Sügavuti lõppjärjestuses läbimise algoritm alustab";
+	tekst := "Sügavuti lõppjärjestuses läbimise algoritm alustab.";
 	i := EsimeneTipp;;
 
-let esimeneTipp(algtipp, servad) = 
+let esimeneTipp(algtipp) =
+	vaadeldavadTipud := [algtipp];
 	algtipp.tv := Vaadeldav;
-	vaadeldavTipp := Some algtipp;
-	tekst := "Külastame esimest tippu.";
-	let js = leiaJ2rgServad(algtipp, servad) in
-	j2rgmisedServad := js @ (!j2rgmisedServad);
-	lisatavadTipud := algtipp :: !lisatavadTipud;
+	tekst := "Vaatleme esimest tippu.";
 	i := ServaVaatlus;;
 
-let servaVaatlus(servad) = 
-	tekst := "Külastame järgmist tippu.";
-	let s = List.hd !j2rgmisedServad in
-	j2rgmisedServad := List.tl !j2rgmisedServad;
-	match s with
-		| {tipp1 = t1; tipp2 = t2; sv = v;} -> ( (*märgime järgmise serva ja tipu vaadeldavaks*)
-			v := Vaadeldav;
-			if !((!t1).tv) = Vaatlemata then (
-				(!t1).tv := Vaadeldav;
-				vaadeldavTipp := Some !t1
-			);
-			if !((!t2).tv) = Vaatlemata then (
-				(!t2).tv := Vaadeldav; 
-				vaadeldavTipp := Some !t2
-			);
-		);
-	match !vaadeldavTipp with
-		| None -> print_endline("Mingi viga.")
-		| Some vt -> (
-				lisatavadTipud := vt :: !lisatavadTipud;
-      	let js = leiaJ2rgServad(vt, servad) in
-      	print_endline(vt.nimi ^ ", " ^ string_of_int(List.length js));
-      	if List.length js = 0 (* sügavamale ei lähe, hakkame tippe/servi lisama *)
-      		then (
-      			i := ServaValik
-      		)
-      	else (
-      		j2rgmisedServad := js @ (!j2rgmisedServad);
-      		i := ServaVaatlus
-  			)
-  		);;
-
-let servaValik(algtipp, servad) = 
-	tekst := "Valime tipu.";
-	let t = List.hd !lisatavadTipud in (* leiame tipu, mida lisama hakkame *)
-	t.tv := Valitud;
-	if t = algtipp 
-		then ()
+let servaVaatlus(servad) =
+	let eelmineTipp = List.hd !vaadeldavadTipud in
+	let vs = leiaVaatlemataServad(eelmineTipp, servad) in (*sellest tipust väljuvad vaatlemata servad*)
+	if List.length vs = 0
+		then (
+			tekst := "Sellest tipust enam edasi ei saa.";
+			i := ServaValik;
+		)
 	else (
-		let valitavServ = List.find ((fun t s -> !(s.sv) = Vaadeldav && (!(s.tipp1) = t || !(s.tipp2) = t)) t) servad in
-		valitavServ.sv := Valitud
-	);
+		let j2rgmineServ = List.hd vs in
+		vaatleServa(j2rgmineServ);
+		tekst := "Vaatleme järgmist tippu.";
+		i := ServaVaatlus;
+	);;
+
+let servaValik(algtipp, servad) =
+	tekst := "Kõik selle tipu järglased on töödeldud, nii et valime selle.";
+	let t = List.hd !vaadeldavadTipud in
+	if t = algtipp
+		then t.tv := Valitud
+	else valiTipp(t, servad);
 	i := ServaLisamine;;
 
 let servaLisamine(algtipp, servad) =
-	tekst := "Loeme tipu külastatuks.";
-	let t = List.hd !lisatavadTipud in (* leiame tipu, mida lisama hakkame *)
-	print_endline(string_of_tipp(t));
-	lisatavadTipud := List.tl !lisatavadTipud;
-	t.tv := Vaadeldud;
+	tekst := "Töötleme selle tipu.";
+	let t = List.hd !vaadeldavadTipud in
+	kylastatudTipud := !kylastatudTipud @ [t];
 	if t = algtipp
-		then i := Lopp
+		then (
+			t.tv := Vaadeldud;
+			i := Lopp
+		)
 	else (
-		let valitavServ = List.find ((fun t s -> !(s.sv) = Valitud && (!(s.tipp1) = t || !(s.tipp2) = t)) t) servad in
-		valitavServ.sv := Valitud;
-		i := ServaVaatlus (*õige??*)
+		lisaTipp(t, servad);
+		let eelmineTipp = List.hd !vaadeldavadTipud in
+		let vs = leiaVaatlemataServad(eelmineTipp, servad) in
+  	if List.length vs = 0
+  		then i := ServaValik
+  	else i := ServaVaatlus
 	);;
 
-let lopp() = 
-	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.");;
+let lopp() =
+	AlgoBaas.lopp("Algoritm lõpetab." ^ string_of_tippude_j2rjekord(!kylastatudTipud));;
 
 let sygavutiLopp(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus();
-		| EsimeneTipp -> esimeneTipp(algtipp, servad);
+		| EsimeneTipp -> esimeneTipp(algtipp);
 		| ServaVaatlus -> servaVaatlus(servad);
 		| ServaValik -> servaValik(algtipp, servad);
 		| ServaLisamine -> servaLisamine(algtipp, servad);
 		| Lopp -> lopp();
 		| _ -> ();;
+	
