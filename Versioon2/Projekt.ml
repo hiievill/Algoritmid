@@ -274,6 +274,7 @@ let samm(algtipp, tipud, servad, algo) =
 		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
 		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
 		| TopoLopp -> TopoLopp.topoLopp(algtipp, tipud, servad)
+		| Kosaraju -> Kosaraju.kosaraju(algtipp, tipud, servad)
 		| _ -> ();;
 
 let syndmused(algtipp, tipud, servad, algo) =
@@ -358,7 +359,7 @@ let main() =
 			("D", "F", Some(1), true);
 			("D", "E", Some(9), true);
 		], tipud) in
-		let algo = SygavutiLopp in
+		let algo = Kosaraju in
 		let algtipp = List.hd tipud in (* ajutine - peab saama ise valida *)
 		open_graph (" " ^ string_of_int(aknaLaius) ^ "x" ^ string_of_int(aknaKorgus));
 		set_window_title "Graafialgoritmid";

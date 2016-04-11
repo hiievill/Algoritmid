@@ -95,5 +95,6 @@ let prim(algtipp, tipud, servad) =
 		| ServaValik -> servaValik(servad)
 		| ServaLisamine -> servaLisamine(tipud, servad)
 		| Lopp -> lopp()
-		| L2bi -> ();;
+		| L2bi -> ()
+		| _ -> ();;
 		

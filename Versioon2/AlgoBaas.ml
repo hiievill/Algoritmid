@@ -13,8 +13,8 @@ let leiaLyhimServ(servad) =
 	List.fold_left (fun s1 s2 -> if s1.kaal < s2.kaal then s1 else s2) (List.hd servad) (List.tl servad);;
 
 (* funktsioon, mis tagastab stringina külastatud tippude järjekorra *)
-let string_of_tippude_j2rjekord(tipud) =
-	"Tippude läbimise järjekord: " ^ String.concat ", " (List.map (fun t -> t.nimi) tipud);;
+let string_of_tipud(tipud) =
+	String.concat ", " (List.map (fun t -> t.nimi) tipud);;
 
 (* funktsioon, mis kontrollib, et graaf sidus oleks. TODO. *)
 let kontrolliSidusust() = ();;

@@ -2,7 +2,7 @@
 TULEM = tulem.exe
 
 build:
-	ocamlc graphics.cma Struktuurid.ml AlgoBaas.ml Laiuti.ml SygavutiEes.ml SygavutiLopp.ml Prim.ml Kruskal.ml Dijkstra.ml TopoKahn.ml TopoLopp.ml Projekt.ml -o $(TULEM)
+	ocamlc graphics.cma Struktuurid.ml AlgoBaas.ml Laiuti.ml SygavutiEes.ml SygavutiLopp.ml Prim.ml Kruskal.ml Dijkstra.ml TopoKahn.ml TopoLopp.ml Kosaraju.ml Projekt.ml -o $(TULEM)
 
 clean:
 	rm -f $(TULEM)

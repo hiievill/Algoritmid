@@ -26,6 +26,7 @@ let leiaLisatavTipp(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2;} -> if !((!t1).tv) = Valitud then !t1 else !t2;;
 
+(* TODO: see List.filter abil kokku võtta *)
 let rec eemalda(servad) =
 	match servad with
 		| x::xs -> (match x with
@@ -79,13 +80,14 @@ let servaLisamine(tipud, servad) =
 	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
 	lisaServ(lisatavServ);
 	tekst := "Märgime selle tipu külastatuks.";
-	(*if List.for_all tippVaadeldud tipud*) (*TODO: vÃµi ei vii enam Ã¼htki serva siit vÃ¤lja*)
+	(*if List.for_all tippVaadeldud tipud*) (*TODO: või ei vii enam ühtki serva siit välja*)
 	if List.length !j2rgmisedServad = 0
 		then i := Lopp
 	else i := ServaValik;;
 
 let lopp() =
-	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu. \n" ^ string_of_tippude_j2rjekord(!kylastatudTipud));;
+	(*AlgoBaas.lopp("Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu. \n");;*)
+	AlgoBaas.lopp("Tippude läbimise järjekord: " ^ string_of_tipud(!kylastatudTipud));;
 		
 let laiuti(algtipp, tipud, servad) = 
 	match !i with

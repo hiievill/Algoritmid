@@ -117,7 +117,8 @@ let servaLisamine(algtipp, servad) =
 	);;
 
 let lopp() =
-	AlgoBaas.lopp("Algoritm lõpetab." ^ string_of_tippude_j2rjekord(!kylastatudTipud));;
+	(*AlgoBaas.lopp("Algoritm lõpetab.");;*)
+	AlgoBaas.lopp("Tippude läbimise järjekord: " ^ string_of_tipud(!kylastatudTipud));;
 
 let sygavutiLopp(algtipp, tipud, servad) = 
 	match !i with

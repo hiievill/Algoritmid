@@ -17,7 +17,9 @@ type algoSamm = Algus
 	| ServaValik
 	| ServaLisamine
 	| Lopp
-	| L2bi;;
+	| L2bi
+	| Sygavuti
+	| PooratudGraaf;;
 
 type vaadeldavus = Vaatlemata	(* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
 	| Vaadeldav
@@ -41,6 +43,9 @@ type serv = {
 	nool : bool; (*kui true, siis alati esimesest teise*)
 	sv : vaadeldavus ref;
 }
+
+let string_of_serv(serv) =
+	"Serv {" ^ string_of_tipp(!(serv.tipp1)) ^ ", " ^ string_of_tipp(!(serv.tipp2)) ^ "}";;
 
 (*ei kasuta veel *)
 type graaf = {
