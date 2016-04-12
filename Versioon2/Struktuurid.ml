@@ -8,7 +8,7 @@ type algoritm = Laiuti
 	| FloydWarshall
 	| TopoLopp
 	| TopoKahn
-	| EeldusAnalyys
+	| Eeldusgraaf
 	| Kosaraju;;
 
 type algoSamm = Algus

@@ -31,9 +31,11 @@ let algus(tipud, servad) =
 let sygavuti(algtipp, tipud, servad) =
 	let esimeneTipp = ref(algtipp) in
 	while List.exists (fun t -> !(t.tv) = Vaatlemata) tipud (* kuniks leidub veel vaatlemata tippe *)
-  	do
+		do
 			i := Algus;
 			(* läbime graafi sügavuti lõppjärjestuses alates tipust esimeneTipp *)
+			algoL2bi := false;
+			SygavutiLopp.kylastatudTipud := [];
 			while !algoL2bi = false
 				do
 					SygavutiLopp.sygavutiLopp(!esimeneTipp, tipud, servad)		(*läbime sügavuti*)
@@ -48,8 +50,10 @@ let sygavuti(algtipp, tipud, servad) =
 
 (* tekitame pööratud kaartega graafi *)
 let pooratudGraaf(tipud, servad) =
+	sygavutiTipud := List.rev(!sygavutiTipud); (*tippude järjestuse pidi ka ümber pöörama*)
 	tekst := "Tekitame pööratud kaartega graafi.";
 	tekst := "Läbime tippe alates esimesest läbimata tipust tekkinud järjestuses.";
+	tekst := string_of_tipud(!sygavutiTipud);
 	pooraServad(servad);
 	List.iter (fun s -> s.sv := Vaatlemata) servad;
 	List.iter (fun t -> t.tv := Vaatlemata) tipud;

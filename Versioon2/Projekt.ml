@@ -272,10 +272,11 @@ let samm(algtipp, tipud, servad, algo) =
 		| SygavutiLopp -> SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
 		| Kruskal -> Kruskal.kruskal(tipud, servad)
 		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
+		| FloydWarshall -> FloydWarshall.floydWarshall(tipud, servad)
 		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
 		| TopoLopp -> TopoLopp.topoLopp(algtipp, tipud, servad)
-		| Kosaraju -> Kosaraju.kosaraju(algtipp, tipud, servad)
-		| _ -> ();;
+		| Eeldusgraaf -> Eeldusgraaf.eeldusgraaf(algtipp, tipud, servad)
+		| Kosaraju -> Kosaraju.kosaraju(algtipp, tipud, servad);;
 
 let syndmused(algtipp, tipud, servad, algo) =
 	let hiirVajutatud = ref(false) in
@@ -342,7 +343,7 @@ let main() =
 		], tipud) in*)
 		
 		(* Näide 3 - Prim *)
-		let tipud = looTipud([
+		(*let tipud = looTipud([
 			("A", 200, 200);
 			("B", 250, 40);
 			("C", 30, 300);
@@ -358,6 +359,29 @@ let main() =
 			("A", "F", Some(8), true);
 			("D", "F", Some(1), true);
 			("D", "E", Some(9), true);
+		], tipud) in*)
+		(* Näide 4 - Koaraju *)
+		let tipud = looTipud([
+			("A", 100, 400);
+			("B", 200, 400);
+			("C", 300, 400);
+			("D", 400, 400);
+			("E", 100, 200);
+			("F", 200, 200);
+			("G", 300, 200);
+			("H", 400, 200);
+		]) in
+		let servad = looServad([
+			("A", "B", None, true);
+			("B", "C", None, true);
+			("C", "D", None, true);
+			("C", "G", None, true);
+			("G", "C", None, true);
+			("B", "F", None, true);
+			("F", "G", None, true);
+			("F", "E", None, true);
+			("E", "A", None, true);
+			("H", "G", None, true);
 		], tipud) in
 		let algo = Kosaraju in
 		let algtipp = List.hd tipud in (* ajutine - peab saama ise valida *)
