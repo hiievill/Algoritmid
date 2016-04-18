@@ -1,5 +1,6 @@
 open Graphics;;
 open Struktuurid;;
+open Graafika;;
 open AlgoBaas;;
 
 let aknaLaius = 600;;
@@ -33,11 +34,12 @@ let piiridesY(y) =
 
 let looTipp(tipuandmed) = 
 	match tipuandmed with
-		| (tipuNimi, tipuX, tipuY) -> {
+		| (tipuNimi, tipuX, tipuY, tipuHind) -> {
 			nimi = tipuNimi;
 			x = ref(piiridesX(tipuX));
 			y = ref(piiridesY(tipuY + kirjaaknaKorgus)); (* + kirjaaknaKorgus jätta või mitte? *)
 			tv = ref(Vaatlemata);
+			hind = tipuHind;
 		};;
 
 let looTipud(tipuandmeteList) =
@@ -209,6 +211,14 @@ let kuvaServJaNool(serv) =
     	kuvaServ(serv);
 			if serv.nool = true then kuvaNool(serv);
 		);;
+
+let kuvaHind(tipp) =
+	match tipp.hind with
+		| None -> ()
+		| Some h -> (
+			moveto (!(tipp.x) - 5) (!(tipp.y) + 20); (* TODO: 5 ja 20 suvalt võetud, panna sõltuma *)
+			draw_string (string_of_int(h))
+		);;
 		
 let kuvaTipud(tipud) = 
 	List.iter kuvaTipp tipud;;
@@ -226,8 +236,9 @@ let kuvaKaalud(servad) =
 	set_color black;
 	List.iter kuvaKaal servad;;
 	
-(*let kuvaNooled(servad) = 
-	List.iter kuvaEriNool servad;;*)
+let kuvaHinnad(tipud) =
+	set_color black;
+	List.iter kuvaHind tipud;;
 	
 let kuvaServadJaNooled(servad) =
 	set_line_width 3;
@@ -250,6 +261,7 @@ let kuvaPilt(tipud, servad) =
 	kuvaTipud(tipud);
 	kuvaNimed(tipud);
 	kuvaKaalud(servad);
+	kuvaHinnad(tipud);
 	kuvaVahe();
 	kuvaTekst();;
 	(*set_line_width 3;
@@ -327,11 +339,11 @@ let main() =
 		
 		(* Näide 2 - Prim *)
 		(*let tipud = looTipud([
-			("A", 100, 300);
-			("B", 300, 300);
-			("C", 100, 100);
-			("D", 300, 100);
-			("E", 500, 200);
+			("A", 100, 300, None);
+			("B", 300, 300, None);
+			("C", 100, 100, None);
+			("D", 300, 100, None);
+			("E", 500, 200, None);
 		]) in
 		let servad = looServad([
 			("A", "B", Some(1), Puudub);
@@ -344,12 +356,12 @@ let main() =
 		
 		(* Näide 3 - Prim *)
 		(*let tipud = looTipud([
-			("A", 200, 200);
-			("B", 250, 40);
-			("C", 30, 300);
-			("D", 540, 410);
-			("E", 10, 400);
-			("F", 400, 70)
+			("A", 200, 200, None);
+			("B", 250, 40, None);
+			("C", 30, 300, None);
+			("D", 540, 410, None);
+			("E", 10, 400, None);
+			("F", 400, 70, None)
 		]) in
 		let servad = looServad([
 			("A", "B", Some(6), true);
@@ -361,15 +373,15 @@ let main() =
 			("D", "E", Some(9), true);
 		], tipud) in*)
 		(* Näide 4 - Koaraju *)
-		let tipud = looTipud([
-			("A", 100, 400);
-			("B", 200, 400);
-			("C", 300, 400);
-			("D", 400, 400);
-			("E", 100, 200);
-			("F", 200, 200);
-			("G", 300, 200);
-			("H", 400, 200);
+		(*let tipud = looTipud([
+			("A", 100, 400, None);
+			("B", 200, 400, None);
+			("C", 300, 400, None);
+			("D", 400, 400, None);
+			("E", 100, 200, None);
+			("F", 200, 200, None);
+			("G", 300, 200, None);
+			("H", 400, 200, None);
 		]) in
 		let servad = looServad([
 			("A", "B", None, true);
@@ -382,8 +394,27 @@ let main() =
 			("F", "E", None, true);
 			("E", "A", None, true);
 			("H", "G", None, true);
+		], tipud) in*)
+		(* Näide - eeldusgraafi analüüs *)
+		let tipud = looTipud([
+			("A", 100, 400, Some(8));
+			("B", 200, 400, Some(2));
+			("C", 300, 400, Some(10));
+			("D", 400, 400, Some(5));
+			("E", 100, 200, Some(7));
+			("F", 200, 200, Some(17));
+			("G", 300, 200, Some(1));
+		]) in
+		let servad = looServad([
+			("A", "B", None, true);
+			("B", "C", None, true);
+			("C", "D", None, true);
+			("C", "G", None, true);
+			("B", "F", None, true);
+			("F", "G", None, true);
+			("F", "E", None, true);
 		], tipud) in
-		let algo = Kosaraju in
+		let algo = Eeldusgraaf in
 		let algtipp = List.hd tipud in (* ajutine - peab saama ise valida *)
 		open_graph (" " ^ string_of_int(aknaLaius) ^ "x" ^ string_of_int(aknaKorgus));
 		set_window_title "Graafialgoritmid";

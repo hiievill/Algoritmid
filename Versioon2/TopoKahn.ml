@@ -59,6 +59,7 @@ let servaValik(tipud) =
 	tekst := "Valime suvaliselt ühe tipu, mille sisendaste on 0.";
 	let valitudTipp = valiTipp(tipud) in
 	valitudTipp.tv := Valitud;
+	(*List.iter (fun t -> print_endline(t.nimi ^ ": " ^ ( if !(t.tv) = Vaadeldud then "Vaadeldud" else if !(t.tv) = Vaatlemata then "Vaatlemata" else if !(t.tv) = Vaadeldav then "Vaadeldav" else "Valitud") ^ ", " ^ string_of_int(Hashtbl.find sisendastmed t.nimi))) tipud;*)
 	i := ServaVaatlus;;
 
 let servaVaatlus(servad) =

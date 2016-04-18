@@ -19,7 +19,15 @@ type algoSamm = Algus
 	| Lopp
 	| L2bi
 	| Sygavuti
-	| PooratudGraaf;;
+	| PooratudGraaf
+	| Topo
+	| Vahe1
+	| Vahe2
+	| Vahe3
+	| TipuValikVL
+	| TipuLisamineVL
+	| TipuValikHA
+	| TipuLisamineHA;;
 
 type vaadeldavus = Vaatlemata	(* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
 	| Vaadeldav
@@ -31,6 +39,7 @@ type tipp = {
 	x : int ref;
 	y : int ref;
 	tv : vaadeldavus ref;
+	hind: int option
 }
 
 let string_of_tipp(tipp) =

@@ -1,6 +1,8 @@
 open Struktuurid;;
 open AlgoBaas;;
 
+(* TODO: TopoKahn.string_of_topo ära kasutada *)
+
 let algus() =
 	tekst := "Algoritm opoloogilise järjestuse leidmiseks lõppjärjestuse kaudu alustab.";
 	tekst := "Läbime graafi sügavuti lõppjärjestusega.";
