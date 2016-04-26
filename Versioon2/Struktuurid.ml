@@ -11,6 +11,20 @@ type algoritm = Laiuti
 	| Eeldusgraaf
 	| Kosaraju;;
 
+let string_of_algo(algo) =
+	match algo with
+		| Laiuti -> "Laiuti"
+		| SygavutiEes -> "Sügavuti eesjärjestuses"
+  	| SygavutiLopp -> "Sügavuti lõppjärjestuses"
+  	| Prim -> "Primi algoritm"
+  	| Kruskal -> "Kruskali algoritm"
+  	| Dijkstra -> "Dijkstra algoritm"
+  	| FloydWarshall -> "Floyd-Warshalli algoritm"
+  	| TopoLopp -> "Topoloogiline järjestamine lõppjärjestuse abil"
+  	| TopoKahn -> "Topoloogiline järjestamine Kahni algoritmiga"
+  	| Eeldusgraaf -> "Eeldusgraafi analüüs"
+  	| Kosaraju -> "Kosaraju algoritm";;
+
 type algoSamm = Algus
 	| EsimeneTipp
 	| ServaVaatlus
@@ -27,12 +41,26 @@ type algoSamm = Algus
 	| TipuValikVL
 	| TipuLisamineVL
 	| TipuValikHA
-	| TipuLisamineHA;;
+	| TipuLisamineHA
+	| SobimatuServ
+	| Tagurpidi
+	| EsimeneKriitiline
+	| Kriitiline;;
 
-type vaadeldavus = Vaatlemata	(* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
+(* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
+type vaadeldavus = Vaatlemata
 	| Vaadeldav
 	| Valitud
-	| Vaadeldud;;
+	| Vaadeldud
+	| Sobimatu;;
+
+let string_of_vaadeldavus(v) =
+	match v with
+		| Vaatlemata -> "Vaatlemata"
+		| Vaadeldav -> "Vaadeldav"
+		| Valitud -> "Valitud"
+		| Vaadeldud -> "Vaadeldud"
+		| Sobimatu -> "Sobimatu";;
 	
 type tipp = {
 	nimi : string;
@@ -45,6 +73,14 @@ type tipp = {
 let string_of_tipp(tipp) =
 	"Tipp {" ^ tipp.nimi ^ ", " ^ string_of_int(!(tipp.x)) ^ ", " ^ string_of_int(!(tipp.y)) ^ "}";;
 
+(* väljad x, y ja r on ringjoone võrrandite jaoks *)
+(*type kaal = {
+	suurus : int;
+	x : int ref;
+	y : int ref;
+	r : int ref;
+}*)
+
 type serv = {
 	tipp1 : tipp ref;
 	tipp2 : tipp ref;
@@ -54,21 +90,11 @@ type serv = {
 }
 
 let string_of_serv(serv) =
-	"Serv {" ^ string_of_tipp(!(serv.tipp1)) ^ ", " ^ string_of_tipp(!(serv.tipp2)) ^ "}";;
+	"Serv {" ^ string_of_tipp(!(serv.tipp1)) ^ ", " ^ string_of_tipp(!(serv.tipp2)) ^ ", kaal: " ^ 
+		(match serv.kaal with | None -> "puudub" | Some k -> string_of_int(k)) ^ ", nool: " ^ string_of_bool(serv.nool) ^ "}";;
 
-(*ei kasuta veel *)
 type graaf = {
 	tipud : tipp list;
 	servad : serv list;
 }
-	
-let string_of_vaadeldavus(v) =
-	match v with
-		| Vaatlemata -> "Vaatlemata"
-		| Vaadeldav -> "Vaadeldav"
-		| Valitud -> "Valitud"
-		| Vaadeldud -> "Vaadeldud";;
-
-let tippVaadeldud(tipp) =	(*tagastab true, kui vastav tipp on vaadeldud*)
-	!(tipp.tv) = Vaadeldud;;
 

@@ -6,30 +6,33 @@ let algus() =
 	(*AlgoBaas.graafiKontroll(...);*)
 	tekst := "Sügavuti eesjärjestuses läbimise algoritm alustab";
 	i := EsimeneTipp;;
-
-let servaValik(servad) = (* sama mis laiutil, ainult 1 rida erinev *)
-	let s = List.hd !j2rgmisedServad in
-	j2rgmisedServad := List.tl !j2rgmisedServad;
-	match s with
-		| {tipp1 = t1; tipp2 = t2; sv = v;} -> (
-			v := Valitud;
-			if !((!t1).tv) = Vaatlemata then (!t1).tv := Valitud;
-			if !((!t2).tv) = Vaatlemata then (!t2).tv := Valitud; 
-		);
+	
+let servaLisamine(tipud, servad) =	(* sama mis laiuti, aga 2 erinevat rida: tekst ja js @ !j2rgmisedServad *)
 	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
-	let lisatavTipp = leiaLisatavTipp(lisatavServ) in
-	kylastatudTipud := (!kylastatudTipud) @ [lisatavTipp];
-	let js = leiaJ2rgServad(lisatavTipp, servad) in
-	j2rgmisedServad := js @ (!j2rgmisedServad);
-	j2rgmisedServad := eemalda(!j2rgmisedServad);
-	tekst := "Valime järgmise tipu.";
-	i := ServaLisamine;;
+	let lisatavTipp = leiaLisatavTipp(lisatavServ) in				(* lisatav tipp *)
+	toodeldudTipud := (!toodeldudTipud) @ [lisatavTipp];	(* lisame selle külastatud tippude hulka *)
+	let js = leiaJ2rgServad(lisatavTipp, servad) in 				(* leiame need servad, kuhu valitud tipust viib *)
+	j2rgmisedServad := js @ (!j2rgmisedServad); 						(* lisame need järgmiste servade järjekorra algusesse *)
+	j2rgmisedServad := eemalda(!j2rgmisedServad); 					(* eemaldame järgmiste servade järjekorrast need servad, 
+																														mis ühendavad külastatud tippe *)
+	lisaServ(lisatavServ);																	(* märgime serva ja tema tipud vaadelduks *)
+	tekst := "Märgime selle tipu töödelduks ja lisame järjekorra algusesse need tipud, kuhu siit pääseb.";
+	tekst := !tekst ^ "\n" ^ string_of_toodeldudTipud(!toodeldudTipud);
+	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedTipud(!j2rgmisedServad);
+	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
+		then i := Lopp
+	else i := ServaValik;;																	(* kui järgmisi servi leidub, lähme uut serva valima *)
+	
+let lopp() =
+	tekst := "Algoritm lõpetab, olles leidnud sügavuti eesjärjestuses otsingu otsingupuu.";
+	tekst := !tekst ^ "\n" ^ "Tippude töötlemise järjekord: " ^ string_of_tipud(!toodeldudTipud);
+	AlgoBaas.lopp();;
 
 let sygavutiEes(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus();
 		| EsimeneTipp -> Laiuti.esimeneTipp(algtipp, servad);
-		| ServaValik -> servaValik(servad);
-		| ServaLisamine -> Laiuti.servaLisamine(tipud, servad);
-		| Lopp -> Laiuti.lopp();
+		| ServaValik -> Laiuti.servaValik(servad);
+		| ServaLisamine -> servaLisamine(tipud, servad);
+		| Lopp -> lopp();
 		| _ -> ();;

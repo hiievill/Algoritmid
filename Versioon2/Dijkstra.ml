@@ -8,7 +8,7 @@ let string_of_kaugused() =
 	let s = Hashtbl.fold (fun k v acc -> k ^ ": " ^ (if v = max_int then "inf" else string_of_int(v)) ^ ", " ^ acc) kaugused "" in
   "Tippude kaugused algtipust: " ^ String.sub s 0 (String.length(s) - 2);;
 
-let valitudTipp = ref(None);;
+let valitudTipp = ref(tyhiTipp);;
 
 (* funktsioon, mis leiab kõik tipust tipp väljuvad servad *)
 let leiaV2ljuvadServad(tipp, servad) =
@@ -51,61 +51,65 @@ let valitavServ(serv) =
 			!v = Vaadeldav && !(!t2.tv) <> Vaadeldud
 		);;
 
+(* funktsioon, mis tagastab tipu, mille kaugus algtipust on kõige väiksem *)
+let leiaL2himTipp(tipud) =
+	List.fold_left (fun t1 t2 -> if Hashtbl.find kaugused t1.nimi <=  Hashtbl.find kaugused t2.nimi then t1 else t2) (List.hd tipud) (List.tl tipud);;
+
+(* funktsioon, mis tagastab, kas serv on tipule vastav, st mille teise tipu kaugus + serv.kaal on tipu kaugus *)
+let vastavServ tipp serv =
+	match serv.kaal with
+		| None -> false
+		| Some k -> !(serv.tipp2) = tipp && Hashtbl.find kaugused !(serv.tipp1).nimi + k = Hashtbl.find kaugused tipp.nimi;;
+
 let algus(algtipp, tipud, servad) =
-	AlgoBaas.graafiKontroll(servad, false, true, true);
-	List.iter (lisaKaugus max_int) tipud; (* paneme kõikidele tippudele algseks kauguseks algtipust suurima võimaliku *)
-	lisaKaugus 0 algtipp; (* ainult algtipule 0 *)
+	(*AlgoBaas.graafiKontroll(servad, false, true, true);*)
+	List.iter (lisaKaugus max_int) tipud; 			(* paneme kõikidele tippudele algseks kauguseks algtipust suurima võimaliku *)
+	lisaKaugus 0 algtipp; 											(* ainult algtipule paneme kauguseks 0 *)
 	tekst := "Dijkstra algoritm alustab.";
 	i := EsimeneTipp;;
 
 let esimeneTipp(algtipp) =
 	tekst := "Valime esimese tipu.";
-	algtipp.tv := Valitud;
-	valitudTipp := Some algtipp;
-	i := ServaVaatlus;;
-
-let servaVaatlus(servad) =
-	match !valitudTipp with
-	| None -> failwith("Valitud tipp puudub. Ei tohiks juhtuda.")
-	| Some vt -> (
-  	let vaadeldavadServad = leiaV2ljuvadServad(vt, servad) in
-  	List.iter vaatleServa vaadeldavadServad;
-  	List.iter uuendaKaugust vaadeldavadServad;
-  	tekst := "Vaatleme tipust väljuvaid servi ning uuendame vastavate tippude kaugusi, kui need on senisest väiksemad.";
-		tekst := string_of_kaugused();
-		i := ServaLisamine
-	);;
+	algtipp.tv := Valitud;											(* märgime algtipu valituks *)
+	valitudTipp := algtipp;
+	i := ServaLisamine;;
 
 let servaLisamine(algtipp, tipud, servad) =
 	tekst := "Märgime valitud tipu vaadelduks.";
-	if !valitudTipp = Some algtipp
-		then algtipp.tv := Vaadeldud
-	else (
-		assert (List.length (List.filter (fun s -> !(s.sv) = Valitud) servad) = 1); (* kontrollime, et vaid 1 serv oleks valitud *)
-		List.iter (fun s -> if !(s.sv) = Valitud then lisaServ(s)) servad; (* märgime vaadelduks*)
-	);
-	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
-		then i := Lopp
-	else i := ServaValik;;
+	if !valitudTipp = algtipp																								(* kui valitud tipp on algtipp *)
+		then algtipp.tv := Vaadeldud																					(* märgime ta vaadelduks *)
+	else List.iter (fun s -> if !(s.sv) = Valitud then lisaServ(s)) servad; (* muidu märgime serva koos tipuga vaadelduks*)
+	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud										(* kui kõik tipu on vaadeldud, lähme lõpule *)
+  		then i := Lopp
+	else i := ServaVaatlus;;																								(* vastasel juhul lähme tippude kaugusi uuendama *)
 
-let servaValik(servad) =
-	let vs = List.filter valitavServ servad in (* leiame vaadeldavad servad *)
-	let ls = AlgoBaas.leiaLyhimServ(vs) in
-	valiServ(ls);
-	valitudTipp := Some !(ls.tipp2);
-	tekst := "Valime lühima serva, mis ühendab vaadeldud ja vaatlemata tippe.";
-	i := ServaVaatlus;;
+let servaVaatlus(tipud, servad) =
+  	let vaadeldavadServad = leiaV2ljuvadServad(!valitudTipp, servad) in		(* leiame äsja külastatud tipust väljuvad servad *)
+  	List.iter vaatleServa vaadeldavadServad;															(* märgime need vaadelduks *)
+  	List.iter uuendaKaugust vaadeldavadServad;														(* uuendame nende 2. tippude kaugusi algtipust *)
+  	tekst := "Vaatleme tipust väljuvaid servi ning uuendame vastavate tippude kaugusi, kui need on senisest väiksemad.";
+		tekst := !tekst ^ "\n" ^ string_of_kaugused();
+  	i := ServaValik;;
+
+let servaValik(tipud, servad) =
+	let t = leiaL2himTipp(List.filter (fun t -> !(t.tv) = Vaadeldav) tipud) in		(* leiame algtipule lähima külastamata tipu*)
+	let s = List.find (vastavServ t) servad in																		(* ja talle vastava serva *)
+	valiServ(s);																																	(* märgime serva ja tipu valituks *)
+	valitudTipp := t;
+	tekst := "Valime algtipule lähima külastamata tipu.";
+	i := ServaLisamine;;
 
 let lopp() =
-	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud kõikide tippude vähima kauguse algtipust. \n" ^ string_of_kaugused());;
+	tekst := "Algoritm lõpetab, olles leidnud kõikide tippude vähima kauguse algtipust. \n" ^ string_of_kaugused();
+	AlgoBaas.lopp();;
 
 let dijkstra(algtipp, tipud, servad) =
 	match !i with
 		| Algus -> algus(algtipp, tipud, servad)
 		| EsimeneTipp -> esimeneTipp(algtipp)		(* vaatleme tippu (märgime valituks) *)
-		| ServaVaatlus -> servaVaatlus(servad)
+		| ServaVaatlus -> servaVaatlus(tipud, servad)
 				(* vaatleme kõiki sellest tipust väljuvaid servi (vaadeldavad) ja uuendame kaugusi*)
 		| ServaLisamine -> servaLisamine(algtipp, tipud, servad)		(* märgime tipu (ja serva) vaadelduks *)
-		| ServaValik -> servaValik(servad)			(* valime lühima serva, mis ühendab Vaadeldud ja Vaadeldavat tippu *)
+		| ServaValik -> servaValik(tipud, servad)			(* valime lühima serva, mis ühendab Vaadeldud ja Vaadeldavat tippu *)
 		| Lopp -> lopp()
 		| _ -> ();;

@@ -1,8 +1,6 @@
 open Struktuurid;;
 open AlgoBaas;;
 
-let valitudServ = ref(None);;
-
 let hulgad = Hashtbl.create 10;; (* sisuliselt map tipp.nimi : tipp.nimi *)
 
 (* funktsioon, mis määrab tippudele t1 ja t2 hulgad järgnevalt:*)
@@ -31,29 +29,26 @@ let lisaHulka(t1, t2) =
 		Hashtbl.add hulgad t2.nimi t1.nimi;
 	);;
 
-(* funktsioon, mis tagastab, kas tippude t1 ja t2 vahelise serva lisamine tekitaks tsükli, st*)
-(* kas mõlemad tipud on vaadeldud ning kuuluvad ühte hulka (puusse) *)
+(* funktsioon, mis tagastab, kas tippude t1 ja t2 vahelise serva lisamine tekitaks tsükli (kuuluvad samasse sidusasse*)
+(* komponenti), st kas mõlemad tipud on vaadeldud ning kuuluvad ühte hulka (puusse) *)
 let tekitabTsykli(t1, t2) =
 	!(t1.tv) = Vaadeldud && !(t2.tv) = Vaadeldud && Hashtbl.find hulgad t1.nimi = Hashtbl.find hulgad t2.nimi
 
-(* funkstioon, mis märgib serva ja tema tipud vaadelduks ning määrab, kas serva lisada või mitte*)
-let vaatle(serv) =
-	valitudServ := Some serv;
+(* funkstioon, mis märgib serva ja tema tipud valituks ning määrab, kas serva lisada või mitte*)
+let valiServ(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2; sv = v;} -> (
-			v := Vaadeldav;
+			v := Valitud;
+			tekst := "Valime väikseima kaaluga vaatlemata serva.";
 			if tekitabTsykli(!t1, !t2)
-				then (
-					tekst := "Vaatleme serva. Selle lisamine tekitaks tsükli, nii et seda me ei lisa.";
-					i := ServaVaatlus
-				)
+				then
+					i := SobimatuServ
 			else (
 				lisaHulka(!t1, !t2);
-				tekst := "Vaatleme serva.";
-				i := ServaValik
+				i := ServaLisamine
 			);
-			if !((!t1).tv) = Vaatlemata then (!t1).tv := Vaadeldav;
-			if !((!t2).tv) = Vaatlemata then (!t2).tv := Vaadeldav
+			if !((!t1).tv) = Vaatlemata then (!t1).tv := Valitud;
+			if !((!t2).tv) = Vaatlemata then (!t2).tv := Valitud
 		);;
 
 (* funktsioon, mis muudab serva ja selle tippude vaadeldavust v1-st v2-ks *)
@@ -68,46 +63,43 @@ let muudaServa v1 v2 serv =
 		);;
 
 let algus(servad) =
-	AlgoBaas.graafiKontroll(servad, true, false, true);
+	(*AlgoBaas.graafiKontroll(servad, true, false, true);*)
 	tekst := "Kruskali algoritm alustab.";
-	i := ServaVaatlus;;
-
-(* leiame *)
-let servaVaatlus(servad) =
-	let vs = List.filter (fun s -> !(s.sv) = Vaatlemata) servad in (*vaatlemata servad*)
-	match List.length vs with
-		| 0 -> print_endline("Mingi viga, nii ei tohiks juhtuda.") (* TODO!! See kontroll varem.*)
-		| 1 -> vaatle(List.hd vs)
-		| _ -> (
-			let lvs = AlgoBaas.leiaLyhimServ(vs) in (*lühim vaatlemata serv*)
-    	vaatle(lvs)
-		);;
+	i := ServaValik;;
 
 let servaValik(servad) =
-	tekst := "Selle serva lisamine tsüklit ei tekitaks, nii et valime selle.";
-	match !valitudServ with
-		| None -> ()
-		| Some s -> muudaServa Vaadeldav Valitud s;
-	i := ServaLisamine;;
+	let vs = List.filter (fun s -> !(s.sv) = Vaatlemata) servad in 							(*vaatlemata servad*)
+	match List.length vs with
+		| 0 -> print_endline("Mingi viga, nii ei tohiks juhtuda.") 								(* TODO!! See kontroll varem.*)
+		| 1 -> valiServ(List.hd vs)
+		| _ -> (
+			let lvs = AlgoBaas.leiaLyhimServ(vs) in 																(*lühim vaatlemata serv*)
+    	valiServ(lvs)
+		);;
+
+let sobimatuServ(servad) =
+	tekst := "See serv ühendab samas sidusas komponendis olevaid tippe, nii et seda me ei lisa.";
+	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Sobimatu) servad; 		(* märgime serva sobimatuks *)
+	i := ServaValik;;
 
 let servaLisamine(servad, tipud) =
-	tekst := "Lisame serva.";
-	match !valitudServ with
-		| None -> ()
-		| Some s -> muudaServa Valitud Vaadeldud s; 
+	tekst := "See serv ühendab eri sidusaid komponente olevaid tippe, nii et lisame selle.";
+	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
+	muudaServa Valitud Vaadeldud lisatavServ; 																	(* märgime serva vaadelduks *)
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
 		then i := Lopp
-	else i := ServaVaatlus;;
+	else i := ServaValik;;
 
 let lopp() =
-	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud minimaalse toesepuu.");;
+	tekst := "Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
+	AlgoBaas.lopp();;
 
 
 let kruskal(tipud, servad) = 
 	match !i with
 		| Algus -> algus(servad)
-		| ServaVaatlus -> servaVaatlus(servad)
 		| ServaValik -> servaValik(servad)
+		| SobimatuServ -> sobimatuServ(servad)
 		| ServaLisamine -> servaLisamine(servad, tipud)
 		| Lopp -> lopp()
 		| _ -> ();;

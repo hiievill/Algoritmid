@@ -5,10 +5,12 @@ let sisendastmed = Hashtbl.create 10;; (*sisuliselt map tipp.nimi : int *)
 
 let tekkinudJ2rjestus = ref([]);; (* siia tekkinud topoloogiline järjestus *)
 
+(* funktsioon tippude sisendastmete sõnena esitamiseks *)
 let string_of_sisendastmed() =
 	let s = Hashtbl.fold (fun k v acc -> k ^ ": " ^ string_of_int(v) ^ ", " ^ acc) sisendastmed "" in
   "Tippude sisendastmed: " ^ String.sub s 0 (String.length(s) - 2);;
 
+(* funktsioon tippude topoloogilise järjestuse sõnena esitamiseks *)
 let string_of_topo() =
 	"Topoloogiline järjestus: " ^ String.concat ", " (List.map (fun t -> t.nimi) !tekkinudJ2rjestus);;
 
@@ -50,38 +52,40 @@ let lisaTipp(tipp) =
 let algus(tipud, servad) =
 	List.iter (fun t -> uuendaSisendastet (leiaSisendaste(t, servad)) t) tipud;
 	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab.";
-	tekst := "Määrame iga tipuga vastavusse temasse sisenevate servade arvu";
-	tekst := string_of_sisendastmed();
+	tekst := !tekst ^ "\n" ^ "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
+	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
 	i := ServaValik;;
 
 (* õigupoolest tipu valik *)
 let servaValik(tipud) =
 	tekst := "Valime suvaliselt ühe tipu, mille sisendaste on 0.";
+	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
 	let valitudTipp = valiTipp(tipud) in
 	valitudTipp.tv := Valitud;
-	(*List.iter (fun t -> print_endline(t.nimi ^ ": " ^ ( if !(t.tv) = Vaadeldud then "Vaadeldud" else if !(t.tv) = Vaatlemata then "Vaatlemata" else if !(t.tv) = Vaadeldav then "Vaadeldav" else "Valitud") ^ ", " ^ string_of_int(Hashtbl.find sisendastmed t.nimi))) tipud;*)
 	i := ServaVaatlus;;
 
 let servaVaatlus(servad) =
 	List.iter vaatleServa servad;
 	tekst := "Vaatleme kõiki servi, mis valitud tipust väljuvad, ja vähendame sisendtippude sisendastet 1 võrra.";
-	tekst := string_of_sisendastmed();
+	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
 	i := ServaLisamine;;
 
 let servaLisamine(tipud, servad) =
-	tekst := "Lisame valitud tipu topoloogilisse järjestusse.";
 	List.iter (fun t -> if !(t.tv) = Valitud then lisaTipp t) tipud;
 	List.iter (fun t -> if !(t.tv) = Vaadeldav then t.tv := Vaatlemata) tipud; 
 					(* kõik teised tipud uuesti Vaadeldav -> Vaatlemata *)
 	List.iter (fun s -> if !(s.sv) = Vaadeldav then s.sv := Vaadeldud) servad;
 					(* kõik Vaadeldavad servad -> Vaadeldud *)
+	tekst := "Lisame valitud tipu topoloogilisse järjestusse.";
+	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
 		then i := Lopp
 	else i := ServaValik;;
 
 let lopp() =
-	(*AlgoBaas.lopp("Algoritm lõpetab, olles leidnud sunatud graafi topoloogilise järjestuse.");;*)
-	AlgoBaas.lopp(string_of_topo());;
+	tekst := "Algoritm lõpetab, olles leidnud sunatud graafi topoloogilise järjestuse.";
+	tekst := !tekst ^ "\n" ^ string_of_topo();
+	AlgoBaas.lopp();;
 
 let topoKahn(tipud, servad) = 
 	match !i with

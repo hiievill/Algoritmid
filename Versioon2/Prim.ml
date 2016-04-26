@@ -1,99 +1,107 @@
 open Struktuurid;;
 open AlgoBaas;;
 
-(* kui serva üks tipp on vaadeldud ja teine mitte, märgime serva ja vaatlemata tipu vaadeldavateks*)
-let vaatle(serv) =
-	match serv with
-		| {tipp1 = t1; tipp2 = t2;} -> 
-			if !((!t1).tv) = Vaadeldud && !((!t2).tv) <> Vaadeldud
-				then (
-					(!t2).tv := Vaadeldav;
-					serv.sv := Vaadeldav;
-				)
-			else if !((!t2).tv) = Vaadeldud && !((!t1).tv) <> Vaadeldud
-				then (
-					(!t1).tv := Vaadeldav;
-					serv.sv := Vaadeldav
-				);;
+let j2rgmisedServad = ref([]);;
 
-(* tagastab true, kui serv on vaadeldav *)
-let servVaadeldav(serv) = !(serv.sv) = Vaadeldav;;
-		
+let lisatudTipp = ref(tyhiTipp);;
+
+(* funktsioon, mis tagastab, kas serv on sobiv, st kui ta on suunatud, siis ega tema esimene tipp vaadeldud pole, kui aga *)
+(* mittesuunatud, siis ega mõlemad tipud vaadeldud pole *)
+let sobivJ2rgServ tipp serv = (* sarnane nagu Laiutis, aga mitte päris *)
+	match serv with 
+		| {tipp1 = t1; tipp2 = t2; nool = n} ->
+			match n with
+				| false -> !t1 = tipp && !((!t2).tv) <> Vaadeldud || !t2 = tipp && !((!t1).tv) <> Vaadeldud	(* mittesuunatud graaf *)
+				| true -> !t1 = tipp && !((!t2).tv) <> Vaadeldud;;																					(* suunatud graaf *)
+
+(* funktsioon järgmiste sobivate servade leidmiseks *)
+let leiaJ2rgServad(tipp, servad) =
+	List.filter (sobivJ2rgServ tipp) servad;;
+
+(* funktsioon järjekorras olevate servade sõnena esitamiseks *)
+let string_of_j2rgmisedServad(servad) =
+	"Järjekorras olevad servad: [" ^ string_of_servad(servad) ^ "]";;
+
+(* funktsioon, mis märgib serva ja tema tipud vaadeldavaks, kui need enne vaatlemata olid *)
+let vaatleServ(serv) =
+	match serv with
+		| {tipp1 = t1; tipp2 = t2;} -> (
+			if !((!t1).tv) = Vaatlemata then (!t1).tv := Vaadeldav;
+			if !((!t2).tv) = Vaatlemata then (!t2).tv := Vaadeldav;
+			serv.sv := Vaadeldav;
+		);;
+
+(* funktsioon, mis märgib serva ja tema tipud valituks, kui nad enne vaadeldavad olid, ja eemaldab serva järjekorrast *)
 let valiServ(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2;} -> (
 			if !((!t1).tv) = Vaadeldav then (!t1).tv := Valitud;
 			if !((!t2).tv) = Vaadeldav then (!t2).tv := Valitud;
 			serv.sv := Valitud;
-		);;
-		
-let rec lisaServ(servad) =
-	match servad with
-		| x::xs -> (
-			match x with
-				| {tipp1 = t1; tipp2 = t2; sv = v} -> (
-					if !v = Valitud 
-						then (
-							v := Vaadeldud;
-							(!t1).tv := Vaadeldud;
-							(!t2).tv := Vaadeldud
-						)
-					else lisaServ(xs)
-				);
-		)
-		| [] -> print_endline("Ühtegi serva ei lisatud. Ei tohiks juhtuda.");;
-	
-	
-let lopetaTipuVaatlus(tipp) =
-	if !(tipp.tv) = Vaadeldav then tipp.tv := Vaatlemata;;
-		
-let lopetaServaVaatlus(serv) =
-	if !(serv.sv) = Vaadeldav then serv.sv := Vaatlemata;;
+		);
+	j2rgmisedServad := List.filter (fun s -> s <> serv) !j2rgmisedServad;;	(* eemaldame lisatava serva järjekorrast *)
 
-let algus(servad) =
-	AlgoBaas.graafiKontroll(servad, true, false, true);
+(* funkstioon, mis märgib tipu vaadelduks ning omistab lisatudTipule *)
+let lisaTipp(tipp) =
+	tipp.tv := Vaadeldud;
+	lisatudTipp := tipp;;
+
+(* funktsioon, mis eemaldab järgmiste servade hulgast need, mis ühendavad kaht vaadeldud tippu, ja märgib need vaatlemata *)
+let eemaldaServad() =
+	List.iter (fun s -> s.sv := Vaatlemata) !j2rgmisedServad;
+	j2rgmisedServad := List.filter (fun s -> !(!(s.tipp1).tv) <> Vaadeldud || !(!(s.tipp2).tv) <> Vaadeldud) !j2rgmisedServad;
+	List.iter (fun s -> s.sv := Vaadeldav) !j2rgmisedServad;;
+
+let algus() =
 	tekst := "Primi algoritm alustab.";
 	i := EsimeneTipp;;
-		
-let esimeneTipp(algtipp, tipud) =
-	tekst := "Märgime algtipu külastatuks. Sellest hakkame toesepuud ehitama.";
-	algtipp.tv := Vaadeldud;
-	if List.for_all tippVaadeldud tipud (*TODO: või ei vii enam ühtki serva siit välja*)
-		then i := Lopp
-	else i := ServaVaatlus;;
 
-let servaVaatlus(servad) = 
-	List.iter vaatle servad;
-	tekst := "Vaatleme kõiki servi, mis ühendavad külastatud tippe külastamata tippudega."; (* TODO: konkreetsed servad? *)
-	i := ServaValik;;
-				
-let servaValik(servad) = 
-	let vaadeldavadServad = List.filter servVaadeldav servad in
-	let lyhim = AlgoBaas.leiaLyhimServ(vaadeldavadServad) in
-	valiServ(lyhim);
-	tekst := "Valime lühima serva.";
+let esimeneTipp(algtipp, servad) =
+	lisaTipp(algtipp);
+	tekst := "Märgime esimese tipu külastatuks.";
+	(*tekst := !tekst ^ "\n" ^ string_of_j2rgmisedServad(!j2rgmisedServad);*)
+	i := ServaVaatlus;;
+
+let servaVaatlus(servad) =
+	let js = leiaJ2rgServad(!lisatudTipp, servad) in				(* leiame servad, mis viivad sellest tipust külastamata tippu *)
+	j2rgmisedServad := !j2rgmisedServad @ js;								(* lisame need järjekorda *)
+	List.iter vaatleServ js;																(* märgime need vaadeldavateks *)
+	tekst := "Lisame järjekorda kõik servad, mis lisatud tippu mõne külastamata tipuga ühendavad.";
+	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedServad(!j2rgmisedServad);
+		if List.length !j2rgmisedServad = 0										(* kui enam servi lisada ei saa, siis lähme lõpule *)								
+		then i := Lopp
+	else i := ServaValik;;																	(* vastasel juhul lähme järgmisi servi lisama *)
+
+let servaValik() =
+	let lyhimServ = AlgoBaas.leiaLyhimServ(!j2rgmisedServad) in					(* valime järjekorrast lühima serva *)
+	valiServ(lyhimServ);																								(* märgime selle valituks *)
+	tekst := "Valime järjekorrast lühima serva.";
+	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedServad(!j2rgmisedServad);
 	i := ServaLisamine;;
 
-let servaLisamine(tipud, servad) =
-	lisaServ(servad);
-	List.iter lopetaTipuVaatlus tipud;
-	List.iter lopetaServaVaatlus servad;
-	tekst := "Loeme serva ja vastava tipu külastatuks ning ühendame tekkinud puuga.";
-	if List.for_all tippVaadeldud tipud
+let servaLisamine(algtipp, tipud, servad) =
+	let lisatavTipp = List.find (fun t -> !(t.tv) = Valitud) tipud in
+	lisaTipp(lisatavTipp);																							(* märgime lisatava tipu vaadelduks *)
+	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
+	lisatavServ.sv := Vaadeldud;																				(* märgime lisatava serva vaadelduks *)
+	eemaldaServad();																										(* eemaldame järjekorrast üleliigsed servad *)
+	tekst := "Märgime vastava tipu külastatuks ja eemaldame järjekorrast need servad, mis ühendavad kaht külastatud tippu.";
+	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedServad(!j2rgmisedServad);
+	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud								(* kui kõik tipud on vaadeldud, lähme lõpule *)
 		then i := Lopp
-	else i := ServaVaatlus;;
+	else i := ServaVaatlus;;																						(* vastasel juhul lähme veel servi vaatlema *)
 
-let lopp() = 
-	AlgoBaas.lopp("Algoritm lõpetab, olles leidnud minimaalse toesepuu.");;
-	
-(*tipp - tipp, millest läbimängu alustame; tipud - kõik graafis esinevad tipud; servad - kõik graafis esinevad servad *)
+let lopp() =
+	tekst := "Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
+	AlgoBaas.lopp();;
+
 let prim(algtipp, tipud, servad) = 
 	match !i with
-		| Algus -> algus(servad)
-		| EsimeneTipp -> esimeneTipp(algtipp, tipud)
+		| Algus -> algus()
+		| EsimeneTipp -> esimeneTipp(algtipp, servad)
 		| ServaVaatlus -> servaVaatlus(servad)
-		| ServaValik -> servaValik(servad)
-		| ServaLisamine -> servaLisamine(tipud, servad)
+		| ServaValik -> servaValik()
+		| ServaLisamine -> servaLisamine(algtipp, tipud, servad)
 		| Lopp -> lopp()
 		| L2bi -> ()
 		| _ -> ();;

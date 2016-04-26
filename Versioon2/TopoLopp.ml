@@ -17,23 +17,26 @@ let servaVaatlus(algtipp, tipud, servad) =
 			SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
 		done;
 	List.iter (fun s -> s.sv := Vaadeldud) servad; (* kõik vaadelduks, et graafil kajastuks *)
-	tekst := "Tipud läbiti järgnevas järjekorras: " ^ string_of_tipud(!(SygavutiLopp.kylastatudTipud));
-	i := ServaValik;;
+	tekst := "Tipud läbiti järgnevas järjekorras: " ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud));
+	algoL2bi := false;
+	i := Tagurpidi;;
 
-(* TODO: rename *)
-let servaValik() =
+let tagurpidi() =
 	tekst := "Topoloogilise järjestuse leidmiseks keerame tekkinud järjestuse tagurpidi.";
+	tekst := !tekst ^ "\n" ^ "Järjestus: " ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud));
+	tekst := !tekst ^ "\n" ^ "Tagurpidi järjestus: " ^ string_of_tipud(List.rev !(SygavutiLopp.toodeldudTipud));
 	i := Lopp;;
 
 let lopp() =
-	(*AlgoBaas.lopp("Algoritm lõpetab, olles leidnud topoloogilise järjestuse.");;*)
-	AlgoBaas.lopp(string_of_tipud(List.rev !(SygavutiLopp.kylastatudTipud)));;
+	tekst := "Algoritm lõpetab, olles leidnud topoloogilise järjestuse.";
+	tekst := !tekst ^ "\n" ^ string_of_tipud(List.rev !(SygavutiLopp.toodeldudTipud));
+	AlgoBaas.lopp();;
 
 let topoLopp(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus();
 		| ServaVaatlus -> servaVaatlus(algtipp, tipud, servad);
-		| ServaValik -> servaValik();
+		| Tagurpidi -> tagurpidi();
 		| Lopp -> lopp();
 		| _ -> ();;
 

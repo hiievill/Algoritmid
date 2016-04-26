@@ -22,6 +22,9 @@ let rec pooraServad(servad) =
 				)
 		);;
 
+let string_of_sygavutiJ2rjekord() =
+	"Tekkinud järjestus: " ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud));;
+
 let algus(tipud, servad) =
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
 	tekst := "Kosaraju algoritmi algustab.";
@@ -35,25 +38,26 @@ let sygavuti(algtipp, tipud, servad) =
 			i := Algus;
 			(* läbime graafi sügavuti lõppjärjestuses alates tipust esimeneTipp *)
 			algoL2bi := false;
-			SygavutiLopp.kylastatudTipud := [];
+			SygavutiLopp.toodeldudTipud := [];
 			while !algoL2bi = false
 				do
 					SygavutiLopp.sygavutiLopp(!esimeneTipp, tipud, servad)		(*läbime sügavuti*)
 				done;
-  		sygavutiTipud := !sygavutiTipud @ !(SygavutiLopp.kylastatudTipud); (*lisame järjestusse*)
+  		sygavutiTipud := !sygavutiTipud @ !(SygavutiLopp.toodeldudTipud); (*lisame järjestusse*)
   		if List.exists (fun t -> !(t.tv) = Vaatlemata) tipud (* kui leidub veel vaatlemata tippe *)
   			then esimeneTipp := TopoKahn.valiTipp(tipud) (* määrame uue algtipu (sisendastmega 0) *)
   	done;
 	algoL2bi := false;
 	tekst := "Läbime graafi sügavuti lõppjärjestuses ja kirjutame välja tekkinud lõppjärjestuse.";
+	tekst := !tekst ^ "\n" ^ string_of_sygavutiJ2rjekord();
 	i := PooratudGraaf;;
 
 (* tekitame pööratud kaartega graafi *)
 let pooratudGraaf(tipud, servad) =
 	sygavutiTipud := List.rev(!sygavutiTipud); (*tippude järjestuse pidi ka ümber pöörama*)
 	tekst := "Tekitame pööratud kaartega graafi.";
-	tekst := "Läbime tippe alates esimesest läbimata tipust tekkinud järjestuses.";
-	tekst := string_of_tipud(!sygavutiTipud);
+	tekst := !tekst ^ "\n" ^ "Läbime tippe alates esimesest läbimata tipust tekkinud järjestuses.";
+	tekst := !tekst ^ "\n" ^ string_of_tipud(!sygavutiTipud);
 	pooraServad(servad);
 	List.iter (fun s -> s.sv := Vaatlemata) servad;
 	List.iter (fun t -> t.tv := Vaatlemata) tipud;
@@ -75,7 +79,7 @@ let servaValik(servad) =
 	if List.length !j2rgmisedServad = 0
 		then (
 			tekst := "Edasi ei pääse kuhugi, seni läbitud tipud moodustavad ühe sidusa komponendi.";
-			tekst := "Tugevalt sidus komponent: " ^ string_of_tipud(!komponent);
+			tekst := !tekst ^ "\n" ^ "Tugevalt sidus komponent: " ^ string_of_tipud(!komponent);
 			komponendid := !komponendid @ [komponent]; (*lisame sidusa komponendi komponentide hulka *)
 			komponent := [];
 			if List.length !sygavutiTipud > 0 (*sama kui et kõik pole vaadeldud *)
@@ -117,7 +121,8 @@ let servaLisamine(tipud, servad) =
 	else i := ServaValik;;
 
 let lopp() =
-	AlgoBaas.lopp("Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid.");;
+	tekst := "Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid.";
+	AlgoBaas.lopp();;
 	(*TODO: komponendid välja printida. Siin ja mujal (igal tipulisamisel nimekiri) *)
 
 let kosaraju(algtipp, tipud, servad) = 
