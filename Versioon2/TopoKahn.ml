@@ -8,11 +8,11 @@ let tekkinudJ2rjestus = ref([]);; (* siia tekkinud topoloogiline järjestus *)
 (* funktsioon tippude sisendastmete sõnena esitamiseks *)
 let string_of_sisendastmed() =
 	let s = Hashtbl.fold (fun k v acc -> k ^ ": " ^ string_of_int(v) ^ ", " ^ acc) sisendastmed "" in
-  "Tippude sisendastmed: " ^ String.sub s 0 (String.length(s) - 2);;
+  "Tippude sisendastmed: [" ^ String.sub s 0 (String.length(s) - 2) ^ "]";;
 
 (* funktsioon tippude topoloogilise järjestuse sõnena esitamiseks *)
 let string_of_topo() =
-	"Topoloogiline järjestus: " ^ String.concat ", " (List.map (fun t -> t.nimi) !tekkinudJ2rjestus);;
+	"Topoloogiline järjestus: [" ^ String.concat ", " (List.map (fun t -> t.nimi) !tekkinudJ2rjestus) ^ "]";;
 
 let uuendaSisendastet nr tipp = (*analoogiline fn-ga Dijkstra.lisaKaugus, kokku võtta?*)
 	Hashtbl.replace sisendastmed tipp.nimi nr;;

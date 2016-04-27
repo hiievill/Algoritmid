@@ -64,19 +64,19 @@ let uuendaV2ljundastet nr tipp = (*analoogiline fn-ga Dijkstra.lisaKaugus, kokku
 
 (* funktsioon tippude varaseimate lõpuaegade sõnena esitamiseks *)
 let string_of_varaseimadLopuajad(tipud) =
-	"Varaseimad lõpuajad: " ^ String.concat ", " (List.map (fun t -> t.nimi ^ ": " ^ if Hashtbl.mem vl t.nimi then string_of_int(Hashtbl.find vl t.nimi) else "-") tipud);;
+	"Varaseimad lõpuajad: [" ^ String.concat ", " (List.map (fun t -> t.nimi ^ ": " ^ if Hashtbl.mem vl t.nimi then string_of_int(Hashtbl.find vl t.nimi) else "-") tipud) ^ "]";;
 	
 (* funktsioon tippude hiliseimate algusaegade sõnena esitamiseks *)
 let string_of_hiliseimadAlgusajad(tipud) =
-	"Hiliseimad algusajad: " ^ String.concat ", " (List.map (fun t -> t.nimi ^ ": " ^ if Hashtbl.mem ha t.nimi then string_of_int(Hashtbl.find ha t.nimi) else "-") tipud);;
+	"Hiliseimad algusajad: [" ^ String.concat ", " (List.map (fun t -> t.nimi ^ ": " ^ if Hashtbl.mem ha t.nimi then string_of_int(Hashtbl.find ha t.nimi) else "-") tipud) ^ "]";;
 
 (* funktsioon tagurpidi topoloogilise järjestuse sõnena esitamiseks *)
 let string_of_tagurpidiTopo() =
-	"Tagurpidi topoloogiline järjestus: " ^ String.concat ", " (List.map (fun t -> t.nimi) (List.rev !(TopoKahn.tekkinudJ2rjestus)));;
+	"Tagurpidi topoloogiline järjestus: [" ^ String.concat ", " (List.map (fun t -> t.nimi) (List.rev !(TopoKahn.tekkinudJ2rjestus))) ^ "]";;
 
 (* funktsioon kriitilise tee sõnena esitamiseks *)
 let string_of_kriitilineTee()=
-	"Kriitiline tee: " ^ string_of_tipud(!kriitilineTee);;
+	"Kriitiline tee: [" ^ string_of_tipud(!kriitilineTee) ^ "]";;
 
 let algus() =
 	tekst := "Teostame eeldusgraafi analüüsi: leiame tippude hiliseima algusaja, varaseima lõpuaja ja kriitilise tee.";
@@ -184,6 +184,7 @@ let kriitiline(tipud, servad) =
 
 let lopp() =
 	tekst := "Kriitiline tee on leitud ja sellega on eldusgraafi analüüs lõppenud.";
+	tekst := !tekst ^ "\n" ^ string_of_kriitilineTee();
 	AlgoBaas.lopp();;
 
 let eeldusgraaf(algtipp, tipud, servad) = 

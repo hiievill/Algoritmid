@@ -65,17 +65,20 @@ let algus(algtipp, tipud, servad) =
 	(*AlgoBaas.graafiKontroll(servad, false, true, true);*)
 	List.iter (lisaKaugus max_int) tipud; 			(* paneme kõikidele tippudele algseks kauguseks algtipust suurima võimaliku *)
 	lisaKaugus 0 algtipp; 											(* ainult algtipule paneme kauguseks 0 *)
-	tekst := "Dijkstra algoritm alustab.";
+	tekst := "Dijkstra algoritm alustab. Määrame kõikidele tippudele kaugused algtipust: algtipule 0, kõikidele teistele lõpmatuse.";
+	tekst := !tekst ^ "\n" ^ string_of_kaugused();
 	i := EsimeneTipp;;
 
 let esimeneTipp(algtipp) =
 	tekst := "Valime esimese tipu.";
+	tekst := !tekst ^ "\n" ^ string_of_kaugused();
 	algtipp.tv := Valitud;											(* märgime algtipu valituks *)
 	valitudTipp := algtipp;
 	i := ServaLisamine;;
 
 let servaLisamine(algtipp, tipud, servad) =
 	tekst := "Märgime valitud tipu vaadelduks.";
+	tekst := !tekst ^ "\n" ^ string_of_kaugused();
 	if !valitudTipp = algtipp																								(* kui valitud tipp on algtipp *)
 		then algtipp.tv := Vaadeldud																					(* märgime ta vaadelduks *)
 	else List.iter (fun s -> if !(s.sv) = Valitud then lisaServ(s)) servad; (* muidu märgime serva koos tipuga vaadelduks*)
@@ -97,6 +100,7 @@ let servaValik(tipud, servad) =
 	valiServ(s);																																	(* märgime serva ja tipu valituks *)
 	valitudTipp := t;
 	tekst := "Valime algtipule lähima külastamata tipu.";
+	tekst := !tekst ^ "\n" ^ string_of_kaugused();
 	i := ServaLisamine;;
 
 let lopp() =

@@ -17,24 +17,6 @@ let sobivJ2rgServ tipp serv =
 (* esimene tipp on vastav tipp ja teine on vaatlemata *)
 let leiaJ2rgServad(tipp, servad) =
 	List.filter (sobivJ2rgServ tipp) servad;;
-(*let rec leiaJ2rgServad(tipp, servad) = 
-	match servad with
-		| x::xs -> (
-			match x with 
-				| {tipp1 = t1; tipp2 = t2; nool = n} -> 
-					match n with
-						| false -> (																		(*mittesuunatud graafid*)
-							if !t1 = tipp && !((!t2).tv) = Vaatlemata || !t2 = tipp && !((!t1).tv) = Vaatlemata
-								then x :: leiaJ2rgServad(tipp, xs)
-							else leiaJ2rgServad(tipp, xs)
-						)
-						| true -> (
-							if !t1 = tipp && !((!t2).tv) = Vaatlemata 		(*suunatud graafid*)
-								then  x :: leiaJ2rgServad(tipp, xs)
-							else leiaJ2rgServad(tipp, xs)
-						)
-		)
-		| [] -> [];;*)
 
 (* leiab serva järgi lisatava tipu (selle, mis on valitud) *)
 let leiaLisatavTipp(serv) =

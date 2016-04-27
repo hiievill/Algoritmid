@@ -45,7 +45,8 @@ type algoSamm = Algus
 	| SobimatuServ
 	| Tagurpidi
 	| EsimeneKriitiline
-	| Kriitiline;;
+	| Kriitiline
+	| EsimeseTipuLisamine;;
 
 (* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
 type vaadeldavus = Vaatlemata

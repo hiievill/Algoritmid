@@ -225,9 +225,11 @@ let alusta(graaf, algtipp) =
 		| Graphic_failure("graphic screen not opened") -> ();;*)
 	
 let main() =
-	algo := Eeldusgraaf;
-	let graaf = ntEeldusgraaf1 in
+	
+	algo := Kosaraju;
+	let graaf = ntKosaraju1 in
 	let algtipp = valiAlgtipp("A", graaf.tipud) in
+	
 	alusta(graaf, algtipp);;
 
 		
