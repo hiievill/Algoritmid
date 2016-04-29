@@ -6,7 +6,7 @@ open AlgoBaas;;
 
 let algus() =
 	tekst := "Algoritm opoloogilise järjestuse leidmiseks lõppjärjestuse kaudu alustab.";
-	tekst := "Läbime graafi sügavuti lõppjärjestusega.";
+	tekst := !tekst ^ "\n" ^ "Läbime graafi sügavuti lõppjärjestusega.";
 	i := ServaVaatlus;;
 
 (* TODO: rename. Algosamme oleks juurde vaja. *)
@@ -18,19 +18,21 @@ let servaVaatlus(algtipp, tipud, servad) =
 			SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
 		done;
 	List.iter (fun s -> s.sv := Vaadeldud) servad; (* kõik vaadelduks, et graafil kajastuks *)
-	tekst := "Tipud läbiti järgnevas järjekorras: [" ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud)) ^ "]";
+	nk1 := "Lõppjärjestus: " ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud));
+	nk2 := "";
 	algoL2bi := false;
 	i := Tagurpidi;;
 
 let tagurpidi() =
 	tekst := "Topoloogilise järjestuse leidmiseks keerame tekkinud järjestuse tagurpidi.";
-	tekst := !tekst ^ "\n" ^ "Järjestus: [" ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud)) ^ "]";
-	tekst := !tekst ^ "\n" ^ "Tagurpidi järjestus: [" ^ string_of_tipud(List.rev !(SygavutiLopp.toodeldudTipud)) ^ "]";
+	nk1 := "Lõppärjestus: " ^ string_of_tipud(!(SygavutiLopp.toodeldudTipud));
+	nk2 := "Tagurpidi lõppjärjestus: " ^ string_of_tipud(List.rev !(SygavutiLopp.toodeldudTipud));
 	i := Lopp;;
 
 let lopp() =
 	tekst := "Algoritm lõpetab, olles leidnud topoloogilise järjestuse.";
-	tekst := !tekst ^ "\n[" ^ string_of_tipud(List.rev !(SygavutiLopp.toodeldudTipud)) ^ "]";
+	nk1 := "Topoloogiline järjestus: " ^ string_of_tipud(List.rev !(SygavutiLopp.toodeldudTipud));
+	nk2 := "";
 	AlgoBaas.lopp();;
 
 let topoLopp(algtipp, tipud, servad) = 

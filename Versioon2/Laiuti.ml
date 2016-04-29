@@ -58,15 +58,14 @@ let eemaldaKorduvadLopust(list) = List.rev (eemaldaKorduvadAlgusest(List.rev lis
 let string_of_j2rgmisedTipud(servad) = 
 	let tipud =	List.map (fun s -> if !(!(s.tipp1).tv) = Vaatlemata then !(s.tipp1) else !(s.tipp2)) servad in
 	let unikaalsedTipud = eemaldaKorduvadLopust(tipud) in
-	"Järgmised tipud: [" ^ string_of_tipud(unikaalsedTipud) ^ "]";;
+	"Järgmised tipud: " ^ string_of_tipud(unikaalsedTipud);;
 
-(* funktsioon külastatud tippude sõnena esitamiseks *)
-let string_of_toodeldudTipud(tipud) =
-	"Töödeldud tipud: [" ^ string_of_tipud(tipud) ^ "]";;
+let lisatekst() =
+	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
+	nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);;
 
 let algus() =
-	(*AlgoBaas.graafiKontroll(...);*)
-	tekst := "Laiuti läbimise algoritm alustab";
+	tekst := "Laiuti läbimise algoritm alustab.";
 	i := EsimeneTipp;;
 	
 let esimeneTipp(algtipp, servad) =
@@ -74,9 +73,10 @@ let esimeneTipp(algtipp, servad) =
 	toodeldudTipud := (!toodeldudTipud) @ [algtipp];
 	let js = leiaJ2rgServad(algtipp, servad) in
 	j2rgmisedServad := (!j2rgmisedServad) @ js;
-	tekst := "Märgime esimese tipu külastatuks ja lisame järjekorda need tipud, kuhu siit pääseb.";
-	tekst := !tekst ^ "\n" ^ string_of_toodeldudTipud(!toodeldudTipud);
-	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedTipud(!j2rgmisedServad);
+	tekst := "Märgime esimese tipu külastatuks ja lisame " ^ (if !algo = Laiuti then "järjekorda" else "magasini") ^ 
+		" need tipud, kuhu äsja töödeldud tipust serv viib.";
+	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
+	nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);
 	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
 		then i := Lopp
 	else i := ServaValik;;																	(* kui järgmisi servi leidub, lähme uut serva valima *)
@@ -85,30 +85,29 @@ let servaValik(servad) =
 	let lisatavServ = List.hd !j2rgmisedServad in 					(* valime järjekorra algusest järgmise serva *)
 	j2rgmisedServad := List.tl !j2rgmisedServad;						(* eemaldame selle serva järgmiste servade järjekorrast *)
 	valiServ(lisatavServ);																	(* märgime serva ja vastava tipu valituks *)
-	tekst := "Valime järjekorrast järgmise tipu.";
-	tekst := !tekst ^ "\n" ^ string_of_toodeldudTipud(!toodeldudTipud);
-	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedTipud(!j2rgmisedServad);
+	tekst := "Valime " ^ (if !algo = Laiuti then "järjekorrast" else "magasinist") ^ " järgmise tipu.";
+	lisatekst();
 	i := ServaLisamine;;
 
 let servaLisamine(tipud, servad) =
 	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
 	let lisatavTipp = leiaLisatavTipp(lisatavServ) in				(* lisatav tipp *)
-	toodeldudTipud := (!toodeldudTipud) @ [lisatavTipp];	(* lisame selle külastatud tippude hulka *)
+	toodeldudTipud := (!toodeldudTipud) @ [lisatavTipp];		(* lisame selle külastatud tippude hulka *)
 	let js = leiaJ2rgServad(lisatavTipp, servad) in 				(* leiame need servad, kuhu valitud tipust viib *)
 	j2rgmisedServad := (!j2rgmisedServad) @ js; 						(* lisame need järgmiste servade järjekorra lõppu *)
 	j2rgmisedServad := eemalda(!j2rgmisedServad); 					(* eemaldame järgmiste servade järjekorrast need servad, 
 																														mis ühendavad külastatud tippe *)
 	lisaServ(lisatavServ);																	(* märgime serva ja tema tipud vaadelduks *)
-	tekst := "Märgime selle tipu töödelduks ja lisame järjekorra lõppu need tipud, kuhu siit pääseb.";
-	tekst := !tekst ^ "\n" ^ string_of_toodeldudTipud(!toodeldudTipud);
-	tekst := !tekst ^ "\n" ^ string_of_j2rgmisedTipud(!j2rgmisedServad);
+	tekst := "Märgime selle tipu töödelduks ja lisame " ^ (if !algo = Laiuti then "järjekorra lõppu" else "magasini") ^ 
+		" need tipud, kuhu äsja töödeldud tipust serv viib.";
+	lisatekst();
 	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
 		then i := Lopp
 	else i := ServaValik;;																	(* kui järgmisi servi leidub, lähme uut serva valima *)
 
 let lopp() =
-	tekst := "Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.";
-	tekst := !tekst ^ "\n" ^ "Tippude töötlemise järjekord: " ^ string_of_tipud(!toodeldudTipud);
+	tekst := "Järjekord on tühi.\nAlgoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.";
+	lisatekst();
 	AlgoBaas.lopp();;
 		
 let laiuti(algtipp, tipud, servad) = 

@@ -2,15 +2,15 @@ open Graphics;;
 open Struktuurid;;
 
 let aknaLaius = 600;;
-let aknaKorgus = 550;;
+let aknaKorgus = 450;;
 let kirjaaknaKorgus = 150;; (*ebavajalik *)
 
 let tipuRaadius = 20;;
 
-let nooleLaius = 7.;; (* ıigupoolest pool laiust *)
+let nooleLaius = 7.;; (* √µigupoolest pool laiust *)
 let noolePikkus = 20.;;
 
-(* j‰rgmised on mapid serva tippude nimed : int, hoiustamaks ringjoone vırrandit (x+a)^2 + (y+b)^2 = r^2 *)
+(* j√§rgmised on mapid serva tippude nimed : int, hoiustamaks ringjoone v√µrrandit (x+a)^2 + (y+b)^2 = r^2 *)
 (*let kaareX = Hashtbl.create 10;;
 let kaareY = Hashtbl.create 10;;
 let kaareR = Hashtbl.create 10;;
@@ -32,8 +32,8 @@ let kaksPunkti(x1, y1, a, c, r) =
 	((e1, f1), (e2, f2));;
 
 
-(* leiame kaalu jaoks punkti (i, j) nii, et need oleks tippe tipp1 ja tipp2 ¸hendava serva keskpunktist 90 kraadi all kaugusel "kaugus" ning ei l‰heks akna ‰‰rtest v‰lja *)
-(* TODO: v‰ike koodikordus, kasutada ‰ra noole kuvamise abimeetodeid *)
+(* leiame kaalu jaoks punkti (i, j) nii, et need oleks tippe tipp1 ja tipp2 √ºhendava serva keskpunktist 90 kraadi all kaugusel "kaugus" ning ei l√§heks akna √§√§rtest v√§lja *)
+(* TODO: v√§ike koodikordus, kasutada √§ra noole kuvamise abimeetodeid *)
 let kaaluKoordinaadid(tipp1, tipp2, kaugus) =
 	let x1 = float_of_int(!(!tipp1.x)) in
 	let y1 = float_of_int(!(!tipp1.y)) in
@@ -42,9 +42,9 @@ let kaaluKoordinaadid(tipp1, tipp2, kaugus) =
 	let k = float_of_int(kaugus) in
 	let e = (x1 +. x2) /. 2. in 			(* serva keskpunkti x *)
 	let f = (y1 +. y2) /. 2. in 			(* serva keskpunkti y *)
-	let a = (y2 -. y1) /. (x2 -. x1) in 	(* serva tıus *)
+	let a = (y2 -. y1) /. (x2 -. x1) in 	(* serva t√µus *)
 	let vahe = a *. k /. sqrt(a ** 2. +. 1.) in
-		(*if klauslid vajalikud, sest kui on horisontaalne vıi vertikaalne serv, siis a = 0 vıi +- inf ning asi ei tˆˆtaks *)
+		(*if klauslid vajalikud, sest kui on horisontaalne v√µi vertikaalne serv, siis a = 0 v√µi +- inf ning asi ei t√∂√∂taks *)
 	let imin = if x1 = x2 then (x1 -. k) else min (e -. vahe) (e +. vahe) in
 	let jmin = if y1 = y2 then (y1 -. k) else f +. (e -. imin) /. a in
 	let imax = if x1 = x2 then (x1 +. k) else max (e -. vahe) (e +. vahe) in
@@ -55,7 +55,7 @@ let kaaluKoordinaadid(tipp1, tipp2, kaugus) =
 		then (int_of_float(imax), int_of_float(jmax))
 	else (-1, -1) (*TODO: mingi kontroll/erind siia? Kuigi kui kaugus < (min aknaKorgus aknaLaius) / 2, siis ei tohiks kunagi juhtuda. *)
 	
-	(*funktsioon, mis leiab sirgega y=ax+c punktis (e, f) ristuva sirge tıusu ja vabaliikme *)
+	(*funktsioon, mis leiab sirgega y=ax+c punktis (e, f) ristuva sirge t√µusu ja vabaliikme *)
 let leiaRistuvSirge(a, c, e, f) = 
 	let a2 = (-1.) /. a in
 	let c2 = f +. e /. a in
@@ -72,7 +72,7 @@ let kaheTipuVahel(p, t1x, t2x) =
 	Hashtbl.replace kaareY nimi 0;
 	Hashtbl.replace kaareR nimi 0;;*)
 
-(*TODO: kirjaaknaKorgust ka arvestada. NB! aknaLaius - tipuRaadius pole p‰ris t‰pne, vaja kuidagi katsetamisega leida *)
+(*TODO: kirjaaknaKorgust ka arvestada. NB! aknaLaius - tipuRaadius pole p√§ris t√§pne, vaja kuidagi katsetamisega leida *)
 let piiridesX(x) = if x < tipuRaadius then tipuRaadius else if x > aknaLaius - tipuRaadius then aknaLaius - tipuRaadius else x;;
 let piiridesY(y) = 
 	if y < tipuRaadius (*+ kirjaaknaKorgus*) then tipuRaadius (*+ kirjaaknaKorgus*) 
@@ -83,9 +83,9 @@ let piiridesY(y) =
 let looTipp(tipuandmed) = 
 	match tipuandmed with
 		| (tipuNimi, tipuX, tipuY, tipuHind) -> {
-			nimi = tipuNimi; (*TODO: peab tagama, et oleks ¸hekohaline?*)
+			nimi = tipuNimi; (*TODO: peab tagama, et oleks √ºhekohaline?*)
 			x = ref(piiridesX(tipuX));
-			y = ref(piiridesY(tipuY (*+ kirjaaknaKorgus*))); (* + kirjaaknaKorgus j‰tta vıi mitte? *)
+			y = ref(piiridesY(tipuY (*+ kirjaaknaKorgus*))); (* + kirjaaknaKorgus j√§tta v√µi mitte? *)
 			tv = ref(Vaatlemata);
 			hind = tipuHind;
 		};;
@@ -99,7 +99,7 @@ let sobivKaal(kaal) =
 	match kaal with
 		| None -> true
 		| Some k -> k < max_int && k > min_int;; 
-		(* tegelt peaks kuvamise kenaduse huvides ka 2-kohaliseks piirama? Vıi kaugust kaarest suurendama? *)
+		(* tegelt peaks kuvamise kenaduse huvides ka 2-kohaliseks piirama? V√µi kaugust kaarest suurendama? *)
 	
 let looServ(servaandmed, tipud) =
 	(*TODO: peaks kontrollima ka seda, et sellist serva juba pole?*)
@@ -109,7 +109,7 @@ let looServ(servaandmed, tipud) =
 				let t1 = List.find (leiaVastavaNimegaTipp t1nimi) tipud in
 				let t2 = List.find (leiaVastavaNimegaTipp t2nimi) tipud in
 				if sobivKaal(k) = false
-					then failwith("Kaal peab olema v‰iksem kui maksimaalne ja suurem kui minimaalne t‰isarv.")
+					then failwith("Kaal peab olema v√§iksem kui maksimaalne ja suurem kui minimaalne t√§isarv.")
 				else (
 					(*nulliKaareAndmed(t1, t2);*)
   				Some {
@@ -163,7 +163,7 @@ let kuvaServ(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2; sv = v} -> (
 				(*if Hashtbl.find kaareR (!t1.nimi ^ ":" ^ !t2.nimi) = 0
-					then ( (*kui raadius on 0, siis j‰relikult sirgjoon, mitte kaar*)*)
+					then ( (*kui raadius on 0, siis j√§relikult sirgjoon, mitte kaar*)*)
   					moveto !(!t1.x) !(!t1.y);
   					lineto !(!t2.x) !(!t2.y)
 					(* )
@@ -171,7 +171,7 @@ let kuvaServ(serv) =
 		);;
 		
 let kuvaNimi(tipp) =
-	moveto (!(tipp.x)-3) (!(tipp.y)-7); (*TODO: panna mahalahutamine raadiusest sıltuma *)
+	moveto (!(tipp.x)-3) (!(tipp.y)-7); (*TODO: panna mahalahutamine raadiusest s√µltuma *)
 	draw_string tipp.nimi;;
 	
 let kuvaKaal(serv) =
@@ -184,7 +184,7 @@ let kuvaKaal(serv) =
 						| (i, j) -> moveto i j;
 					draw_string (string_of_int(ka))
 				)
-				| None -> () (* kas see haru on ¸ldse vajalik? OCamlis pole exhaustive probleeme? *)
+				| None -> () (* kas see haru on √ºldse vajalik? OCamlis pole exhaustive probleeme? *)
 		);;
 		
 let kuvaNool(serv) =
@@ -229,7 +229,7 @@ let kuvaServJaNool(serv) =
 			| Vaadeldav -> rgb 240 240 3
 			| Valitud -> rgb 253 144 1
 			| Vaadeldud -> rgb 78 247 59
-			| Sobimatu -> rgb 148 148 148
+			| Sobimatu -> rgb 67 67 67
 	);
 	kuvaServ(serv);
 	if serv.nool = true then kuvaNool(serv);;
@@ -238,7 +238,7 @@ let kuvaHind(tipp) =
 	match tipp.hind with
 		| None -> ()
 		| Some h -> (
-			moveto (!(tipp.x) - 5) (!(tipp.y) + 20); (* TODO: 5 ja 20 suvalt vıetud, panna sıltuma *)
+			moveto (!(tipp.x) - 5) (!(tipp.y) + 20); (* TODO: 5 ja 20 suvalt v√µetud, panna s√µltuma *)
 			draw_string (string_of_int(h))
 		);;
 		
@@ -251,8 +251,6 @@ let kuvaTipud(tipud) =
 	
 let kuvaNimed(tipud) =
 	set_color black;
-	set_text_size 5;
-	set_font "Courier-Bold";
 	List.iter kuvaNimi tipud;;
 	
 let kuvaKaalud(servad) =
@@ -273,6 +271,14 @@ let kuvaVahe() = (*kirjaaken ja graafiakent lahutav joon *)
 	set_line_width 1;
 	moveto 0 kirjaaknaKorgus;
 	lineto aknaLaius kirjaaknaKorgus;;
+
+let kuvaNimekirjad() =
+	moveto 10 (aknaKorgus + 50);
+	draw_string !AlgoBaas.nk1;
+	moveto 10 (aknaKorgus + 30);
+	draw_string !AlgoBaas.nk2;
+	moveto 10 (aknaKorgus + 10);
+	draw_string !AlgoBaas.nk3;;
 	
 let kuvaTekst() =
 	(*TODO: alles slaidile *)
@@ -282,6 +288,81 @@ let kuvaTekst() =
 	draw_string !(AlgoBaas.tekst);;*)
 	if !(AlgoBaas.tekst) <> ""
 		then print_endline(!(AlgoBaas.tekst) ^ "\n");;
+
+let kuvaTabel(tipud, servad) =
+	set_line_width 2;
+	let xAlgus = aknaLaius + 10 in	(* x algkoordinaat - tabeli vasak √ºlemine nurk *)
+	let yAlgus = 400 in							(* y algkoordinaat *)
+	let tippudeArv = List.length tipud in
+	let a = 30 in (* v√§ikse ruudu k√ºlje suurus NB! fill_rect alustab just vasakust alumisest nurgast *)
+	if !(FloydWarshall.fiks) >= 0 && !(FloydWarshall.fiks) < tippudeArv 
+		then (
+			set_color (rgb 253 253 122);
+			fill_rect xAlgus (yAlgus - (!(FloydWarshall.fiks) + 2) * a) ((tippudeArv + 1) * a) a;	(* horisontaalne *)
+			fill_rect (xAlgus + (!(FloydWarshall.fiks) + 1) * a) (yAlgus - (tippudeArv + 1) * a) a ((tippudeArv + 1) * a);	(* vertikaalne *)
+		);
+	if !(FloydWarshall.x) >= 0 && !(FloydWarshall.y) >= 0 && !(FloydWarshall.x) <= tippudeArv - 1 
+		then (
+			set_color (rgb 253 159 37);
+			fill_rect (xAlgus + (!(FloydWarshall.y) + 1) * a) (yAlgus - (!(FloydWarshall.x) + 2) * a) a a;
+			(*print_endline(string_of_int(!(FloydWarshall.y)) ^ ", " ^ string_of_int(!(FloydWarshall.x)))*)
+		);
+	set_color black;
+	(* horisontaalsed jooned *)
+	let x = ref(xAlgus) in
+	let y = ref(yAlgus) in
+	for i = 0 to (tippudeArv + 1)
+	do
+		moveto !x !y;
+		lineto (!x + (tippudeArv + 1) * a) !y;
+		y := !y - a
+	done;
+	(* vertikaalsed jooned *)
+	let x = ref(xAlgus) in
+	let y = ref(yAlgus) in
+	for i = 0 to (tippudeArv + 1)
+	do
+		moveto !x !y;
+		lineto !x (!y - (tippudeArv + 1) * a);
+		x := !x + a
+	done;
+	(* horisontaalsed t√§hed *)
+	let x = ref(xAlgus + a + 5) in
+	let y = ref(yAlgus - a + 5) in
+	for i = 0 to (tippudeArv - 1)
+	do
+		moveto !x !y;
+		draw_string((List.nth tipud i).nimi);
+		x := !x + a
+	done;
+	(* vertikaalsed t√§hed *)
+	let x = ref(xAlgus + 5) in
+	let y = ref(yAlgus - 2 * a + 5) in
+	for i = 0 to (tippudeArv - 1)
+	do
+		moveto !x !y;
+		draw_string((List.nth tipud i).nimi);
+		y := !y - a
+	done;
+	(* tabel ise *)
+	if !(FloydWarshall.tabel) <> [||]
+		then (
+    	let x = ref(xAlgus + a + 5) in
+    	let y = ref(yAlgus - 2 * a + 5) in
+    	for i = 0 to (tippudeArv - 1)
+    	do
+    		for j = 0 to (tippudeArv - 1)
+    		do
+    			moveto !x !y;
+    			let kaal = !(FloydWarshall.tabel).(i).(j) in
+    			draw_string(FloydWarshall.string_of_lahter(kaal));
+    			x := !x + a
+    		done;
+    		y := !y - a;
+    		x := xAlgus + a + 5
+    	done
+		);;
+
 	
 let kuvaPilt(tipud, servad) =
 	clear_graph();
@@ -291,6 +372,9 @@ let kuvaPilt(tipud, servad) =
 	kuvaKaalud(servad);
 	kuvaHinnad(tipud);
 	(*kuvaVahe();*)
+	kuvaNimekirjad();
+	if !(AlgoBaas.algo) = FloydWarshall
+		then kuvaTabel(tipud, servad);
 	kuvaTekst();;
 
 (*TODO: eraldi fn randomilt tippude loomiseks, ainult etteantud arvuga? *)

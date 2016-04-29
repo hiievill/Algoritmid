@@ -64,12 +64,12 @@ let lisaTipp(tipp, servad) =
 
 (* funktsioon töötlusjärjekorra sõnena esitamiseks *)
 let string_of_vaadeldavadTipud(tipud) = 
-	"Töötlusjärjekord: [" ^ string_of_tipud(tipud) ^ "]";;
+	"Töötlusjärjekord: " ^ string_of_tipud(tipud);;
 
 (* funktsioon, mis lisab teksti lõppu töödeldud tipud ja töötlusjärjekorra *)
 let lisatekst() =
-	tekst := !tekst ^ "\n" ^ Laiuti.string_of_toodeldudTipud(!toodeldudTipud);
-	tekst := !tekst ^ "\n" ^ string_of_vaadeldavadTipud(!vaadeldavadTipud);;
+	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
+	nk2 := string_of_vaadeldavadTipud(!vaadeldavadTipud);;
 
 let algus() =
 	tekst := "Sügavuti lõppjärjestuses läbimise algoritm alustab.";
@@ -126,8 +126,8 @@ let servaLisamine(algtipp, tipud, servad) =
 	);;
 
 let lopp() =
-	tekst := "Slgoritm lõpetab, olles leidnud ...";
-	tekst := !tekst ^ "\n" ^ "Tippude töötlemise järjekord: " ^ string_of_tipud(!toodeldudTipud);
+	tekst := "Algoritm lõpetab, olles leidnud sügavuti lõppjärjestuses otsingu otsingupuu.";
+	lisatekst();
 	AlgoBaas.lopp();;
 
 let sygavutiLopp(algtipp, tipud, servad) = 

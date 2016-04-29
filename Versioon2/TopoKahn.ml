@@ -12,7 +12,7 @@ let string_of_sisendastmed() =
 
 (* funktsioon tippude topoloogilise järjestuse sõnena esitamiseks *)
 let string_of_topo() =
-	"Topoloogiline järjestus: [" ^ String.concat ", " (List.map (fun t -> t.nimi) !tekkinudJ2rjestus) ^ "]";;
+	"Topoloogiline järjestus: " ^ string_of_tipud(!tekkinudJ2rjestus);;
 
 let uuendaSisendastet nr tipp = (*analoogiline fn-ga Dijkstra.lisaKaugus, kokku võtta?*)
 	Hashtbl.replace sisendastmed tipp.nimi nr;;
@@ -49,42 +49,46 @@ let lisaTipp(tipp) =
 	tipp.tv := Vaadeldud;
 	tekkinudJ2rjestus := !tekkinudJ2rjestus @ [tipp];;
 
+let lisatekst() =
+	nk1 := string_of_sisendastmed();
+	nk2 := string_of_topo();;
+
 let algus(tipud, servad) =
 	List.iter (fun t -> uuendaSisendastet (leiaSisendaste(t, servad)) t) tipud;
 	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab.";
 	tekst := !tekst ^ "\n" ^ "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
-	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
+	nk1 := string_of_sisendastmed();
 	i := ServaValik;;
 
 (* õigupoolest tipu valik *)
 let servaValik(tipud) =
 	tekst := "Valime suvaliselt ühe tipu, mille sisendaste on 0.";
-	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
+	lisatekst();
 	let valitudTipp = valiTipp(tipud) in
 	valitudTipp.tv := Valitud;
 	i := ServaVaatlus;;
 
 let servaVaatlus(servad) =
 	List.iter vaatleServa servad;
-	tekst := "Vaatleme kõiki servi, mis valitud tipust väljuvad, ja vähendame sisendtippude sisendastet 1 võrra.";
-	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
+	tekst := "Vaatleme kõiki servi, mis valitud tipust väljuvad, ja vähendame sihttippude sisendastet 1 võrra.";
+	lisatekst();
 	i := ServaLisamine;;
 
 let servaLisamine(tipud, servad) =
 	List.iter (fun t -> if !(t.tv) = Valitud then lisaTipp t) tipud;
-	List.iter (fun t -> if !(t.tv) = Vaadeldav then t.tv := Vaatlemata) tipud; 
+	List.iter (fun t -> if !(t.tv) = Vaadeldav then t.tv := Vaatlemata) tipud;
 					(* kõik teised tipud uuesti Vaadeldav -> Vaatlemata *)
 	List.iter (fun s -> if !(s.sv) = Vaadeldav then s.sv := Vaadeldud) servad;
 					(* kõik Vaadeldavad servad -> Vaadeldud *)
 	tekst := "Lisame valitud tipu topoloogilisse järjestusse.";
-	tekst := !tekst ^ "\n" ^ string_of_sisendastmed();
+	lisatekst();
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
 		then i := Lopp
 	else i := ServaValik;;
 
 let lopp() =
 	tekst := "Algoritm lõpetab, olles leidnud sunatud graafi topoloogilise järjestuse.";
-	tekst := !tekst ^ "\n" ^ string_of_topo();
+	lisatekst();
 	AlgoBaas.lopp();;
 
 let topoKahn(tipud, servad) = 

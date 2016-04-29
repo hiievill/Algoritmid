@@ -76,7 +76,7 @@ let string_of_tagurpidiTopo() =
 
 (* funktsioon kriitilise tee sõnena esitamiseks *)
 let string_of_kriitilineTee()=
-	"Kriitiline tee: [" ^ string_of_tipud(!kriitilineTee) ^ "]";;
+	"Kriitiline tee: " ^ string_of_tipud(!kriitilineTee);;
 
 let algus() =
 	tekst := "Teostame eeldusgraafi analüüsi: leiame tippude hiliseima algusaja, varaseima lõpuaja ja kriitilise tee.";
@@ -90,12 +90,14 @@ let topo(tipud, servad) =
 		done;
 	algoL2bi := false;
 	tekst := "Leiame graafi topoloogilise järjestuse.";
-	tekst := !tekst ^ "\n" ^ TopoKahn.string_of_topo();
+	nk1 := TopoKahn.string_of_topo();
+	nk2 := "";
 	i := Vahe1;;
 
 let vahe1(tipud, servad) =
 	tekst := "Hakkame tippe topoloogilises järjestuses läbima ja neile varasemaid lõpuaegu määrama.";
-	tekst := !tekst ^ "\n" ^ TopoKahn.string_of_topo();
+	nk1 := TopoKahn.string_of_topo();
+	nk2 := string_of_varaseimadLopuajad(tipud);
 	List.iter (fun t -> t.tv := Vaatlemata) tipud;
 	List.iter (fun s -> s.sv := Vaatlemata) servad;
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
@@ -106,8 +108,8 @@ let vahe1(tipud, servad) =
 
 let tipuValikVL(tipud, servad) =
 	tekst := "Valime topoloogilises järjestuses järgmise vaatlemata tipu.";
-	tekst := !tekst ^ "\n" ^ TopoKahn.string_of_topo();
-	tekst := !tekst ^ "\n" ^ string_of_varaseimadLopuajad(tipud);
+	nk1 := TopoKahn.string_of_topo();
+	nk2 := string_of_varaseimadLopuajad(tipud);
 	let valitudTipp = List.find (fun t -> !(t.tv) = Vaatlemata) !(TopoKahn.tekkinudJ2rjestus) in
 	valitudTipp.tv := Valitud;
 	i := TipuLisamineVL;;
@@ -120,15 +122,17 @@ let tipuLisamineVL(tipud, servad) =
 	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;
 	tekst := "Määrame tipule varaseima lõpetamisaja, milleks on tema hind, kui tema sisendaste on 0, " ^
 		"vastasel juhul tipu hinna ja tipu eellaste suurima varaseima lõpuaja summa.";
-	tekst := !tekst ^ "\n" ^ TopoKahn.string_of_topo();
-	tekst := !tekst ^ "\n" ^ string_of_varaseimadLopuajad(tipud);
+	nk1 := TopoKahn.string_of_topo();
+	nk2 := string_of_varaseimadLopuajad(tipud);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
 		then i := Vahe2
 	else i := TipuValikVL;;
 
 let vahe2(tipud, servad) =
 	tekst := "Hakkame tippe topoloogilises järjestuses tagurpidi läbima ja neile hilisemaid algusaegu määrama.";
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidiTopo();
+	nk1 := string_of_varaseimadLopuajad(tipud);
+	nk2 := TopoKahn.string_of_topo();
+	nk3 := string_of_tagurpidiTopo();
 	List.iter (fun t -> t.tv := Vaatlemata) tipud;
 	List.iter (fun s -> s.sv := Vaatlemata) servad;
 	i := TipuValikHA;;
@@ -137,8 +141,8 @@ let tipuValikHA(tipud, servad) =
 	let valitudTipp = List.find (fun t -> !(t.tv) = Vaatlemata) (List.rev !(TopoKahn.tekkinudJ2rjestus)) in
 	valitudTipp.tv := Valitud;
 	tekst := "Valime tagurpidi topoloogilises järjestuses järgmise vaatlemata tipu.";
-	tekst := !tekst ^ "\n" ^ string_of_hiliseimadAlgusajad(tipud);
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidiTopo();
+	nk2 := string_of_tagurpidiTopo();
+	nk3 := string_of_hiliseimadAlgusajad(tipud);
 	i := TipuLisamineHA;;
 
 let tipuLisamineHA(tipud, servad) =
@@ -150,8 +154,8 @@ let tipuLisamineHA(tipud, servad) =
 	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;
 	tekst := "Määrame tipule hiliseima algusaja, milleks on kogu projekti varaseim lõpuaeg, kui tal järglasi pole, " ^
 		"vastasel juhul tipu järglaste vähima hiliseima algusaja ja tipu hinna vahe.";
-	tekst := !tekst ^ "\n" ^ string_of_hiliseimadAlgusajad(tipud);
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidiTopo();
+	nk2 := string_of_tagurpidiTopo();
+	nk3 := string_of_hiliseimadAlgusajad(tipud);
 	(* TODO: eelnev VL-ga kokku võtta *)
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
 		then i := Vahe3
@@ -159,6 +163,8 @@ let tipuLisamineHA(tipud, servad) =
 
 let vahe3(tipud, servad) =
 	tekst := "Leiame kriitilise tee.";
+	nk2 := string_of_hiliseimadAlgusajad(tipud);
+	nk3 := "";
 	i := EsimeneKriitiline;;
 
 let esimeneKriitiline(tipud) =
@@ -166,8 +172,10 @@ let esimeneKriitiline(tipud) =
 	kriitilineTipp.tv := Valitud;
 	kriitilineTee := [kriitilineTipp];
 	tekst := "Leiame esimese kriitilise tipu - sellise tipu, mille hiliseim algusaeg on 0.";
-	tekst := !tekst ^ "\n" ^ string_of_kriitilineTee();
-	i := Kriitiline;;
+	nk3 := string_of_kriitilineTee();
+	if List.length tipud = 1
+		then i := Lopp
+	else i := Kriitiline;;
 	
 let kriitiline(tipud, servad) =
 	let projektiAeg = leiaSuurimVL(tipud) in
@@ -177,17 +185,17 @@ let kriitiline(tipud, servad) =
 	kriitilineTipp.tv := Valitud;
 	kriitilineTee := !kriitilineTee @ [kriitilineTipp];
 	tekst := "Leiame järgmise kriitilise tipu - sellise tipu, mille hiliseima algusaja ja hinna summa on võrdne tema varaseima lõpetamisajaga.";
-	tekst := !tekst ^ "\n" ^ string_of_kriitilineTee();
+	nk3 := string_of_kriitilineTee();
 	if Hashtbl.find vl kriitilineTipp.nimi = projektiAeg
 		then i := Lopp
 	else i := Kriitiline;;
 
 let lopp() =
 	tekst := "Kriitiline tee on leitud ja sellega on eldusgraafi analüüs lõppenud.";
-	tekst := !tekst ^ "\n" ^ string_of_kriitilineTee();
+	nk3 := string_of_kriitilineTee();
 	AlgoBaas.lopp();;
 
-let eeldusgraaf(algtipp, tipud, servad) = 
+let eeldusgraaf(tipud, servad) = 
 	match !i with
 		| Algus -> algus()
 		| Topo -> topo(tipud, servad)

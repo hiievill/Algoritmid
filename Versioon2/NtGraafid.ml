@@ -173,6 +173,38 @@ let sidusKaaludegaSuunadega2servad = looServad([
   	("D", "E", Some(6), true);
 	], sidusKaaludegaSuunadega2tipud);;
 
+let sidusNegKaaludegaSuunadegatipud = looTipud([
+		("A", 100, 300, None);
+		("B", 300, 300, None);
+		("C", 100, 100, None);
+		("D", 300, 100, None);
+	]);;
+let sidusNegKaaludegaSuunadegaservad = looServad([
+		("A", "C", Some(3), true);
+  	("B", "D", Some(1), true);
+  	("D", "B", Some(4), true);
+  	("C", "D", Some(5), true);
+  	("B", "A", Some(-2), true);
+  	("A", "D", Some(0), true);
+	], sidusNegKaaludegaSuunadegatipud);;
+
+let sidusNegKaaludegaSuunadega2tipud = looTipud([
+		("A", 100, 300, None);
+		("B", 300, 300, None);
+		("C", 100, 100, None);
+		("D", 300, 100, None);
+		("E", 200, 200, None);
+	]);;
+let sidusNegKaaludegaSuunadega2servad = looServad([
+		("A", "B", Some(1), true);
+  	("B", "D", Some(2), true);
+  	("D", "C", Some(-2), true);
+  	("D", "E", Some(5), true);
+  	("C", "E", Some(3), true);
+  	("C", "A", Some(4), true);
+		("A", "E", Some(9), true);
+	], sidusNegKaaludegaSuunadega2tipud);;
+
 let sidusKaaludetaSuunadegaHindadegatipud = looTipud([
 		("A", 100, 400, Some(8));
 		("B", 200, 400, Some(2));
@@ -245,6 +277,16 @@ let sidusKaaludetaSuunadega3 = {								(* tsüklitega *)		(* mitte tugevalt sidu
 let sidusKaaludegaSuunadega = {								(* tsüklitega *)
 	tipud = sidusKaaludegaSuunadegatipud;
 	servad = sidusKaaludegaSuunadegaservad;
+};;
+
+let sidusNegKaaludegaSuunadega = {
+	tipud = sidusNegKaaludegaSuunadegatipud;
+	servad = sidusNegKaaludegaSuunadegaservad;
+};;
+
+let sidusNegKaaludegaSuunadega2 = {
+	tipud = sidusNegKaaludegaSuunadega2tipud;
+	servad = sidusNegKaaludegaSuunadega2servad;
 };;
 
 let sidusKaaludegaSuunadega2 = {								(* tsüklitega *)
@@ -344,7 +386,9 @@ let ntDijkstra1 = sidusKaaludegaSuunadega;; 	(* tsüklitega *)
 let ntDijkstra2 = sidusKaaludegaSuunadega2;; 	(* tsüklitega *)
 (* TODO: tsükliteta *)
 
-let ntFloydWarshall1 = sidusKaaludegaSuunadega;;	(* tsüklitega *)
+let ntFloydWarshall1 = sidusNegKaaludegaSuunadega2;;(* tsüklitega, negatiivsete kaaludega *)
+let ntFloydWarshall2 = sidusNegKaaludegaSuunadega;; (* tsüklitega, negatiivsete kaaludega *)
+let ntFloydWarshall3 = sidusKaaludegaSuunadega;; (* tsüklitega *)
 
 let ntTopoLopp1 = sidusKaaludetaSuunadega;;		(* tsükliteta *)
 let ntTopoLopp2 = sidusKaaludetaSuunadega2;;		(* tsüklitega *)

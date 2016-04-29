@@ -1,10 +1,7 @@
 open Struktuurid;;
 open AlgoBaas;;
 
-(* TODO: üsna palju koodikordust Sygavuti algodega. Äkki SygavutiEes ka ühe sammuna? *)
-
 let sygavutiTipud = ref([]);;
-let j2rgmisedServad = ref([]);;
 let komponendid = ref([]);; (* kõik sidusad komponendid. TODO: hoopis hulgana teha? *)
 let komponent = ref([]);; (* üks sidus komponent *)
 
@@ -24,28 +21,29 @@ let rec pooraServad(servad) =
 
 (* funktsioon sügavuti lõppjärjestuse sõnena esitamiseks *)
 let string_of_lopp(tipud) =
-	"Lõppjärjestus: ["  ^ string_of_tipud(tipud) ^ "]";;
+	"Lõppjärjestus: "  ^ string_of_tipud(tipud);;
 
 (* funktsioon tagurpidi sügavuti lõppjärjestuse sõnena esitamiseks *)
 let string_of_tagurpidi(tipud) =
-	"Tagurpidi lõppjärjestus: ["  ^ string_of_tipud(tipud) ^ "]";;		(* NB! mitte List.rev, selle pöörasin juba ringi *)
+	"Tagurpidi lõppjärjestus: "  ^ string_of_tipud(tipud);;		(* NB! mitte List.rev, selle pöörasin juba ringi *)
 	
 (* funktsioon ühe tugevalt sidusa komponendi sõnena esitamiseks *)
 let string_of_komponent(tipud) =
-	"Tugevalt sidus komponent: [" ^ string_of_tipud(tipud) ^ "]";;
+	"Tugevalt sidus komponent: " ^ string_of_tipud(tipud);;
 
 (* funktsioon tugevalt sidusate komponentide sõnena esitamiseks *)
 let string_of_komponendid(komponendid) =
-	"Tugevalt sidusad komponendid:" ^ List.fold_left  (fun a b -> a ^ "\n" ^ string_of_komponent b) "" komponendid;;
+	"Tugevalt sidusad komponendid:" ^ List.fold_left  (fun a b -> a ^ " \n" ^ string_of_tipud b) "" komponendid;;
 
 let algus(tipud, servad) =
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
-	tekst := "Kosaraju algoritmi algustab.";
+	tekst := "Kosaraju algoritm algustab.";
 	i := Sygavuti;;
 
 (* läbime graafi sügavuti lõppjärjestuses. Kui mõni tipp jääb läbi käimata, siis mitu korda *)
 let sygavuti(algtipp, tipud, servad) =
 	let esimeneTipp = ref(algtipp) in
+	!esimeneTipp.tv := Vaatlemata;	(* ühe tipuga juhuks, muidu ei tööta (sest alguses märkisime algtipu juba valituks) *)
 	while List.exists (fun t -> !(t.tv) = Vaatlemata) tipud (* kuniks leidub veel vaatlemata tippe *)
 		do
 			i := Algus;
@@ -62,102 +60,66 @@ let sygavuti(algtipp, tipud, servad) =
   	done;
 	algoL2bi := false;
 	tekst := "Läbime graafi sügavuti lõppjärjestuses ja kirjutame välja tekkinud lõppjärjestuse.";
-	tekst := !tekst ^ "\n" ^ string_of_lopp(!sygavutiTipud);
+	nk1 := string_of_lopp(!sygavutiTipud);
 	i := PooratudGraaf;;
 
 (* tekitame pööratud kaartega graafi *)
 let pooratudGraaf(tipud, servad) =
 	tekst := "Tekitame pööratud kaartega graafi.";
-	tekst := !tekst ^ "\n" ^ "Pöörame tekkinud järjestuse tagurpidi ja hakkame läbima tippe alates esimesest läbimata tipust selles järjestuses.";
-	tekst := !tekst ^ "\n" ^ string_of_lopp(!sygavutiTipud);
+	tekst := !tekst ^ "\n" ^ "Pöörame tekkinud järjestuse tagurpidi ja hakkame läbima tippe alates esimesest läbimata tipust tagurpidi järjestuses.";
 	sygavutiTipud := List.rev(!sygavutiTipud); (*tippude järjestuse pidi ka ümber pöörama*)
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidi(!sygavutiTipud);
+	nk2 := string_of_tagurpidi(!sygavutiTipud);
 	pooraServad(servad);
 	List.iter (fun s -> s.sv := Vaatlemata) servad;
 	List.iter (fun t -> t.tv := Vaatlemata) tipud;
 	i := EsimeneTipp;;
 
-let esimeneTipp(servad) =
-	let esimeneTipp = List.hd !sygavutiTipud in
+let esimeneTipp(tipud, servad) =
+	List.iter (fun t -> if !(t.tv) = Vaadeldud then t.tv := Sobimatu) tipud;
+	List.iter (fun s -> if !(s.sv) = Vaadeldud then s.sv := Sobimatu) servad;
+	let esimeneTipp = List.find (fun t -> !(t.tv) = Vaatlemata) !sygavutiTipud in
 	esimeneTipp.tv := Valitud;
-	let js = Laiuti.leiaJ2rgServad(esimeneTipp, servad) in
-	j2rgmisedServad := (!j2rgmisedServad) @ js;
-	tekst := "Valime järjestusest esimese tipu.";
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidi(!sygavutiTipud);
-	tekst := !tekst ^ "\n" ^ string_of_komponent(!komponent);
-	i := EsimeseTipuLisamine;;
+	tekst := "Valime tagurpidi lõppjärjestusest esimese tipu, mis pole veel üheski komponendis.";
+	nk1 := string_of_tagurpidi(!sygavutiTipud);
+	nk2 := string_of_komponent(!komponent);
+	nk3 := string_of_komponendid(!komponendid);
+	i := TeisedTipud;;
 
-let esimeseTipuLisamine() =
-	let esimeneTipp = List.hd !sygavutiTipud in
-	esimeneTipp.tv := Vaadeldud;
-	komponent := [esimeneTipp];
-	sygavutiTipud := List.filter (fun t -> t.nimi <> esimeneTipp.nimi) !sygavutiTipud;
-	tekst := "Lisame selle tipu tugevalt sidusasse komponenti, märgime tipu vaadelduks ja kustutame järjestusest.";
-	tekst := !tekst ^ "\n" ^ string_of_komponent(!komponent);
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidi(!sygavutiTipud);
-	i := ServaValik;;
-
-(* NB! sarnane kui SygavutiEes.servaValik, TODO: kokku võtta *)
-let servaValik(servad) =
-	if List.length !j2rgmisedServad = 0
-		then (
-			tekst := "Edasi ei pääse kuhugi, seni läbitud tipud moodustavad ühe tugevalt sidusa komponendi.";
-			tekst := !tekst ^ "\n" ^ string_of_komponent(!komponent);
-			tekst := !tekst ^ "\n" ^ string_of_tagurpidi(!sygavutiTipud);
-			komponendid := !komponendid @ [!komponent]; (*lisame sidusa komponendi komponentide hulka *)
-			komponent := [];
-			if List.length !sygavutiTipud > 0 (*sama kui et kõik pole vaadeldud *)
-				then i := EsimeneTipp
-			else i := Lopp (*Kõik tipud said vaadeldud*)
-		)
-	else (
-		let s = List.hd !j2rgmisedServad in
-  	j2rgmisedServad := List.tl !j2rgmisedServad;
-  	match s with	(* TODO: see on kuskil mujal algodes ka olemas *)
-  		| {tipp1 = t1; tipp2 = t2; sv = v;} -> (
-  			v := Valitud;
-  			if !((!t1).tv) = Vaatlemata then (!t1).tv := Valitud;
-  			if !((!t2).tv) = Vaatlemata then (!t2).tv := Valitud; 
-  		);
-  	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
-  	let lisatavTipp = Laiuti.leiaLisatavTipp(lisatavServ) in
-  	let js = Laiuti.leiaJ2rgServad(lisatavTipp, servad) in
-  	j2rgmisedServad := js @ (!j2rgmisedServad);
-  	j2rgmisedServad := Laiuti.eemalda(!j2rgmisedServad);
-  	tekst := "Valime järgmise vaatlemata tipu.";
-		tekst := !tekst ^ "\n" ^ string_of_komponent(!komponent);
-		tekst := !tekst ^ "\n" ^ string_of_tagurpidi(!sygavutiTipud);
-  	i := ServaLisamine
-	);;
-
-let servaLisamine(tipud, servad) =
-	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
-	let lisatavTipp = Laiuti.leiaLisatavTipp(lisatavServ) in
-	komponent := !komponent @ [lisatavTipp];
-	Laiuti.lisaServ(lisatavServ);
-	sygavutiTipud := List.filter (fun t -> t.nimi <> lisatavTipp.nimi) !sygavutiTipud;
-	tekst := "Lisame selle tipu tugevalt sidusasse komponenti, märgime tipu vaadelduks ja kustutame järjestusest.";
-	tekst := !tekst ^ "\n" ^ string_of_komponent(!komponent);
-	tekst := !tekst ^ "\n" ^ string_of_tagurpidi(!sygavutiTipud);
-	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
+let teisedTipud(tipud, servad) =
+	let esimeneTipp = List.find (fun t -> !(t.tv) = Valitud) tipud in
+	i := Algus;
+	while !algoL2bi = false
+		do
+			Laiuti.laiuti(esimeneTipp, tipud, servad)	(* võiks ka sügavuti, aga pole vahet *)
+		done;
+	algoL2bi := false;
+	List.iter (fun t -> if !(t.tv) = Valitud then t.tv := Vaadeldud) tipud;
+	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;
+	komponent := List.filter (fun t -> !(t.tv) = Vaadeldud) tipud;
+	komponendid := !komponendid @ [!komponent];
+	tekst := "Lisame temaga ühte sidususkomponenti kõik tipud, millesse saab temast ümberpööratud kaartega graafis jõuda.";
+	nk2 := string_of_komponent(!komponent);
+	nk3 := string_of_komponendid(!komponendid);
+	if List.for_all (fun t -> !(t.tv) = Vaadeldud || !(t.tv) = Sobimatu) tipud
 		then i := Lopp
-	else i := ServaValik;;
+	else i := EsimeneTipp;;
 
-let lopp() =
-	tekst := "Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid.";
-	tekst := !tekst ^ "\n" ^ string_of_komponendid(!komponendid); 
+let lopp(tipud, servad) =
+	List.iter (fun t -> if !(t.tv) = Vaadeldud then t.tv := Sobimatu) tipud;
+	List.iter (fun s -> if !(s.sv) = Vaadeldud then s.sv := Sobimatu) servad;
+	tekst := "Kõik tipud on vaadeldud. Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid.";
+	nk1 := string_of_komponendid(!komponendid);
+	nk2 := "";
+	nk3 := ""; 
 	AlgoBaas.lopp();;
-	(*TODO: komponendid välja printida. Siin ja mujal (igal tipulisamisel nimekiri) *)
 
 let kosaraju(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus(tipud, servad)
 		| Sygavuti -> sygavuti(algtipp, tipud, servad)
-		| EsimeneTipp -> esimeneTipp(servad)
-		| EsimeseTipuLisamine -> esimeseTipuLisamine()
 		| PooratudGraaf -> pooratudGraaf(tipud, servad)
-		| ServaValik -> servaValik(servad)
-		| ServaLisamine -> servaLisamine(tipud, servad)
-		| Lopp -> lopp()
+		| EsimeneTipp -> esimeneTipp(tipud, servad)
+		| TeisedTipud -> teisedTipud(tipud, servad)
+		| Lopp -> lopp(tipud, servad)
 		| L2bi -> ()
 		| _ -> ();;

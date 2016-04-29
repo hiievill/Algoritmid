@@ -46,7 +46,11 @@ type algoSamm = Algus
 	| Tagurpidi
 	| EsimeneKriitiline
 	| Kriitiline
-	| EsimeseTipuLisamine;;
+	| EsimeseTipuLisamine
+	| TeisedTipud
+	| Fikseerimine
+	| LahtriVaatlus
+	| LahtriMuutmine;;
 
 (* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
 type vaadeldavus = Vaatlemata

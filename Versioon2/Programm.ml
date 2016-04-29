@@ -127,7 +127,7 @@ let samm(algtipp, tipud, servad) =
 		| FloydWarshall -> FloydWarshall.floydWarshall(tipud, servad)
 		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
 		| TopoLopp -> TopoLopp.topoLopp(algtipp, tipud, servad)
-		| Eeldusgraaf -> Eeldusgraaf.eeldusgraaf(algtipp, tipud, servad)
+		| Eeldusgraaf -> Eeldusgraaf.eeldusgraaf(tipud, servad)
 		| Kosaraju -> Kosaraju.kosaraju(algtipp, tipud, servad);;
 
 let programmK2ib = ref(true);;
@@ -212,25 +212,46 @@ let valiAlgtipp(nimi, tipud) =
 	with
 		| Not_found -> List.hd tipud;;	(* TODO: erind, et uuesti prooviks? *)
 
-let alusta(graaf, algtipp) =
-	(*try*)
-		let tipud = graaf.tipud in
-		let servad = graaf.servad in
-		open_graph (" " ^ string_of_int(aknaLaius) ^ "x" ^ string_of_int(aknaKorgus));
-		set_window_title ("Graafialgoritmid - " ^ string_of_algo(!algo));
-		kuvaPilt(tipud, servad);
-		syndmused(algtipp, tipud, servad);;
-	(*with
-		| Graphic_failure("fatal I/O error") -> ();
-		| Graphic_failure("graphic screen not opened") -> ();;*)
+(* funktsioon, mis kontrollib graafi sobivust algoritmile *)
+let graafiKontroll(algtipp, tipud, servad) =
+	match !algo with 														 (*algtipp, tipud, servad, suunad, 			kaalud, hinnad, sidus*)
+		| Laiuti -> 				AlgoBaas.graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
+		| SygavutiEes -> 		AlgoBaas.graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
+  	| SygavutiLopp -> 	AlgoBaas.graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
+  	| Prim -> 					AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some false, 	true, 	false, 	true)
+  	| Kruskal -> 				AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some false, 	true, 	false, 	false)
+  	| Dijkstra -> 			AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some true, 	true, 	false, 	true)
+  	| FloydWarshall -> 	AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some true, 	true, 	false, 	false)
+  	| TopoLopp -> 			AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some true, 	false, 	false, 	false)
+  	| TopoKahn -> 			AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some true, 	false, 	false, 	false)
+  	| Eeldusgraaf -> 		AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some true, 	false, 	true, 	true) (* TODO: sidusus õige? *)
+  	| Kosaraju -> 			AlgoBaas.graafiKontroll (algtipp, tipud, servad, Some true, 	false, 	false, 	false);;
+
+(* funktsioon, mis tagastab, kas tegu on algtippu nõudva algoritmiga *)
+let algtipugaAlgoritm() =
+	let algtipugaAlgoritmid = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Dijkstra; TopoLopp; Kosaraju]  in
+	List.mem !algo algtipugaAlgoritmid;;
+
+let alusta(graaf, algtipuNimi) =
+	let algtipp = valiAlgtipp(algtipuNimi, graaf.tipud) in
+	let tipud = graaf.tipud in
+	let servad = graaf.servad in
+	graafiKontroll(algtipp, tipud, servad);
+	let x = (if !algo = FloydWarshall then 400 else 0) in
+	open_graph (" " ^ string_of_int(aknaLaius + x) ^ "x" ^ string_of_int(aknaKorgus + 110));	(* TODO: 110 ajutine *)
+	set_window_title ("Graafialgoritmid - " ^ string_of_algo(!algo));
+	if algtipugaAlgoritm()
+		then algtipp.tv := Valitud; (* märgime algtipu valituks, et seda juba 1. slaidil kuvada *)
+	kuvaPilt(tipud, servad);
+	syndmused(algtipp, tipud, servad);;
 	
 let main() =
 	
-	algo := Kosaraju;
-	let graaf = ntKosaraju1 in
-	let algtipp = valiAlgtipp("A", graaf.tipud) in
+	algo := FloydWarshall;
+	let graaf = ntFloydWarshall1 in
+	let algtipuNimi = "A" in
 	
-	alusta(graaf, algtipp);;
+	alusta(graaf, algtipuNimi);;
 
 		
 main();;
