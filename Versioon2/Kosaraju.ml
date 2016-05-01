@@ -42,23 +42,7 @@ let algus(tipud, servad) =
 
 (* läbime graafi sügavuti lõppjärjestuses. Kui mõni tipp jääb läbi käimata, siis mitu korda *)
 let sygavuti(algtipp, tipud, servad) =
-	let esimeneTipp = ref(algtipp) in
-	!esimeneTipp.tv := Vaatlemata;	(* ühe tipuga juhuks, muidu ei tööta (sest alguses märkisime algtipu juba valituks) *)
-	while List.exists (fun t -> !(t.tv) = Vaatlemata) tipud (* kuniks leidub veel vaatlemata tippe *)
-		do
-			i := Algus;
-			(* läbime graafi sügavuti lõppjärjestuses alates tipust esimeneTipp *)
-			algoL2bi := false;
-			SygavutiLopp.toodeldudTipud := [];
-			while !algoL2bi = false
-				do
-					SygavutiLopp.sygavutiLopp(!esimeneTipp, tipud, servad)		(*läbime sügavuti*)
-				done;
-  		sygavutiTipud := !sygavutiTipud @ !(SygavutiLopp.toodeldudTipud); (*lisame järjestusse*)
-  		if List.exists (fun t -> !(t.tv) = Vaatlemata) tipud (* kui leidub veel vaatlemata tippe *)
-  			then esimeneTipp := TopoKahn.valiTipp(tipud) (* määrame uue algtipu (sisendastmega 0) *)
-  	done;
-	algoL2bi := false;
+	sygavutiTipud := TopoLopp.l2biSygavuti(algtipp, tipud, servad);				(* läbime graafi sügavuti lõppjärjestuses *)
 	tekst := "Läbime graafi sügavuti lõppjärjestuses ja kirjutame välja tekkinud lõppjärjestuse.";
 	nk1 := string_of_lopp(!sygavutiTipud);
 	i := PooratudGraaf;;

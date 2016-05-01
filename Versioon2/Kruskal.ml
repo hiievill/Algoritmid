@@ -66,6 +66,11 @@ let muudaServa v1 v2 serv =
 			)
 		);;
 
+(* funktsioon, mid tagastab, kas tekkinud graaf on sidus (ehk kas kõik tipud kuuluvad samasse hulka) *)
+let onSidus(tipud) =
+	let esimeseHulk = Hashtbl.find hulgad (List.hd tipud).nimi in
+	List.for_all (fun t -> Hashtbl.find hulgad t.nimi = esimeseHulk) tipud;;
+
 let algus(servad) =
 	(*AlgoBaas.graafiKontroll(servad, true, false, true);*)
 	List.iter (fun s -> sej := !sej @ [s]) servad;
@@ -94,8 +99,9 @@ let servaLisamine(servad, tipud) =
 		then i := Lopp
 	else i := ServaValik;;
 
-let lopp() =
-	tekst := "Eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
+let lopp(tipud) =
+	tekst := "Eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toese" ^ 
+			(if onSidus(tipud) then "puu." else "metsa.");
 	nk1 := string_of_sej(!sej);
 	AlgoBaas.lopp();;
 
@@ -106,5 +112,5 @@ let kruskal(tipud, servad) =
 		| ServaValik -> servaValik(servad)
 		| SobimatuServ -> sobimatuServ(servad)
 		| ServaLisamine -> servaLisamine(servad, tipud)
-		| Lopp -> lopp()
+		| Lopp -> lopp(tipud)
 		| _ -> ();;

@@ -10,16 +10,31 @@ let kaksTippuSuunatudKaaludegaservad = looServad([
 		("A", "B", Some(8), true);
 	], kaksTippuSuunatudKaaludegatipud);;
 
-let mitteSidusKaaludetaSuunadetatipud = looTipud([
+let mitteSidusKaaludegaSuunadegatipud = looTipud([
 		("A", 100, 100, None);
 		("B", 200, 200, None);
 		("C", 300, 200, None);
 		("D", 400, 300, None);
+		("E", 200, 300, None);
 	]);;
-let mitteSidusKaaludetaSuunadetaservad = looServad([
+let mitteSidusKaaludegaSuunadegaservad = looServad([
+		("A", "B", Some(7), true);
+		("C", "D", Some(5), true);
+		("D", "E", Some(8), true);
+	], mitteSidusKaaludegaSuunadegatipud);;
+
+let mitteSidusKaaludetaSuunadegatipud = looTipud([
+		("A", 100, 100, None);
+		("B", 200, 200, None);
+		("C", 300, 200, None);
+		("D", 400, 300, None);
+		("E", 200, 300, None);
+	]);;
+let mitteSidusKaaludetaSuunadegaservad = looServad([
 		("A", "B", None, true);
 		("C", "D", None, true);
-	], mitteSidusKaaludetaSuunadetatipud);;
+		("D", "E", None, true);
+	], mitteSidusKaaludetaSuunadegatipud);;
 
 let mitteTugevaltSidustipud = looTipud([
 		("A", 100, 100, None);
@@ -122,6 +137,19 @@ let sidusKaaludegaSuunadetaservad = looServad([
   	("A", "C", Some(4), false);
   	("D", "E", Some(6), false);
   ], sidusKaaludegaSuunadetatipud);;
+
+let mittesidusKaaludegaSuunadetatipud = looTipud([
+  	("A", 100, 100, None);
+		("B", 200, 200, None);
+		("C", 300, 200, None);
+		("D", 400, 300, None);
+		("E", 200, 400, None);
+  ]);;
+let mittesidusKaaludegaSuunadetaservad = looServad([
+  	("A", "B", Some(7), false);
+		("C", "D", Some(5), false);
+		("D", "E", Some(8), false);
+  ], mittesidusKaaludegaSuunadetatipud);;
 
 let sidusKaaludetaSuunadega2tipud = looTipud([
   	("A", 100, 300, None);
@@ -296,12 +324,6 @@ let yksTippHinnaga = {
 	servad = [];
 };;
 
-(* kahest tipust koosnev suunadeta ja kaaludeta graaf *)
-
-(* kahest tipust koosnev suunadeta kaaludega graaf *)
-
-(* kahest tipust koosnev suunadega kaaludeta graaf *)
-
 (* kahest tipust koosnev suunatud ja kaaluga graaf *)
 let kaksTippuSuunatudKaaluga = {
 	tipud = kaksTippuSuunatudKaaludegatipud;
@@ -309,9 +331,15 @@ let kaksTippuSuunatudKaaluga = {
 };;
 
 (* mittesidus kaaludeta ja suunadeta graaf *)
-let mitteSidusKaaludetaSuunadeta = {
-	tipud = mitteSidusKaaludetaSuunadetatipud;
-	servad = mitteSidusKaaludetaSuunadetaservad;
+let mitteSidusKaaludegaSuunadega = {
+	tipud = mitteSidusKaaludegaSuunadegatipud;
+	servad = mitteSidusKaaludegaSuunadegaservad;
+};;
+
+(* mittesidus kaaludeta ja suunadega graaf *)
+let mitteSidusKaaludetaSuunadega = {
+	tipud = mitteSidusKaaludetaSuunadegatipud;
+	servad = mitteSidusKaaludetaSuunadegaservad;
 };;
 
 (*sidus, aga mitte tugevalt sidus kaaludeta ja suunadeta graaf *)
@@ -320,19 +348,14 @@ let mitteTugevaltSidus = {
 	servad = mitteTugevaltSidusservad;
 };;
 
-(* sidus kaaludeta suunatud graaf *)
-
-(* mittesidus kaaludeta suunatud graaf *)
-
-(* sidus kaaludeta suunadeta graaf *)
-
-(* mittesidus kaaludeta suunadeta graaf *)
-
-
-
 let sidusKaaludegaSuunadeta = {
 	tipud = sidusKaaludegaSuunadetatipud;
 	servad = sidusKaaludegaSuunadetaservad;
+};;
+
+let mittesidusKaaludegaSuunadeta = {
+	tipud = mittesidusKaaludegaSuunadetatipud;
+	servad = mittesidusKaaludegaSuunadetaservad;
 };;
 
 let sidusKaaludegaSuunadeta2 = {
@@ -361,6 +384,7 @@ let ntPrim2 = sidusKaaludegaSuunadeta2;;			(*tsükliteta *)
 
 let ntKruskal1 = sidusKaaludegaSuunadeta;;		(* tsüklitega *)
 let ntKruskal2 = sidusKaaludegaSuunadeta2;;			(*tsükliteta *)
+let ntKruskal3 = mittesidusKaaludegaSuunadeta;;
 
 let ntDijkstra1 = sidusKaaludegaSuunadega;; 	(* tsüklitega *)
 let ntDijkstra2 = sidusKaaludegaSuunadega2;; 	(* tsüklitega *)
@@ -368,14 +392,17 @@ let ntDijkstra2 = sidusKaaludegaSuunadega2;; 	(* tsüklitega *)
 
 let ntFloydWarshall1 = sidusNegKaaludegaSuunadega2;;(* tsüklitega, negatiivsete kaaludega *)
 let ntFloydWarshall2 = sidusKaaludegaSuunadega;; (* tsüklitega *)
+let ntFloydWarshall3 = mitteSidusKaaludegaSuunadega;;
 
 let ntTopoLopp1 = sidusKaaludetaSuunadega;;		(* tsükliteta *)
 let ntTopoLopp2 = sidusKaaludetaSuunadega2;;		(* tsüklitega *)
+let ntTopoLopp3 = mitteSidusKaaludetaSuunadega;;
 
 let ntTopoKahn1 = sidusKaaludetaSuunadega;;		(* tsükliteta *)
 let ntTopoKahn2 = sidusKaaludetaSuunadega2;;		(* tsüklitega *)
+let ntTopoKahn3 = mitteSidusKaaludetaSuunadega;;
 	
 let ntEeldusgraaf1 = sidusKaaludetaSuunadegaHindadega;;	(* tsükliteta *)
 
-let ntKosaraju1 = sidusKaaludetaSuunadega3;;		(* tsüklitega *)		(* mitte tugevalt sidus *)
-
+let ntKosaraju1 = sidusKaaludetaSuunadega3;;		(* tsüklitega *)		(* mitte tugevalt sidus *)	(* TODO: kustutada *)
+let ntKosaraju2 = mitteSidusKaaludetaSuunadega;;	(* iga tipp eraldi komponent *)

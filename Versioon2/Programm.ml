@@ -377,7 +377,7 @@ let graafiKontroll(algtipp, tipud, servad, suunatus, kaaludega, hindadega, sidus
 
 (* funktsioon, mis kontrollib graafi sobivust algoritmile *)
 let graafiKontroll(algtipp, tipud, servad) =
-	match !algo with 														 (*algtipp, tipud, servad, suunad, 			kaalud, hinnad, sidus*)
+	match !algo with 										(*algtipp, tipud, servad, suunad, 			kaalud, hinnad, sidus*)
 		| Laiuti -> 				graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
 		| SygavutiEes -> 		graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
   	| SygavutiLopp -> 	graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
@@ -411,8 +411,8 @@ let alusta(graaf, algtipuNimi) =
 	
 let main() =
 	
-	algo := FloydWarshall;
-	let graaf = ntFloydWarshall1 in
+	algo := TopoLopp;
+	let graaf = ntTopoLopp3 in
 	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 	
 	alusta(graaf, algtipuNimi);;
