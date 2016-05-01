@@ -4,11 +4,14 @@ open Struktuurid;;
 let aknaLaius = 600;;
 let aknaKorgus = 450;;
 let kirjaaknaKorgus = 150;; (*ebavajalik *)
+let fwLaius = 400;; (* Floyd-Warshalli puhul kuvame laiema akna *)
 
 let tipuRaadius = 20;;
 
 let nooleLaius = 7.;; (* õigupoolest pool laiust *)
 let noolePikkus = 20.;;
+
+let jooneLaius = 3;;
 
 (* järgmised on mapid serva tippude nimed : int, hoiustamaks ringjoone võrrandit (x+a)^2 + (y+b)^2 = r^2 *)
 (*let kaareX = Hashtbl.create 10;;
@@ -34,7 +37,7 @@ let kaksPunkti(x1, y1, a, c, r) =
 
 (* leiame kaalu jaoks punkti (i, j) nii, et need oleks tippe tipp1 ja tipp2 ühendava serva keskpunktist 90 kraadi all kaugusel "kaugus" ning ei läheks akna äärtest välja *)
 (* TODO: väike koodikordus, kasutada ära noole kuvamise abimeetodeid *)
-let kaaluKoordinaadid(tipp1, tipp2, kaugus) =
+let leiaKaaluKoordinaadid(tipp1, tipp2, kaugus) =
 	let x1 = float_of_int(!(!tipp1.x)) in
 	let y1 = float_of_int(!(!tipp1.y)) in
 	let x2 = float_of_int(!(!tipp2.x)) in
@@ -55,7 +58,7 @@ let kaaluKoordinaadid(tipp1, tipp2, kaugus) =
 		then (int_of_float(imax), int_of_float(jmax))
 	else (-1, -1) (*TODO: mingi kontroll/erind siia? Kuigi kui kaugus < (min aknaKorgus aknaLaius) / 2, siis ei tohiks kunagi juhtuda. *)
 	
-	(*funktsioon, mis leiab sirgega y=ax+c punktis (e, f) ristuva sirge tõusu ja vabaliikme *)
+(*funktsioon, mis leiab sirgega y=ax+c punktis (e, f) ristuva sirge tõusu ja vabaliikme *)
 let leiaRistuvSirge(a, c, e, f) = 
 	let a2 = (-1.) /. a in
 	let c2 = f +. e /. a in
@@ -179,15 +182,14 @@ let kuvaKaal(serv) =
 		| {tipp1 = a; tipp2 = b; kaal = k; sv = v} -> (
 			match k with
 				| Some ka -> (
-					let koordinaadid = kaaluKoordinaadid(a, b, 20) in (*TODO: see kaugus 20 on omavoliline *)
-					match koordinaadid with
-						| (i, j) -> moveto i j;
+					let (x, y) = leiaKaaluKoordinaadid(a, b, 20) in (*TODO: see kaugus 20 on omavoliline *)
+					moveto x y;
 					draw_string (string_of_int(ka))
 				)
-				| None -> () (* kas see haru on üldse vajalik? OCamlis pole exhaustive probleeme? *)
+				| None -> ()
 		);;
-		
-let kuvaNool(serv) =
+
+let leiaNooleKoordinaadid(serv) =
 	let fromTipp = serv.tipp1 in
 	let toTipp = serv.tipp2 in
 	let x1 = float_of_int(!(!fromTipp.x)) in
@@ -199,12 +201,12 @@ let kuvaNool(serv) =
 		then
 			let i = if kaheTipuVahel(y2 +. tr, y1, y2) then y2 +. tr else y2 -. tr in
 			let j = if kaheTipuVahel(y2 +. tr +. noolePikkus, y1, y2) then y2 +. tr +. noolePikkus else y2 -. tr -. noolePikkus in
-			fill_poly [|int_of_float(x2), int_of_float(i); int_of_float(x2 -. nooleLaius), int_of_float(j); int_of_float(x2 +. nooleLaius), int_of_float(j)|]
+			(int_of_float(x2), int_of_float(i), int_of_float(x2 -. nooleLaius), int_of_float(j), int_of_float(x2 +. nooleLaius), int_of_float(j))
 	else if y1 = y2 (* erijuht horisontaalse serva jaoks *)
 		then 
 			let k = if kaheTipuVahel(x2 +. tr, x1, x2) then x2 +. tr else x2 -. tr in
 			let l = if kaheTipuVahel(x2 +. tr +. noolePikkus, x1, x2) then x2 +. tr +. noolePikkus else x2 -. tr -. noolePikkus in
-			fill_poly [|int_of_float(k), int_of_float(y2); int_of_float(l), int_of_float(y2 -. nooleLaius); int_of_float(l), int_of_float(y2 +. nooleLaius)|]
+			(int_of_float(k), int_of_float(y2), int_of_float(l), int_of_float(y2 -. nooleLaius), int_of_float(l), int_of_float(y2 +. nooleLaius))
 	else
 	let a = (y2 -. y1) /. (x2 -. x1) in
 	let c = y1 -. a *. x1 in
@@ -220,7 +222,11 @@ let kuvaNool(serv) =
 							| ((nx1, ny1), (nx2, ny2)) -> 
 								let nx = if kaheTipuVahel(nx1, x1, x2) then nx1 else nx2 in
 								let ny = if kaheTipuVahel(e1, x1, x2) then ny1 else ny2 in
-								fill_poly [|int_of_float(p1), int_of_float(p2); int_of_float(p3), int_of_float(p4); int_of_float(nx), int_of_float(ny)|];;
+								(int_of_float(p1), int_of_float(p2), int_of_float(p3), int_of_float(p4), int_of_float(nx), int_of_float(ny));;
+		
+let kuvaNool(serv) =
+	let (p1, p2, p3, p4, p5, p6) = leiaNooleKoordinaadid(serv) in
+	fill_poly [|p1, p2; p3, p4; p5, p6|];; 
 		
 let kuvaServJaNool(serv) =
 	set_color (
@@ -245,10 +251,6 @@ let kuvaHind(tipp) =
 let kuvaTipud(tipud) = 
 	List.iter kuvaTipp tipud;;
 	
-(*let kuvaServad(servad) =
-	set_line_width 3;
-	List.iter kuvaServ servad;;*)
-	
 let kuvaNimed(tipud) =
 	set_color black;
 	List.iter kuvaNimi tipud;;
@@ -262,7 +264,7 @@ let kuvaHinnad(tipud) =
 	List.iter kuvaHind tipud;;
 	
 let kuvaServadJaNooled(servad) =
-	set_line_width 3;
+	set_line_width jooneLaius;
 	List.iter kuvaServJaNool(servad);;
 	
 (*ebavajalik*)
@@ -283,7 +285,6 @@ let kuvaNimekirjad() =
 let kuvaTekst() =
 	(*TODO: alles slaidile *)
 	set_color black;
-	set_font "Courier-Bold";
 	(*moveto 0 100;
 	draw_string !(AlgoBaas.tekst);;*)
 	if !(AlgoBaas.tekst) <> ""
@@ -291,21 +292,21 @@ let kuvaTekst() =
 
 let kuvaTabel(tipud, servad) =
 	set_line_width 2;
+	(* TODO: tabeli algkoordinaadid tippude arvust sõltuma? *)
 	let xAlgus = aknaLaius + 10 in	(* x algkoordinaat - tabeli vasak ülemine nurk *)
 	let yAlgus = 400 in							(* y algkoordinaat *)
 	let tippudeArv = List.length tipud in
 	let a = 30 in (* väikse ruudu külje suurus NB! fill_rect alustab just vasakust alumisest nurgast *)
 	if !(FloydWarshall.fiks) >= 0 && !(FloydWarshall.fiks) < tippudeArv 
-		then (
+		then (																				(* fikseeritud rea ja veeru kuvamine *)
 			set_color (rgb 253 253 122);
 			fill_rect xAlgus (yAlgus - (!(FloydWarshall.fiks) + 2) * a) ((tippudeArv + 1) * a) a;	(* horisontaalne *)
 			fill_rect (xAlgus + (!(FloydWarshall.fiks) + 1) * a) (yAlgus - (tippudeArv + 1) * a) a ((tippudeArv + 1) * a);	(* vertikaalne *)
 		);
 	if !(FloydWarshall.x) >= 0 && !(FloydWarshall.y) >= 0 && !(FloydWarshall.x) <= tippudeArv - 1 
-		then (
+		then (																				(* vaadeldava lahtri kuvamine *)
 			set_color (rgb 253 159 37);
 			fill_rect (xAlgus + (!(FloydWarshall.y) + 1) * a) (yAlgus - (!(FloydWarshall.x) + 2) * a) a a;
-			(*print_endline(string_of_int(!(FloydWarshall.y)) ^ ", " ^ string_of_int(!(FloydWarshall.x)))*)
 		);
 	set_color black;
 	(* horisontaalsed jooned *)

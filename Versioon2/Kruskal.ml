@@ -95,7 +95,7 @@ let servaLisamine(servad, tipud) =
 	else i := ServaValik;;
 
 let lopp() =
-	tekst := "Eelistusjärjekord on tühi. \nAlgoritm lõpetab, olles leidnud minimaalse toesepuu.";
+	tekst := "Eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
 	nk1 := string_of_sej(!sej);
 	AlgoBaas.lopp();;
 

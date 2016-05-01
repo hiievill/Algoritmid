@@ -5,8 +5,8 @@ open AlgoBaas;;
 (* TODO: string_of_... funktsioonid *)
 
 let algus() =
-	tekst := "Algoritm opoloogilise järjestuse leidmiseks lõppjärjestuse kaudu alustab.";
-	tekst := !tekst ^ "\n" ^ "Läbime graafi sügavuti lõppjärjestusega.";
+	tekst := "Algoritm opoloogilise järjestuse leidmiseks lõppjärjestuse kaudu alustab. ";
+	tekst := !tekst ^ "Läbime graafi sügavuti lõppjärjestusega.";
 	i := ServaVaatlus;;
 
 (* TODO: rename. Algosamme oleks juurde vaja. *)

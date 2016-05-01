@@ -23,7 +23,7 @@ let servaLisamine(tipud, servad) =	(* sama mis laiuti, aga 2 erinevat rida: teks
 	else i := ServaValik;;																	(* kui järgmisi servi leidub, lähme uut serva valima *)
 	
 let lopp() =
-	tekst := "Magasin on tühi.\nAlgoritm lõpetab, olles leidnud sügavuti eesjärjestuses otsingu otsingupuu.";
+	tekst := "Magasin on tühi. Algoritm lõpetab, olles leidnud sügavuti eesjärjestuses otsingu otsingupuu.";
 	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
 	nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);
 	AlgoBaas.lopp();;

@@ -14,16 +14,16 @@ type algoritm = Laiuti
 let string_of_algo(algo) =
 	match algo with
 		| Laiuti -> "Laiuti"
-		| SygavutiEes -> "Sügavuti eesjärjestuses"
-  	| SygavutiLopp -> "Sügavuti lõppjärjestuses"
-  	| Prim -> "Primi algoritm"
-  	| Kruskal -> "Kruskali algoritm"
-  	| Dijkstra -> "Dijkstra algoritm"
-  	| FloydWarshall -> "Floyd-Warshalli algoritm"
-  	| TopoLopp -> "Topoloogiline järjestamine lõppjärjestuse abil"
-  	| TopoKahn -> "Topoloogiline järjestamine Kahni algoritmiga"
-  	| Eeldusgraaf -> "Eeldusgraafi analüüs"
-  	| Kosaraju -> "Kosaraju algoritm";;
+		| SygavutiEes -> "SygavutiEes"
+  	| SygavutiLopp -> "SygavutiLopp"
+  	| Prim -> "Prim"
+  	| Kruskal -> "Kruskal"
+  	| Dijkstra -> "Dijkstra"
+  	| FloydWarshall -> "FloydWarshall"
+  	| TopoLopp -> "TopoLopp"
+  	| TopoKahn -> "TopoKahn"
+  	| Eeldusgraaf -> "Eeldusgraaf"
+  	| Kosaraju -> "Kosaraju";;
 
 type algoSamm = Algus
 	| EsimeneTipp

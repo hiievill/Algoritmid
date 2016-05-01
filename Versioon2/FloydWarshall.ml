@@ -60,7 +60,7 @@ let fikseerimine(tipud) =
 	fiks := !fiks + 1;
 	(List.nth tipud !fiks).tv := Vaadeldav;
 	tekst := "Fikseerime " ^ string_of_lahter(!fiks + 1) ^ ". veeru ja tulba ja hakkame ülejäänud lahtrites kaugusi uuendama.";
-	tekst := !tekst ^ "\n" ^ "Kui lahtris olev väärtus on suurem kui vastava valitud veeru ju tulba väärtuste summa, siis uuendame seda.";
+	tekst := !tekst ^ "\\n" ^ "Kui lahtris olev väärtus on suurem kui vastava valitud veeru ju tulba väärtuste summa, siis uuendame seda.";
 	i := LahtriVaatlus;;
 
 let lahtriVaatlus(tipud) =
@@ -75,7 +75,7 @@ let lahtriVaatlus(tipud) =
 			List.iter (fun t -> if !(t.tv) = Vaadeldav then t.tv := Vaadeldud) tipud;
 			if !fiks < Array.length !tabel - 1
 				then (
-					tekst := !tekst ^ "\n" ^ "Lähme järgmist rida ja veergu fikseerima.";
+					tekst := !tekst ^ "\\n" ^ "Lähme järgmist rida ja veergu fikseerima.";
 					i := Fikseerimine
 				)
 			else (

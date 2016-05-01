@@ -106,10 +106,10 @@ let servaLisamine(tipud, servad) =
 	else i := ServaValik;;																	(* kui järgmisi servi leidub, lähme uut serva valima *)
 
 let lopp() =
-	tekst := "Järjekord on tühi.\nAlgoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.";
+	tekst := "Järjekord on tühi. Algoritm lõpetab, olles leidnud laiuti otsingu otsingupuu.";
 	lisatekst();
 	AlgoBaas.lopp();;
-		
+
 let laiuti(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus();

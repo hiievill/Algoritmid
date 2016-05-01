@@ -114,7 +114,7 @@ let servaValik(tipud, servad) =
 	i := ServaLisamine;;
 
 let lopp(tipud) =	(* NB! Siin kuvame juba kõikide tippude kaugused algtipust, mitte ainult mittevaadeldute *)
-	tekst := "Algoritm lõpetab, olles leidnud kõikide tippude vähima kauguse algtipust. Pildil on tekkinud kauguste puu.\n";
+	tekst := "Algoritm lõpetab, olles leidnud kõikide tippude vähima kauguse algtipust. Pildil on tekkinud kauguste puu.";
 	nk1 := string_of_kaugused();
 	AlgoBaas.lopp();;
 

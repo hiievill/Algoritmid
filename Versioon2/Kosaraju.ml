@@ -33,7 +33,7 @@ let string_of_komponent(tipud) =
 
 (* funktsioon tugevalt sidusate komponentide sõnena esitamiseks *)
 let string_of_komponendid(komponendid) =
-	"Tugevalt sidusad komponendid:" ^ List.fold_left  (fun a b -> a ^ " \n" ^ string_of_tipud b) "" komponendid;;
+	"Tugevalt sidusad komponendid:" ^ List.fold_left  (fun a b -> a ^ " " ^ string_of_tipud b) "" komponendid;;
 
 let algus(tipud, servad) =
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
@@ -65,8 +65,8 @@ let sygavuti(algtipp, tipud, servad) =
 
 (* tekitame pööratud kaartega graafi *)
 let pooratudGraaf(tipud, servad) =
-	tekst := "Tekitame pööratud kaartega graafi.";
-	tekst := !tekst ^ "\n" ^ "Pöörame tekkinud järjestuse tagurpidi ja hakkame läbima tippe alates esimesest läbimata tipust tagurpidi järjestuses.";
+	tekst := "Tekitame pööratud kaartega graafi. ";
+	tekst := !tekst ^ "Pöörame tekkinud järjestuse tagurpidi ja hakkame läbima tippe alates esimesest läbimata tipust tagurpidi järjestuses.";
 	sygavutiTipud := List.rev(!sygavutiTipud); (*tippude järjestuse pidi ka ümber pöörama*)
 	nk2 := string_of_tagurpidi(!sygavutiTipud);
 	pooraServad(servad);

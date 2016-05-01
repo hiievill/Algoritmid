@@ -55,8 +55,8 @@ let lisatekst() =
 
 let algus(tipud, servad) =
 	List.iter (fun t -> uuendaSisendastet (leiaSisendaste(t, servad)) t) tipud;
-	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab.";
-	tekst := !tekst ^ "\n" ^ "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
+	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab. ";
+	tekst := !tekst ^ "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
 	nk1 := string_of_sisendastmed();
 	i := ServaValik;;
 
