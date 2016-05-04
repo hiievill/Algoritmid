@@ -1,8 +1,7 @@
 open Struktuurid;;
+open Graafika;;
 
 let nr = ref(1);; (* slaidi number *)
-
-(* TODO: servade ja noolte eraldi joonistamise asemel drawarrow *)
 
 (* funktsioon, mis asendab sõnes kõik täpitähed. Ajutine funktsioon edukaks kuvamiseks *)
 let att(tekst) =
@@ -12,9 +11,13 @@ let att(tekst) =
 	let s4 = Str.global_replace (Str.regexp "[Üü]") "y" s3 in
 	s4;;
 
+(* funktsioon, mis ümardab ujukomaarvu 3 komakohani *)
+let ymarda(nr) =
+	floor(nr *. 1000.) /. 1000.;;
+
 (* funktsioon, mis jagab oma argumendi 255-ga (vajalik värvi RGB-st lõiku [0,1] teisendamiseks) ja tagastab selle sõnena *)
 let v2rviTeisendus(v2rv) =
-	string_of_float(float_of_int(v2rv) /. 255.);;
+	string_of_float(ymarda(float_of_int(v2rv) /. 255.));;
 
 (* funktsioon, mis tagastab RGB koodis värvi sõnena, kus numbrid on 255-ga jagatud, et nad oleks lõigus [0,1] *)
 let vStr(v1, v2, v3) =
@@ -31,19 +34,48 @@ let tipuTekst(tipp) =
 			"u withcolor " ^ string_of_vaadeldavus(!(tipp.tv)) ^ "Punkt;";;
 
 let tippudeTekst(tipud) =
-	String.concat "\n" (List.map tipuTekst tipud) ^ "\n";; 
+	String.concat "\n" (List.map tipuTekst tipud) ^ "\n";;
+
+let kaareTekst(nool, n1, n2, r, x, y, serv) =
+	"draw" ^ nool ^ " " ^ "subpath (" ^ string_of_float(n1) ^ ", " ^ string_of_float(n2) ^ 
+			") of fullcircle scaled " ^ string_of_int(2 * r) ^ 
+			"u shifted (" ^ string_of_int(x) ^ "u," ^ string_of_int(y) ^ "u)" ^
+			" cutafter (fullcircle scaled " ^
+			string_of_int(tipuRaadius * 2) ^ "u shifted (" ^ 
+			string_of_int(!(!(serv.tipp2).x)) ^ "u," ^ string_of_int(!(!(serv.tipp2).y)) ^
+			"u))" ^
+			" withcolor " ^ string_of_vaadeldavus(!(serv.sv)) ^ "Serv;";;
 
 let servaTekst(serv) =
-	match serv with
-		| {tipp1 = t1; tipp2 = t2;} -> "draw " ^ !t1.nimi ^ "--" ^ !t2.nimi 
-				^ " withcolor " ^ string_of_vaadeldavus(!(serv.sv)) ^ "Serv;";;
+	let nimi = !(serv.tipp1).nimi ^ ":" ^ !(serv.tipp2).nimi in
+	let r = Hashtbl.find kaareR nimi in
+	let x = Hashtbl.find kaareX nimi in
+	let y = Hashtbl.find kaareY nimi in
+	let nool = if serv.nool then "arrow" else "" in
+	if r = 0	(* sirge serv *)
+		then (
+			"draw" ^ nool ^ " " ^ !(serv.tipp1).nimi ^ "--" ^ !(serv.tipp2).nimi ^ 
+			" cutafter (fullcircle scaled " ^
+			string_of_int(tipuRaadius * 2) ^ "u shifted (" ^ 
+			string_of_int(!(!(serv.tipp2).x)) ^ "u," ^ string_of_int(!(!(serv.tipp2).y)) ^
+			"u))" ^ 
+			" withcolor " ^ string_of_vaadeldavus(!(serv.sv)) ^ "Serv;"
+		)
+	else (		(* kaardus serv *)
+		let (xr, yr, r1, r2, nurk1, nurk2) = leiaKaareAndmed(!(serv.tipp1), !(serv.tipp2)) in
+		let n1 = ymarda(float_of_int(nurk1) *. 8. /. 360.) in
+		let n2 = ymarda(float_of_int(nurk2) *. 8. /. 360.) in
+		kaareTekst(nool, n1, n2, r, x, y, serv) ^ kaareTekst(nool, n2, n1, r, x, y, serv)
+		(* TODO: eelnev rida on väga kehv lahendus. Tõsi, üks nool igal juhul joonistatakse ja teine mitte, nii et topelt*)
+		(* ei tule, aga peaks kontrollima, kumba joonistada, ja joonistamagi vaid ühe *)
+	);;
 
 let servadeTekst(servad) = 
-	"pickup pencircle scaled " ^ string_of_int(Graafika.jooneLaius) ^ "pt;\n" ^
+	"pickup pencircle scaled " ^ string_of_int(jooneLaius) ^ "pt;\n" ^
 	String.concat "\n" (List.map servaTekst servad) ^ "\n";;
 
 let nooleTekst(serv) =
-	let (p1, p2, p3, p4, p5, p6) = Graafika.leiaNooleKoordinaadid(serv) in
+	let (p1, p2, p3, p4, p5, p6) = leiaNooleKoordinaadid(serv) in
 	"fill (" ^ string_of_int(p1) ^ "u," ^ string_of_int(p2) ^ "u)--(" ^
 		string_of_int(p3) ^ "u," ^ string_of_int(p4) ^ "u)--(" ^
 		string_of_int(p5) ^ "u," ^ string_of_int(p6) ^ "u)--cycle withcolor " ^ string_of_vaadeldavus(!(serv.sv)) ^ "Serv;";;
@@ -61,7 +93,7 @@ let kaaluTekst(serv) =
 	match serv.kaal with
 		| None -> ""
 		| Some k -> (
-			let (x, y) = Graafika.leiaKaaluKoordinaadid(serv.tipp1, serv.tipp2, 10) in
+			let (x, y) = leiaKaaluKoordinaadid(serv.tipp1, serv.tipp2, 10) in
 			"label(\"" ^ string_of_int(k) ^ "\" infont defaultfont, (" ^ string_of_int(x) ^ "u," ^ string_of_int(y) ^ "u)) scaled defaultscale withcolor black;"
 		);;
 
@@ -78,20 +110,19 @@ let hinnaTekst(tipp) =
 		| Some h -> "label(\"" ^ string_of_int(h) ^ "\" infont defaultfont, (" ^ string_of_int(!(tipp.x)) ^ "u," ^ string_of_int(!(tipp.y) + 20) ^ "u)) scaled defaultscale withcolor black;"
 
 let hindadeTekst(tipud) = 
-	if List.length tipud = 0	(* TODO: see kontroll varem. Ei tohiks kunagi juhtuda. *)
-		then ""																																(* kui on tippudeta graaf, tagastame tühisõne *)
-	else match (List.hd tipud).hind with
+	match (List.hd tipud).hind with
 		| None -> ""																													(* kui on hindadeta graaf, tagastame tühisõne *)
 		| Some h ->	String.concat "\n" (List.map hinnaTekst tipud) ^ "\n";;		(* kui on hindadega graaf, kuvame need *)
 
 let kirjeldusTekst() =
-	"label.rt(\"" ^ att(!(AlgoBaas.tekst)) ^ "\" infont defaultfont, (20u,10u)) scaled defaultscale withcolor black;\n";;
+	(* TODO: kui paigutus korda saab, siis peaks tegelikult olema (0, -tekstiLisa)u *)
+	"label.rt(\"" ^ att(!(AlgoBaas.tekst)) ^ "\" infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;
 
 let nimekirjadeTekst() =
-	let ak = Graafika.aknaKorgus in
-	"label.rt(\"" ^ att(!(AlgoBaas.nk1)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 20) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!(AlgoBaas.nk2)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 40) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 60) ^ "u)) scaled defaultscale withcolor black;\n";;
+	let ak = aknaKorgus + korgusLisa in
+	"label.rt(\"" ^ att(!(AlgoBaas.nk1)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 60) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!(AlgoBaas.nk2)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 80) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 100) ^ "u)) scaled defaultscale withcolor black;\n";;
 
 let tabeliTekst(tipud, servad) = 		(* TODO: koodikordus Graafika.kuvatabeliga, osa kokku võtta? *)
 	let tulem = ref("") in
@@ -181,27 +212,37 @@ let tabeliTekst(tipud, servad) = 		(* TODO: koodikordus Graafika.kuvatabeliga, o
     	done
 		);
 	!tulem;;
-	
+
+let kastiTekstid() =
+	let al = aknaLaius + if !(AlgoBaas.algo) = FloydWarshall then laiusLisa else 0 in
+	let ak = aknaKorgus + korgusLisa in
+	let tl = tekstiLisa in
+	let lisa = 50 in
+	"draw (0u,-" ^ string_of_int(tl) ^ "u)--(" ^ 																	(* kast pildi, teskti  ja nimekirjade ümber *)
+				string_of_int(al) ^ "u,-"  ^ string_of_int(tl) ^ "u)--(" ^ 
+				string_of_int(al) ^ "u," ^ string_of_int(ak) ^ "u)--(" ^ 
+				"0u," ^ string_of_int(ak) ^ "u)--cycle;\n" ^
+	"draw (-" ^ string_of_int(lisa) ^ "u,-" ^ string_of_int(tl + lisa) ^ "u)--(" ^ 	(* ääred *)
+				string_of_int(al + lisa) ^ "u,-"  ^ string_of_int(tl + lisa) ^ "u)--(" ^ 
+				string_of_int(al + lisa) ^ "u," ^ string_of_int(ak + lisa) ^ "u)--(-" ^
+				string_of_int(lisa) ^ "," ^ string_of_int(ak + lisa) ^ "u)--cycle;\n";;
 	
 let slaidiTekst(tipud, servad) =
-	let alStr = string_of_int(Graafika.aknaLaius + if !(AlgoBaas.algo) = FloydWarshall then Graafika.fwLaius else 0) in
-	let akStr = string_of_int(Graafika.aknaKorgus) in
 	"beginfig(" ^ string_of_int(!nr) ^ ")\n" ^
-		"draw (0,0)--(" ^ alStr ^ "u,0)--(" ^ alStr ^ "u," ^ akStr ^ "u)--(0," ^ akStr ^ "u)--cycle;\n" ^ (* slaidi ümbritsev kast *)
+		(*kastiTekstid() ^*)
 		tippudeDefid(tipud) ^
 		servadeTekst(servad) ^
-		noolteTekst(servad) ^
 		tippudeTekst(tipud) ^
 		nimedeTekst(tipud) ^
 		kaaludeTekst(servad) ^
 		hindadeTekst(tipud) ^
 		kirjeldusTekst() ^
 		nimekirjadeTekst() ^				(* TODO: kodeering/font korda ja need tagasi sisse *)
-		(if !(AlgoBaas.algo) = FloydWarshall then tabeliTekst(tipud, servad) else "\n") ^
+		(if !(AlgoBaas.algo) = FloydWarshall then tabeliTekst(tipud, servad) else "") ^
 	"endfig;\n\n";;
 
 let failiAlgus(tipud) = (* TODO: siia noolte, kaalude jms arvutamine, et mitu korda ei peaks *)
-	"u := 0.5mm;\n" ^
+	"u := 0.35mm;\n" ^
 	"defaultscale := 1.0;\n" ^
 	"defaultfont := \"cmr10\";\n" ^ 
 	"prologues := 3;\n" ^
@@ -219,6 +260,8 @@ let failiAlgus(tipud) = (* TODO: siia noolte, kaalude jms arvutamine, et mitu ko
 	"ValitudServ := " ^ vStr(253, 144, 1) ^ ";\n" ^
 	"VaadeldudServ := " ^ vStr(78, 247, 59) ^ ";\n" ^
 	"SobimatuServ := " ^ vStr(67, 67, 67) ^ ";\n" ^
+	"interim ahlength := " ^ string_of_float(noolePikkus) ^ "u;\n" ^
+	"interim ahangle := " ^ string_of_float(ymarda(2. *. radiaanKraadideks(atan (nooleLaius /. noolePikkus)))) ^ ";\n" ^
 	"pair " ^ (String.concat ", " (List.map (fun t -> t.nimi) tipud)) ^ ";\n\n";;
 
 let failiLopp() =

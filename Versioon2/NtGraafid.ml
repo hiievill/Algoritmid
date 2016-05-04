@@ -183,7 +183,33 @@ let sidusKaaludegaSuunadegaservad = looServad([
 		("A", "F", Some(8), true);
 		("D", "F", Some(1), true);
 		("D", "E", Some(9), true);
+		("E", "D", Some(3), true);
 	], sidusKaaludegaSuunadegatipud);;
+
+let sidusKaaludegaSuunadegatipud3 = looTipud([
+		("A", 200, 200, None);
+		("B", 7, 40, None);
+		("C", 30, 300, None);
+		("D", 100, 340, None);
+		("E", 10, 400, None);
+		("F", 210, 108, None);
+		("G", 370, 50, None);
+		("H", 400, 70, None);
+		("I", 200, 110, None);
+		("J", 150, 250, None);
+	]);;
+let sidusKaaludegaSuunadegaservad3 = looServad([
+		("A", "B", Some(1), true);
+		("B", "C", Some(5), true);
+		("C", "D", Some(13), true);
+		("D", "E", Some(2), true);
+		("E", "F", Some(8), true);
+		("F", "G", Some(44), true);
+		("G", "H", Some(17), true);
+		("H", "I", Some(3), true);
+		("I", "J", Some(8), true);
+		("J", "A", Some(3), true);
+	], sidusKaaludegaSuunadegatipud3);;
 
 let sidusKaaludegaSuunadega2tipud = looTipud([
 		("A", 100, 300, None);
@@ -292,6 +318,11 @@ let sidusKaaludegaSuunadega = {								(* tsüklitega *)
 	servad = sidusKaaludegaSuunadegaservad;
 };;
 
+let sidusKaaludegaSuunadega3 = {								(* tsüklitega *)
+	tipud = sidusKaaludegaSuunadegatipud3;
+	servad = sidusKaaludegaSuunadegaservad3;
+};;
+
 let sidusNegKaaludegaSuunadega2 = {
 	tipud = sidusNegKaaludegaSuunadega2tipud;
 	servad = sidusNegKaaludegaSuunadega2servad;
@@ -393,6 +424,7 @@ let ntDijkstra2 = sidusKaaludegaSuunadega2;; 	(* tsüklitega *)
 let ntFloydWarshall1 = sidusNegKaaludegaSuunadega2;;(* tsüklitega, negatiivsete kaaludega *)
 let ntFloydWarshall2 = sidusKaaludegaSuunadega;; (* tsüklitega *)
 let ntFloydWarshall3 = mitteSidusKaaludegaSuunadega;;
+let ntFloydWarshall4 = sidusKaaludegaSuunadega3;;
 
 let ntTopoLopp1 = sidusKaaludetaSuunadega;;		(* tsükliteta *)
 let ntTopoLopp2 = sidusKaaludetaSuunadega2;;		(* tsüklitega *)

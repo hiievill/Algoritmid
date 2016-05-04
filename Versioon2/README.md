@@ -15,7 +15,12 @@ Ainult läbimängu tegemiseks piisab eelnevatest, slaidide tekitamiseks on lisak
 
 3. MetaPost:
 	* Windows: Installida http://miktex.org/download ja lisada tee (vaikimisi C:\Program Files\MiKTeX 2.9\miktex\bin\x64) environment variables'isse, kui seda automaatselt ei lisatud
-	* Linux: sudo apt-get install texlive-binaries (TODO: ja midagi veel? mpost ja epstopdf käsud peavad igatahes töötama. Ainult sellega ei tööta kumbki)
+	* Linux:
+		1) sudo apt-get install texlive-binaries
+		2) mpost: sudo apt-get install texlive-metapost
+		3) epstopdf: sudo apt-get install texlive-font-utils
+		
+Järgmine pole enamasti vajalik, ainult tagavaravariant juhuks, kui epstopdfi abil slaidide tekitamine ei õnnestu. Sel juhul ei koondata kõiki EPS faile üheks kokku ega tee sellest PDFi, vaid tehakse igast PostScripti failist eraldi PDF ja liidetakse need kokku.
 	
 4. PDF toolkit:
 	* Windows: https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/
@@ -28,7 +33,7 @@ Ainult läbimängu tegemiseks piisab eelnevatest, slaidide tekitamiseks on lisak
 3. Käsurealt 'make'
 4. Käsurealt Windowsis 'tulem.exe', Linuxis './tulem.exe' - käivitab programmi
 	* klahv 'n' võimaldab slaidide haaval läbimängu teha
-	* klahv 's' teostab automaatselt terve läbimängu alates käesolevast sammust, tekitab slaidid ning salvestab PDFina. Läbimäng tekitatakse alates käesolevast slaidist.
+	* klahv 's' teostab automaatselt terve läbimängu alates käesolevale järgnevast sammust, tekitab slaidid ning salvestab PDFina.
 	* klahv 'q' sulgeb programmi
 	* klahv 'f' sulgeb programmi veateatega (ajutiselt - q enne ei toiminud)
 5. Käsurealt 'make clean' - kustutab kõik programmi töö käigus tekkinud failid (NB! Kaasa arvatud tekkinud PDFi)

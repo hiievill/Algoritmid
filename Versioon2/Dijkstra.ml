@@ -71,24 +71,15 @@ let algus(algtipp, tipud, servad) =
 	List.iter (lisaKaugus max_int) tipud; 			(* paneme kõikidele tippudele algseks kauguseks algtipust suurima võimaliku *)
 	lisaKaugus 0 algtipp; 											(* ainult algtipule paneme kauguseks 0 *)
 	tekst := "Dijkstra algoritm alustab. Määrame kõikidele tippudele kaugused algtipust: algtipule 0, kõikidele teistele lõpmatuse.";
-	(*tekst := !tekst ^ "\n" ^ string_of_mitteVaadelduteKaugused(tipud);*)
 	nk1 := string_of_mitteVaadelduteKaugused(tipud);
 	valitudTipp := algtipp;
 	i := ServaLisamine;;
-
-(*let esimeneTipp(algtipp, tipud) =
-	tekst := "Valime esimese tipu.";
-	tekst := !tekst ^ "\n" ^ string_of_mitteVaadelduteKaugused(tipud);
-	algtipp.tv := Valitud;											(* märgime algtipu valituks *)
-	valitudTipp := algtipp;
-	i := ServaLisamine;;*)
 
 let servaLisamine(algtipp, tipud, servad) =
 	if !valitudTipp = algtipp																								(* kui valitud tipp on algtipp *)
 		then algtipp.tv := Vaadeldud																					(* märgime ta vaadelduks *)
 	else List.iter (fun s -> if !(s.sv) = Valitud then lisaServ(s)) servad; (* muidu märgime serva koos tipuga vaadelduks*)
 	tekst := "Märgime valitud tipu vaadelduks.";
-	(*tekst := !tekst ^ "\n" ^ string_of_mitteVaadelduteKaugused(tipud);*)
 	nk1 := string_of_mitteVaadelduteKaugused(tipud);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud										(* kui kõik tipu on vaadeldud, lähme lõpule *)
   		then i := Lopp
@@ -109,7 +100,6 @@ let servaValik(tipud, servad) =
 	valiServ(s);																																	(* märgime serva ja tipu valituks *)
 	valitudTipp := t;
 	tekst := "Valime algtipule lähima külastamata tipu.";
-	(*tekst := !tekst ^ "\n" ^ string_of_mitteVaadelduteKaugused(tipud);*)
 	nk1 := string_of_mitteVaadelduteKaugused(tipud);
 	i := ServaLisamine;;
 

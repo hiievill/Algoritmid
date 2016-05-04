@@ -5,32 +5,30 @@ open AlgoBaas;;
 open NtGraafid;;
 
 let liigutatavTipp = ref(None);;
-(*let liigutatavServ = ref(None);;*)
+let liigutatavServ = ref(None);;
 
-(* funktsioon, mis leiab sirge y=ax+c, millel asuvad tipud (x1;y1) ja (x2;y2), ja tagastab (a,c) *)
-let leiaSirge(x1, y1, x2, y2) =
-	let a = float_of_int(y2 - y1) /. float_of_int(x2 - x1) in
-	let c = float_of_int(y1) -. a *. float_of_int(x1) in
-	(a, c);;
-
-(* funktsioon, mis tagastab, kas arv a asub b1 ja b2 vahel *)
+(* funktsioon, mis tagastab, kas arv a asub b1 ja b2 vahel. Täpsusega 5. *)
 let asubVahel(a, b1, b2) =
-	a <= max b1 b2 && a >= min b1 b2;; 
+	a <= (max b1 b2) + 5 && a >= (min b1 b2) - 5;; 
 
 (* funktsioon, mis tagastab, kas punkt (x, y) asub sirgel y=ax+c *)
 let asubSirgel(x, y, a, c) =
-	abs_float (a *. x +. c -. y) <= 1.;;		(* <= 1, sest vahel teen floate intideks, seega täpne ei pruugiks sobida *) 	
+	abs_float (a *. x +. c -. y) <= 1.;;		(* <= 1, sest vahel teen floate intideks, seega täpne ei pruugiks sobida *)	
+	
+(* funktsioon, mis tagastab, kas punkt (x, y) asub sirgest y=ax+c mitte enam kui 5 ühiku kaugusel *)
+let asubUmbesSirgel(x, y, a, c) =
+	abs_float (a *. x +. c -. y) <= 5.;;
 
 (* funktsioon, mis tagastab, kas punktis (hx, hy) asuv hiir asub sirgel, mis ühendab tippe t1 ja t2 *)
 let hiirAsubSirgel(t1, t2, hx, hy)=
 	if !(t1.x) = !(t2.x) (* horisontaalne sirge *)
-		then hx = !(t1.x) && asubVahel(hy, !(t1.y), !(t2.y))
+		then abs (hx - !(t1.x)) <= 5 && asubVahel(hy, !(t1.y), !(t2.y))
 	else (
 		if !(t1.y) = !(t2.y) (* horisontaalne sirge *)
-			then hy = !(t1.y) && asubVahel(hx, !(t1.x), !(t2.x))
+			then abs (hy - !(t1.y)) <= 5 && asubVahel(hx, !(t1.x), !(t2.x))
 		else ( (* tavaline sirge *)
-			let (a, c) = leiaSirge(!(t1.x), !(t1.y), !(t2.x), !(t2.y)) in 
-			asubSirgel(float_of_int(hx), float_of_int(hy), a, c) &&
+			let (a, c) = leiaSirge(float_of_int(!(t1.x)), float_of_int(!(t1.y)), float_of_int(!(t2.x)), float_of_int(!(t2.y))) in 
+			asubUmbesSirgel(float_of_int(hx), float_of_int(hy), a, c) &&
 			asubVahel(hx, !(t1.x), !(t2.x)) && asubVahel(hy, !(t1.y), !(t2.y)) 
 		)
 	);;
@@ -41,7 +39,7 @@ let hiirTipul hx hy tipp =
 		| {nimi = n; x = tx; y = ty} -> sqrt ((float_of_int(hx - !tx)) ** 2. +. (float_of_int(hy - !ty)) ** 2.) <= float_of_int(tipuRaadius);;
 
 (* funktsioon, mis tagastab, kas hiir asub serva peal (+/- 5) *)
-(*let hiirServal hx hy serv =
+let hiirServal hx hy serv =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2;} -> (
 			let nimi = !t1.nimi ^ ":" ^ !t2.nimi in
@@ -56,7 +54,7 @@ let hiirTipul hx hy tipp =
   			(* hiire kaugus ringjoone keskpunktist on raadius +/- 5 *) 
   			abs_float (sqrt ((float_of_int(hx - x)) ** 2. +. (float_of_int(hy - y)) ** 2.) -. float_of_int(r)) <= 5.
 			)		
-		);;*)
+		);;
 
 (* funktsioon, mis tagastab sirgete y=a1x+c2 ja y=a2x+c2 lõikumispunkti (e, f) *)
 let leiaYhinePunkt(a1, c1, a2, c2) =
@@ -69,36 +67,88 @@ let leiaYhinePunkt(a1, c1, a2, c2) =
 	);;
 
 (* funktsioon, mis määrab serva ringjoonele uued parameetrid, sõltuvalt sellest, kus hiir on *)
-(*let liigutaServa(hx, hy) =
+let liigutaServa(hx, hy) =
 	match !liigutatavServ with
-		| None -> print_endline("Serva pole valitud, nii ei tohiks juhtuda.") (*TODO: printimise asemel failwith? *)
+		| None -> ()
 		| Some s -> (
 			match s with
 				| {tipp1 = t1; tipp2 = t2;} -> (
-					if hiirAsubSirgel(!t2, !t2, hx, hy)
-						then nulliKaareAndmed(!t1, !t2)
+					if hiirAsubSirgel(!t1, !t2, hx, hy)
+						then uuendaKaareAndmeid(!t1, !t2, 0, 0, 0, 0)
 					else (
-						let (a1, c1) = leiaSirge(!(!t1.x), !(!t1.y), !(!t2.x), !(!t2.y)) in
-  					let keskX = float_of_int(!(!t1.x) + !(!t2.x)) /. 2. in
+						(* TODO: bugi - kui raadius on täpselt serva keskpunktis(?), siis ei kuva kaart/ringi, vaid sirge *)
+						let keskX = float_of_int(!(!t1.x) + !(!t2.x)) /. 2. in
   					let keskY = float_of_int(!(!t1.y) + !(!t2.y)) /. 2. in
-  					let (a2, c2) = leiaRistuvSirge(a1, c1, keskX, keskY) in
-  					let (a3, c3) = leiaSirge(!(!t1.x), !(!t1.y), hx, hy) in
-  					let (a4, c4) = leiaRistuvSirge(a3, c3, float_of_int(!(!t1.x) + hx) /. 2., float_of_int(!(!t1.y) + hy) /. 2.) in
-  					let (e, f) = leiaYhinePunkt(a2, c2, a4, c4) in
-  					let r = sqrt ((float_of_int(hx) -. e) ** 2. +. (float_of_int(hy) -. f) ** 2.) in
-						let nimi = !t1.nimi ^ ":" ^ !t2.nimi in
-  					Hashtbl.replace kaareX nimi (int_of_float e);
-  					Hashtbl.replace kaareY nimi (int_of_float f);
-  					Hashtbl.replace kaareR nimi (int_of_float r)
+						let jp1 = leiaJoonePikkus(keskX, keskY, float_of_int(hx), float_of_int(hy)) in							(* hiire kaugus serva keskptist *)
+						let jp2 = leiaJoonePikkus(keskX, keskY, float_of_int(!(!t1.x)), float_of_int(!(!t1.y))) in	(* pool servapikkust *)
+						(* kui hiire kaugus serva keskpunktist on väiksem kui pool servapikkust, siis muudame *)
+						if jp1 < jp2 then (
+    					(* TODO: horisontaalne ja vertikaalne on bugised! *)
+  						if !(!t1.x) = !(!t2.x)
+  							then (
+  								let (a3, c3) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(hx), float_of_int(hy)) in
+									let x = (keskY -. c3) /. a3 in
+									let (e, f) = (x, keskY) in
+									let r = sqrt ((float_of_int(hx) -. e) ** 2. +. (float_of_int(hy) -. f) ** 2.) in
+    							let k = r -. leiaJoonePikkus(e, f, keskX, keskY) in		(* k = r - ringjoone keskpunkti kaugus serva keskpunktist *)
+									(*print_endline("Siin: " ^ string_of_float(r));*)
+      						uuendaKaareAndmeid(!t1, !t2, int_of_float e, int_of_float f, int_of_float r, int_of_float k)
+  							)
+  						else if !(!t1.y) = !(!t2.y)
+  							then (
+  								let (a3, c3) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(hx), float_of_int(hy)) in
+  								let y = a3 *. keskX +. c3 in
+  								let (e, f) = (keskX, y) in
+									let r = sqrt ((float_of_int(hx) -. e) ** 2. +. (float_of_int(hy) -. f) ** 2.) in
+    							let k = r -. leiaJoonePikkus(e, f, keskX, keskY) in		(* k = r - ringjoone keskpunkti kaugus serva keskpunktist *)
+      						uuendaKaareAndmeid(!t1, !t2, int_of_float e, int_of_float f, int_of_float r, int_of_float k)
+  							)
+  						else (
+    						let (a1, c1) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(!(!t2.x)), float_of_int(!(!t2.y))) in
+      					let (a2, c2) = leiaRistuvSirge(a1, c1, keskX, keskY) in
+      					let (a3, c3) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(hx), float_of_int(hy)) in
+      					let (a4, c4) = leiaRistuvSirge(a3, c3, float_of_int(!(!t1.x) + hx) /. 2., float_of_int(!(!t1.y) + hy) /. 2.) in
+      					let (e, f) = leiaYhinePunkt(a2, c2, a4, c4) in
+      					let r = sqrt ((float_of_int(hx) -. e) ** 2. +. (float_of_int(hy) -. f) ** 2.) in
+  							let k = r -. leiaJoonePikkus(e, f, keskX, keskY) in		(* k = r - ringjoone keskpunkti kaugus serva keskpunktist *)
+    						uuendaKaareAndmeid(!t1, !t2, int_of_float e, int_of_float f, int_of_float r, int_of_float k)
+							)
+						)
 					)
 				)
+		);;
+
+(* funktsioon, mis uuendab ringjoone võrrandit, jättes kauguse tippudevahelise lõigu keskpunktist samaks,*)
+(* välja arvatud siis, kui tippe lähemale nihutatakse *)
+(*let uuendaKaart(serv) =
+	match serv with
+		| {tipp1 = t1; tipp2 = t2;} -> (
+			let nimi = !t1.nimi ^ ":" ^ !t2.nimi in
+			if Hashtbl.find kaareR nimi <> 0 then (
+      	let tippudeVahelineKaugus = leiaJoonePikkus(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(!(!t2.x)), float_of_int(!(!t2.y))) in
+  			if float_of_int(Hashtbl.find kaareK nimi) >= tippudeVahelineKaugus
+      		then Hashtbl.replace kaareK nimi (int_of_float(tippudeVahelineKaugus) - 1);
+  			let keskX = float_of_int(!(!t1.x) + !(!t2.x)) /. 2. in
+    		let keskY = float_of_int(!(!t1.y) + !(!t2.y)) /. 2. in
+  			let (a, c) = leiaSirge(!(!t1.x), !(!t1.y), !(!t2.x), !(!t2.y)) in
+				let (a2, c2) = leiaRistuvSirge(a, c, keskX, keskY) in
+  			let ((e1, f1), (e2, f2)) = Graafika.kaksPunkti(keskX, keskY, a2, c2, float_of_int(Hashtbl.find kaareK nimi)) in
+  			let senineX = float_of_int(Hashtbl.find kaareX nimi) in
+  			let senineY = float_of_int(Hashtbl.find kaareY nimi) in
+  			(* leiame selle keskpunkti, mis on tippudevahelise lõigu keskpunktist kaugemal *)
+  			let (e, f) = if leiaJoonePikkus(senineX, senineY, e1, f1) >= leiaJoonePikkus(senineX, senineY, e2, f2) then (e1, f1) else (e2, f2) in
+  			liigutaServa(int_of_float(e), int_of_float(f))
+			)		
 		);;*)
 
-let liigutaTippu(hx, hy) =
+let liigutaTippu(hx, hy, servad) =
 	match !liigutatavTipp with
 		| Some t -> (
-			t.x := piiridesX(hx);
-			t.y := piiridesY(hy);
+			t.x := hx;
+			t.y := hy;
+			(*List.iter (fun s -> if !(s.tipp1) = t || !(s.tipp2) = t then uuendaKaart(s)) servad;*)
+			List.iter (fun s -> if !(s.tipp1) = t || !(s.tipp2) = t then uuendaKaareAndmeid(!(s.tipp1), !(s.tipp2), 0, 0, 0, 0)) servad;
+			(* TODO: valib millegipärast ainult ühe serva *)
 		)
 		| _ -> print_endline("Tippu pole valitud, nii ei tohiks juhtuda.");;
 		
@@ -198,6 +248,11 @@ let teeKoondPDF() =
 	done;																											(* liidame kõik PDF failid üheks PDF failiks *)
 	Sys.command("pdftk " ^ !pdfid ^ " cat output " ^ string_of_algo(!algo) ^ ".pdf");;
 
+(* funktsioon, mis tagastab, kas tegu on algtippu nõudva algoritmiga *)
+let algtipugaAlgoritm() =
+	let algtipugaAlgoritmid = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Dijkstra; TopoLopp; Kosaraju]  in
+	List.mem !algo algtipugaAlgoritmid;;
+
 (* põhiline funktsioon slaidide loomiseks *)
 let looSlaidid(algtipp, tipud, servad) =
 	let fail = "temp.mp" in																		(* loome faili, kuhu MetaPosti koodi lisama hakkame *)
@@ -218,7 +273,7 @@ let looSlaidid(algtipp, tipud, servad) =
 	koondaYhteFaili(psFail);																	(* kirjutame kõik tekkinud PostScripti failid sinna kokku *)
 	let pdfTulemus = Sys.command("epstopdf " ^ psFail) in			(* teeme EPS failist PDF faili *)
 	
-	kustutaFail("temp.mp");																		(* kustutame tekkinud failid *)
+	(*kustutaFail("temp.mp");*)																		(* kustutame tekkinud failid *)
 	kustutaFail("temp.log");
 	kustutaFail(psFail);
 	
@@ -231,7 +286,7 @@ let looSlaidid(algtipp, tipud, servad) =
 				then failwith("KoondPDFi tegemine ebaõnnestus.")
 		);
 	
-	print_endline("PDF valmis.");
+	print_endline("\nPDF valmis.");
 	programmK2ib := false;;																		(* sulgeme akna *)
 
 
@@ -247,54 +302,57 @@ let klahvisyndmus(klahv, algtipp, tipud, servad) =
 		| 'f' -> failwith("Lõpp.") (* ajutine lahendus akna "ilusaks" sulgemiseks Windowsis *) (* TODO: ebavajalik *)
 		| _ -> ();;
 
+let hiirVajutatud = ref(false);;		(* bool - kas hiire kumbki klahv on alla vajutatud või mitte *)
+
+(* funktsioon hiiresündmustele reageerimiseks *)
+let hiiresyndmus(e, tipud, servad) =
+	if e.button (* kui hiir on alla vajutatud *)
+		then (
+			if !hiirVajutatud
+				then (
+					if !liigutatavTipp <> None
+						then (
+							liigutaTippu(piiridesX(e.mouse_x), piiridesY(e.mouse_y), servad);
+							tekst := ""; (* TODO: ajutine, et läbimängul üleliigseid väljatrükkimisi poleks *)
+							kuvaPilt(tipud, servad)
+						)
+					else (
+						if !liigutatavServ <> None
+							then (
+								liigutaServa(piiridesX(e.mouse_x), piiridesY(e.mouse_y)); (* tegelt on võimalik välja nihutada. TODO: fix *)
+								kuvaPilt(tipud, servad)
+							)
+					)
+				) 
+			else (	(* kui hiire alla vajutame ja parajasti mõne tipu või serva peal oleme, siis valime selle *)
+				hiirVajutatud := true;
+				try
+					let valitudTipp = List.find (hiirTipul e.mouse_x e.mouse_y) tipud in
+					liigutatavTipp := Some valitudTipp
+				with
+					| Not_found -> (
+						try
+							let valitudServ = List.find (hiirServal e.mouse_x e.mouse_y) servad in
+							liigutatavServ := Some valitudServ
+						with
+							| Not_found -> ()
+					)
+			)
+		)
+	else (* hiirt vabastades vabastame ka valitud tipu/serva *)
+		if !hiirVajutatud
+			then (
+				hiirVajutatud := false;
+				liigutatavTipp := None;
+				liigutatavServ := None
+			);;
+
 let syndmused(algtipp, tipud, servad) =
-	let hiirVajutatud = ref(false) in
 	while !programmK2ib do
 		let e = wait_next_event [Button_down; Button_up; Mouse_motion; Key_pressed] in
 		if e.keypressed 
 			then klahvisyndmus(e.key, algtipp, tipud, servad)
-		else
-			if e.button (* kui hiir on alla vajutatud *)
-				then (
-					if !hiirVajutatud
-						then (
-							if !liigutatavTipp <> None
-								then (
-									liigutaTippu(e.mouse_x, e.mouse_y);
-									tekst := ""; (* TODO: ajutine, et läbimängul üleliigseid välhatrükkimisi poleks *)
-									kuvaPilt(tipud, servad)
-								)
-							(*else (
-								if !liigutatavServ <> None
-									then (
-										liigutaServa(e.mouse_x, e.mouse_y);
-										kuvaPilt(tipud, servad)
-									)
-							)*)
-						) 
-					else (	(* kui hiire alla vajutame ja parajasti mõne tipu või serva peal oleme, siis valime selle *)
-						hiirVajutatud := true;
-						try
-							let valitudTipp = List.find (hiirTipul e.mouse_x e.mouse_y) tipud in
-							liigutatavTipp := Some valitudTipp
-						with
-							| Not_found -> () (*(
-								try
-  								let valitudServ = List.find (hiirServal e.mouse_x e.mouse_y) servad in
-									print_endline("SIIN!");
-  								liigutatavServ := Some valitudServ
-								with
-									| Not_found -> ()
-							)*)
-					)
-				)
-			else (* hiirt vabastades vabastame ka valitud tipu/serva *)
-				if !hiirVajutatud
-					then (
-						hiirVajutatud := false;
-						liigutatavTipp := None
-						(*liigutatavServ := None*)
-					);
+		else hiiresyndmus(e, tipud, servad)
 	done;; (* peaks close_graph'iga sulgema, aga Windowsis ei õnnestu *)
 
 (* funktsioon, mis tagastab vastava nimega tipu, kui see leidub, vastasel juhul esimese tipu *)
@@ -390,19 +448,14 @@ let graafiKontroll(algtipp, tipud, servad) =
   	| Eeldusgraaf -> 		graafiKontroll (algtipp, tipud, servad, Some true, 	false, 	true, 	true) (* TODO: sidusus õige? *)
   	| Kosaraju -> 			graafiKontroll (algtipp, tipud, servad, Some true, 	false, 	false, 	false);;
 
-(* funktsioon, mis tagastab, kas tegu on algtippu nõudva algoritmiga *)
-let algtipugaAlgoritm() =
-	let algtipugaAlgoritmid = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Dijkstra; TopoLopp; Kosaraju]  in
-	List.mem !algo algtipugaAlgoritmid;;
-
 let alusta(graaf, algtipuNimi) =
 	let algtipp = valiAlgtipp(algtipuNimi, graaf.tipud) in
 	let tipud = graaf.tipud in
 	let servad = graaf.servad in
 	
 	graafiKontroll(algtipp, tipud, servad);
-	let x = (if !algo = FloydWarshall then Graafika.fwLaius else 0) in
-	open_graph (" " ^ string_of_int(aknaLaius + x) ^ "x" ^ string_of_int(aknaKorgus + 110));	(* TODO: 110 ajutine *)
+	let x = (if !algo = FloydWarshall then laiusLisa else 0) in
+	open_graph (" " ^ string_of_int(aknaLaius + x) ^ "x" ^ string_of_int(aknaKorgus + korgusLisa));
 	set_window_title ("Graafialgoritmid - " ^ string_of_algo(!algo));
 	if algtipugaAlgoritm()
 		then algtipp.tv := Valitud; (* märgime algtipu valituks, et seda juba 1. slaidil kuvada *)
@@ -411,8 +464,11 @@ let alusta(graaf, algtipuNimi) =
 	
 let main() =
 	
-	algo := TopoLopp;
-	let graaf = ntTopoLopp3 in
+	if Array.length Sys.argv > 1
+		then (); (* TODO! Sisendandmed failist. *)
+	
+	algo := Dijkstra;
+	let graaf = ntDijkstra1 in
 	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 	
 	alusta(graaf, algtipuNimi);;
