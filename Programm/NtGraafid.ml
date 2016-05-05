@@ -438,3 +438,5 @@ let ntEeldusgraaf1 = sidusKaaludetaSuunadegaHindadega;;	(* tsükliteta *)
 
 let ntKosaraju1 = sidusKaaludetaSuunadega3;;		(* tsüklitega *)		(* mitte tugevalt sidus *)	(* TODO: kustutada *)
 let ntKosaraju2 = mitteSidusKaaludetaSuunadega;;	(* iga tipp eraldi komponent *)
+
+(* TODO: igale algole 3 (või 4?) näitegraafi *)

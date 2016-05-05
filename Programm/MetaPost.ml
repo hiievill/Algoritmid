@@ -4,12 +4,12 @@ open Graafika;;
 let nr = ref(1);; (* slaidi number *)
 
 (* funktsioon, mis asendab sõnes kõik täpitähed. Ajutine funktsioon edukaks kuvamiseks *)
-let att(tekst) =
-	let s1 = Str.global_replace (Str.regexp "[Õõ]") "6" tekst in
+let att(tekst) = tekst;;
+	(*let s1 = Str.global_replace (Str.regexp "[Õõ]") "6" tekst in
 	let s2 = Str.global_replace (Str.regexp "[Ää]") "2" s1 in
 	let s3 = Str.global_replace (Str.regexp "[Öö]") "o" s2 in
 	let s4 = Str.global_replace (Str.regexp "[Üü]") "y" s3 in
-	s4;;
+	s4;;*)
 
 (* funktsioon, mis ümardab ujukomaarvu 3 komakohani *)
 let ymarda(nr) =
@@ -117,6 +117,7 @@ let hindadeTekst(tipud) =
 let kirjeldusTekst() =
 	(* TODO: kui paigutus korda saab, siis peaks tegelikult olema (0, -tekstiLisa)u *)
 	"label.rt(\"" ^ att(!(AlgoBaas.tekst)) ^ "\" infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;
+	(*"label.rt(textext (\"" ^ att(!(AlgoBaas.tekst)) ^ "\") infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;*)
 
 let nimekirjadeTekst() =
 	let ak = aknaKorgus + korgusLisa in
@@ -229,7 +230,7 @@ let kastiTekstid() =
 	
 let slaidiTekst(tipud, servad) =
 	"beginfig(" ^ string_of_int(!nr) ^ ")\n" ^
-		(*kastiTekstid() ^*)
+		kastiTekstid() ^
 		tippudeDefid(tipud) ^
 		servadeTekst(servad) ^
 		tippudeTekst(tipud) ^
@@ -244,7 +245,7 @@ let slaidiTekst(tipud, servad) =
 let failiAlgus(tipud) = (* TODO: siia noolte, kaalude jms arvutamine, et mitu korda ei peaks *)
 	"u := 0.35mm;\n" ^
 	"defaultscale := 1.0;\n" ^
-	"defaultfont := \"cmr10\";\n" ^ 
+	"defaultfont := \"cmr10\";\n" ^ (* ptmr8r? *) 
 	"prologues := 3;\n" ^
 	"color VaatlemataPunkt, VaadeldavPunkt, ValitudPunkt, VaadeldudPunkt, SobimatuPunkt;\n" ^
 	"color VaatlemataServ, VaadeldavServ, ValitudServ, VaadeldudServ, SobimatuServ;\n" ^ 

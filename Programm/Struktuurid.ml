@@ -80,14 +80,6 @@ type tipp = {
 let string_of_tipp(tipp) =
 	"Tipp {" ^ tipp.nimi ^ ", " ^ string_of_int(!(tipp.x)) ^ ", " ^ string_of_int(!(tipp.y)) ^ "}";;
 
-(* väljad x, y ja r on ringjoone võrrandite jaoks *)
-(*type kaal = {
-	suurus : int;
-	x : int ref;
-	y : int ref;
-	r : int ref;
-}*)
-
 type serv = {
 	tipp1 : tipp ref;
 	tipp2 : tipp ref;
@@ -103,5 +95,14 @@ let string_of_serv(serv) =
 type graaf = {
 	tipud : tipp list;
 	servad : serv list;
+}
+
+type seisund = {
+	tipuvaadeldavused : (string, vaadeldavus) Hashtbl.t;
+	servavaadeldavused : (string, vaadeldavus) Hashtbl.t;
+	tekst : string;
+	nk1 : string;
+	nk2 : string;
+	nk3 : string;
 }
 

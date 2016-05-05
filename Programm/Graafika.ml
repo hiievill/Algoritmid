@@ -125,6 +125,8 @@ let looServ(servaandmed, tipud) =
 	match servaandmed with
 		| (t1nimi, t2nimi, k, noolTipust) -> ( 
 			try
+				if t1nimi = t2nimi
+					then failwith("Tipust ei saa minna serva iseendasse."); (* TODO: või seda lubada? *)
 				let t1 = List.find (leiaVastavaNimegaTipp t1nimi) tipud in
 				let t2 = List.find (leiaVastavaNimegaTipp t2nimi) tipud in
 				if sobivKaal(k) = false
@@ -160,7 +162,6 @@ let kuvaTipp(tipp) =
 	fill_circle !(tipp.x) !(tipp.y) tipuRaadius;;
 
 (* funktsioon, mis leiab sirge y=ax+c, millel asuvad tipud (x1;y1) ja (x2;y2), ja tagastab (a,c) *)
-(* TODO: argumendid float'id, mitte int'id *)
 let leiaSirge(x1, y1, x2, y2) =
 	let a = (y2 -. y1) /. (x2 -. x1) in
 	let c = (y1) -. a *. (x1) in
@@ -279,43 +280,36 @@ let leiaNooleKoordinaadidSirge(serv) =
 
 (* funktsioon, mis tagastab noole koordinaadid kaardus serva puhul *)
 let leiaNooleKoordinaadidKaar(serv) =
-	(*let nimi = !(serv.tipp1).nimi ^ ":" ^ !(serv.tipp2).nimi in
+	let nimi = !(serv.tipp1).nimi ^ ":" ^ !(serv.tipp2).nimi in
 	let x1 = float_of_int(!(!(serv.tipp2).x)) in
-	let x2 = float_of_int(Hashtbl.find kaareX nimi) in
-	let r1 = float_of_int(tipuRaadius + noolePikkus) in
 	let y1 = float_of_int(!(!(serv.tipp2).y)) in
+	let r1 = float_of_int(tipuRaadius) +. noolePikkus in
+	let x2 = float_of_int(Hashtbl.find kaareX nimi) in
 	let y2 = float_of_int(Hashtbl.find kaareY nimi) in
 	let r2 = float_of_int(Hashtbl.find kaareR nimi) in
 	(* ringjoonte võrrandid: (x-x1)^2 + (y-y1)^2 = (r1)^2 ja (x-x2)^2 + (y-y2)^2 = (r2)^2 *)
-	(* allikas: http://math.stackexchange.com/a/256123 *)
-	let v = (r1 ** 2. -. r2 ** 2.) -. (x1 ** 2. -. x2 ** 2.) -. (y1 ** 2. -. y2 ** 2.) in
-	let y = ((-0.5) *. v) -. x  (*TODO *)*)
-	match serv with
-		| {tipp1 = t1; tipp2 = t2;} -> (
-			let nimi = !t1.nimi ^ ":" ^ !t2.nimi in
-			let x1 = float_of_int(!(!t1.x)) in
-			let x2 = float_of_int(!(!t1.y)) in
-			let y1 = float_of_int(!(!t2.x)) in
-			let y2 = float_of_int(!(!t2.y)) in
-			let rx = float_of_int(Hashtbl.find kaareX nimi) in
-			let ry = float_of_int(Hashtbl.find kaareY nimi) in
-			let k = float_of_int(Hashtbl.find kaareK nimi) in
-			let keskX = (x1 +. x2) /. 2. in
-			let keskY = (y1 +. y2) /. 2. in
-			let (a, c) = leiaSirge(keskX, keskY, rx, ry) in						(* leiame 2 tipu vahelise lõigu keskristsirge *)
-			let ((e1, f1), (e2, f2)) = kaksPunkti(keskX, keskY, a, c, 2. *. k) in (* TODO: 2 * k on omavoliliselt valitud *)
-			let (e, f) = if leiaJoonePikkus(e1, f1, rx, ry) >= leiaJoonePikkus(e2, f2, rx, ry) then (e1, f1) else (e2, f2) in	(* valime ringjoone keskpunktist kaugema punkti *)
-			let (a2, c2) = leiaSirge(e, f, float_of_int(!(!t2.x)), float_of_int(!(!t2.y))) in
-			let ((e3, f3), (e4, f4)) = kaksPunkti(float_of_int(!(!t2.x)), float_of_int(!(!t2.y)), a2, c2, float_of_int(tipuRaadius)) in
-			let (p1, p2) = if leiaJoonePikkus(e3, f3, keskX, keskY) <= leiaJoonePikkus(e4, f4, keskX, keskY) then (e3, f3) else (e4, f4) in (* noole tipp *)
-			let ((e5, f5), (e6, f6)) = kaksPunkti(float_of_int(!(!t2.x)), float_of_int(!(!t2.y)), a2, c2, float_of_int(tipuRaadius) +. noolePikkus) in
-			let (kx, ky) = if leiaJoonePikkus(e5, f5, keskX, keskY) <= leiaJoonePikkus(e6, f6, keskX, keskY) then (e5, f5) else (e6, f6) in (* noole serva keskpunkt *)
-			let (a3, c3) = leiaRistuvSirge(a2, c2, kx, ky) in
-			let ((p3, p4), (p5, p6)) = kaksPunkti(kx, ky, a3, c3, nooleLaius) in
-			(int_of_float(p1), int_of_float(p2), int_of_float(p3), int_of_float(p4), int_of_float(p5), int_of_float(p6))
-		)
-	
-	
+	(* ringjoonte lõikepunktide leidmine, allikas: http://math.stackexchange.com/a/256123 *)
+	let v = ((r1 ** 2.) -. (r2 ** 2.)) -. ((x1 ** 2.) -. (x2 ** 2.)) -. ((y1 ** 2.) -. (y2 ** 2.)) in
+	(* a - ruutliikme kordaja, b - lineaarliikme kordaja, c - vabaliige *)
+	let a = ((x1 -. x2) /. (y2 -. y1)) ** 2. +. 1. in
+	let b = v *. (x1 -. x2) /. (y2 -. y1) ** 2. +. 2. *. y1 *. (x2 -. x1) /. (y2 -. y1) -. 2. *. x1 in
+	let c = 0.25 *. (v ** 2.) /. (y2 -. y1) ** 2. -. (y1 *. v) /. (y2 -. y1) +. y1 ** 2. +. x1 ** 2. -. r1 ** 2. in  
+	let ruutjuur = sqrt ((b ** 2.) -. (4. *. a *. c)) in
+	let lahx1 = (ruutjuur -. b) /. (2. *. a) in
+	let lahx2 = ((-1.) *. b -. ruutjuur) /. (2. *. a) in
+	let lahy1 = ((v /. 2.) +. (lahx1 *. (x1 -. x2))) /. (y2 -. y1) in
+	let lahy2 = ((v /. 2.) +. lahx2 *. (x1 -. x2)) /. (y2 -. y1) in
+	let tipp1x = float_of_int(!(!(serv.tipp1).x)) in
+	let tipp1y = float_of_int(!(!(serv.tipp1).y)) in
+	let (x, y) = if leiaJoonePikkus(tipp1x, tipp1y, lahx1, lahy1) < leiaJoonePikkus(tipp1x, tipp1y, lahx2, lahy2) 
+		then (lahx1, lahy1) else (lahx2, lahy2) in
+	let (a2, c2) = leiaSirge(x, y, x1, y1) in															(* noole telge läbiv sirge *)
+	let ((nx1, ny1), (nx2, ny2)) = kaksPunkti(x, y, a2, c2, noolePikkus) in
+	let (nx, ny) = if leiaJoonePikkus(nx1, ny1, x1, y1) < leiaJoonePikkus(nx2, ny2, x1, y1) 
+		then (nx1, ny1) else (nx2, ny2) in 																	(* nooletipu koordinaadid *)  
+	let (a3, c3) = leiaRistuvSirge(a2, c2, x, y) in
+	let ((e1, f1), (e2, f2)) = kaksPunkti(x, y, a3, c3, nooleLaius) in		(* ülejäänud 2 punkti koordinaadid *)
+	(int_of_float(nx), int_of_float(ny), int_of_float(e1), int_of_float(f1), int_of_float(e2), int_of_float(f2));;	
 
 (* funktsioon, mis tagastab noole koordinaadid (3 punkti koordinaatteljestikul) *)
 let leiaNooleKoordinaadid(serv) =
@@ -452,6 +446,14 @@ let kuvaTabel(tipud, servad) =
     	done
 		);;
 
+let kuvaKast() =
+	set_color black;
+	set_line_width 2;
+	moveto 0 0;
+	lineto 0 aknaKorgus;
+	lineto aknaLaius aknaKorgus;
+	lineto aknaLaius 0;
+	lineto 0 0;;
 	
 let kuvaPilt(tipud, servad) =
 	clear_graph();
@@ -463,6 +465,7 @@ let kuvaPilt(tipud, servad) =
 	kuvaNimekirjad();
 	if !(AlgoBaas.algo) = FloydWarshall
 		then kuvaTabel(tipud, servad);
+	kuvaKast();
 	kuvaTekst();;
 
 (*TODO: eraldi fn randomilt tippude loomiseks, ainult etteantud arvuga? *)

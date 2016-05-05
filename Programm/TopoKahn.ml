@@ -58,6 +58,7 @@ let algus(tipud, servad) =
 	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab. ";
 	tekst := !tekst ^ "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
 	nk1 := string_of_sisendastmed();
+	Random.self_init();
 	i := ServaValik;;
 
 (* õigupoolest tipu valik *)

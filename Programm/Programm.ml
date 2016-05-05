@@ -77,7 +77,6 @@ let liigutaServa(hx, hy) =
 					if hiirAsubSirgel(!t1, !t2, hx, hy)
 						then uuendaKaareAndmeid(!t1, !t2, 0, 0, 0, 0)
 					else (
-						(* TODO: bugi - kui raadius on t‰pselt serva keskpunktis(?), siis ei kuva kaart/ringi, vaid sirge *)
 						let keskX = float_of_int(!(!t1.x) + !(!t2.x)) /. 2. in
   					let keskY = float_of_int(!(!t1.y) + !(!t2.y)) /. 2. in
 						let jp1 = leiaJoonePikkus(keskX, keskY, float_of_int(hx), float_of_int(hy)) in							(* hiire kaugus serva keskptist *)
@@ -125,52 +124,95 @@ let liigutaServa(hx, hy) =
 
 (* funktsioon, mis uuendab ringjoone vırrandit, j‰ttes kauguse tippudevahelise lıigu keskpunktist samaks,*)
 (* v‰lja arvatud siis, kui tippe l‰hemale nihutatakse *)
-(*let uuendaKaart(serv) =
+let uuendaKaart(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2;} -> (
 			let nimi = !t1.nimi ^ ":" ^ !t2.nimi in
 			if Hashtbl.find kaareR nimi <> 0 then (
       	let tippudeVahelineKaugus = leiaJoonePikkus(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(!(!t2.x)), float_of_int(!(!t2.y))) in
-  			if float_of_int(Hashtbl.find kaareK nimi) >= tippudeVahelineKaugus
-      		then Hashtbl.replace kaareK nimi (int_of_float(tippudeVahelineKaugus) - 1);
+  			if float_of_int(Hashtbl.find kaareK nimi) >= tippudeVahelineKaugus /. 2.
+      		then Hashtbl.replace kaareK nimi (int_of_float(tippudeVahelineKaugus /. 2.) - 1);
   			let keskX = float_of_int(!(!t1.x) + !(!t2.x)) /. 2. in
     		let keskY = float_of_int(!(!t1.y) + !(!t2.y)) /. 2. in
-  			let (a, c) = leiaSirge(!(!t1.x), !(!t1.y), !(!t2.x), !(!t2.y)) in
+  			let (a, c) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(!(!t2.x)), float_of_int(!(!t2.y))) in
 				let (a2, c2) = leiaRistuvSirge(a, c, keskX, keskY) in
-  			let ((e1, f1), (e2, f2)) = Graafika.kaksPunkti(keskX, keskY, a2, c2, float_of_int(Hashtbl.find kaareK nimi)) in
+  			let ((e1, f1), (e2, f2)) = kaksPunkti(keskX, keskY, a2, c2, float_of_int(Hashtbl.find kaareK nimi)) in
   			let senineX = float_of_int(Hashtbl.find kaareX nimi) in
   			let senineY = float_of_int(Hashtbl.find kaareY nimi) in
-  			(* leiame selle keskpunkti, mis on tippudevahelise lıigu keskpunktist kaugemal *)
+  			(* leiame selle keskpunkti, mis on senisest ringjoone keskpunktist kaugemal *)
   			let (e, f) = if leiaJoonePikkus(senineX, senineY, e1, f1) >= leiaJoonePikkus(senineX, senineY, e2, f2) then (e1, f1) else (e2, f2) in
-  			liigutaServa(int_of_float(e), int_of_float(f))
+  			liigutatavServ := Some serv;
+				liigutaServa(int_of_float(e), int_of_float(f))
 			)		
-		);;*)
+		);;
 
 let liigutaTippu(hx, hy, servad) =
 	match !liigutatavTipp with
 		| Some t -> (
 			t.x := hx;
 			t.y := hy;
-			(*List.iter (fun s -> if !(s.tipp1) = t || !(s.tipp2) = t then uuendaKaart(s)) servad;*)
-			List.iter (fun s -> if !(s.tipp1) = t || !(s.tipp2) = t then uuendaKaareAndmeid(!(s.tipp1), !(s.tipp2), 0, 0, 0, 0)) servad;
+			List.iter (fun s -> if !(s.tipp1) = t || !(s.tipp2) = t then uuendaKaart(s)) servad;
+			(*List.iter (fun s -> if !(s.tipp1) = t || !(s.tipp2) = t then uuendaKaareAndmeid(!(s.tipp1), !(s.tipp2), 0, 0, 0, 0)) servad;*)
 			(* TODO: valib millegip‰rast ainult ¸he serva *)
 		)
 		| _ -> print_endline("Tippu pole valitud, nii ei tohiks juhtuda.");;
+
+let sammuNr = ref(0);;
+
+let seisundid = Hashtbl.create 20;;
+
+(* tegu on l‰bitud sammuga - kuvame salvestatud seisundi *)
+let kuvaSeisund(tipud, servad) = 
+	let seisund = Hashtbl.find seisundid !sammuNr in
+	List.iter (fun t -> t.tv := Hashtbl.find (seisund.tipuvaadeldavused) t.nimi) tipud;
+	List.iter (fun s -> s.sv := Hashtbl.find (seisund.servavaadeldavused) (!(s.tipp1).nimi ^ ":" ^ !(s.tipp2).nimi)) servad;
+	tekst := seisund.tekst;
+	nk1 := seisund.nk1;
+	nk2 := seisund.nk2;
+	nk3 := seisund.nk3;
+	kuvaPilt(tipud, servad);;
+
+let lisaSeisund(tipud, servad) =
+	let tv = Hashtbl.create 10 in	(* tippude vaadeldavused *)
+	let sv = Hashtbl.create 10 in	(* servade vaadeldavused *)
+	List.iter (fun t -> Hashtbl.replace tv t.nimi !(t.tv)) tipud;
+	List.iter (fun s -> Hashtbl.replace sv (!(s.tipp1).nimi ^ ":" ^ !(s.tipp2).nimi) !(s.sv)) servad;
+	let seisund = {
+		tipuvaadeldavused = tv;
+		servavaadeldavused = sv;
+  	tekst = !tekst;
+  	nk1 = !nk1;
+  	nk2 = !nk2;
+  	nk3 = !nk3;
+	} in Hashtbl.replace seisundid !sammuNr seisund;;
 		
 (* TODO: Prim.samm, Laiuti.samm jne *)
 let samm(algtipp, tipud, servad) =
-	match !algo with
-		| Prim -> Prim.prim(algtipp, tipud, servad)
-		| Laiuti -> Laiuti.laiuti(algtipp, tipud, servad)
-		| SygavutiEes -> SygavutiEes.sygavutiEes(algtipp, tipud, servad)
-		| SygavutiLopp -> SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
-		| Kruskal -> Kruskal.kruskal(tipud, servad)
-		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
-		| FloydWarshall -> FloydWarshall.floydWarshall(tipud, servad)
-		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
-		| TopoLopp -> TopoLopp.topoLopp(algtipp, tipud, servad)
-		| Eeldusgraaf -> Eeldusgraaf.eeldusgraaf(tipud, servad)
-		| Kosaraju -> Kosaraju.kosaraju(algtipp, tipud, servad);;
+	sammuNr := !sammuNr + 1;
+	if Hashtbl.mem seisundid !sammuNr
+		then kuvaSeisund(tipud, servad) 
+	else (
+  	(
+  		match !algo with
+    		| Prim -> Prim.prim(algtipp, tipud, servad)
+    		| Laiuti -> Laiuti.laiuti(algtipp, tipud, servad)
+    		| SygavutiEes -> SygavutiEes.sygavutiEes(algtipp, tipud, servad)
+    		| SygavutiLopp -> SygavutiLopp.sygavutiLopp(algtipp, tipud, servad)
+    		| Kruskal -> Kruskal.kruskal(tipud, servad)
+    		| Dijkstra -> Dijkstra.dijkstra(algtipp, tipud, servad)
+    		| FloydWarshall -> FloydWarshall.floydWarshall(tipud, servad)
+    		| TopoKahn -> TopoKahn.topoKahn(tipud, servad)
+    		| TopoLopp -> TopoLopp.topoLopp(algtipp, tipud, servad)
+    		| Eeldusgraaf -> Eeldusgraaf.eeldusgraaf(tipud, servad)
+    		| Kosaraju -> Kosaraju.kosaraju(algtipp, tipud, servad)
+		);
+		lisaSeisund(tipud, servad)
+	);;
+
+let tagasisamm(tipud, servad) =
+	if !sammuNr > 0
+		then sammuNr := !sammuNr - 1;
+	kuvaSeisund(tipud, servad);;
 
 let programmK2ib = ref(true);;
 
@@ -290,6 +332,10 @@ let looSlaidid(algtipp, tipud, servad) =
 			if koondPDFTulemus <> 0
 				then failwith("KoondPDFi tegemine ebaınnestus.")
 		);
+		
+	(*let koondPDFTulemus = teeKoondPDF() in
+	if koondPDFTulemus <> 0
+		then failwith("KoondPDFi tegemine ebaınnestus.")*)
 	
 	print_endline("\nPDF valmis.");
 	programmK2ib := false;;																		(* sulgeme akna *)
@@ -304,6 +350,7 @@ let klahvisyndmus(klahv, algtipp, tipud, servad) =
 			samm(algtipp, tipud, servad);
 			kuvaPilt(tipud, servad)
 		)
+		| 'b' -> tagasisamm(tipud, servad)
 		| 'f' -> failwith("Lıpp.") (* ajutine lahendus akna "ilusaks" sulgemiseks Windowsis *) (* TODO: ebavajalik *)
 		| _ -> ();;
 
@@ -465,6 +512,7 @@ let alusta(graaf, algtipuNimi) =
 	if algtipugaAlgoritm()
 		then algtipp.tv := Valitud; (* m‰rgime algtipu valituks, et seda juba 1. slaidil kuvada *)
 	kuvaPilt(tipud, servad);
+	lisaSeisund(tipud, servad);
 	syndmused(algtipp, tipud, servad);;
 
 (* funktsioon, mis m‰‰rab algoritmi *)
