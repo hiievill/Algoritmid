@@ -49,8 +49,9 @@ let hiirServal hx hy serv =
 			else ( (* kaar *)
   			let x = Hashtbl.find kaareX nimi in
   			let y = Hashtbl.find kaareY nimi in
-  			asubVahel(hx, !(!t1.x), !(!t2.x)) && (* hiir on horisontaalselt 2 tipu vahel *)
-  			asubVahel(hy, !(!t1.y), !(!t2.y)) && (* hiir on vertikaalselt 2 tipu vahel *)
+				(* TODO: järgneva || asemel saaks täpsemini kontrollida, et tühjast kohast haarates "servale" ei satuks *)
+  			(asubVahel(hx, !(!t1.x), !(!t2.x)) || (* hiir on horisontaalselt 2 tipu vahel *)
+  			asubVahel(hy, !(!t1.y), !(!t2.y))) && (* hiir on vertikaalselt 2 tipu vahel *)
   			(* hiire kaugus ringjoone keskpunktist on raadius +/- 5 *) 
   			abs_float (sqrt ((float_of_int(hx - x)) ** 2. +. (float_of_int(hy - y)) ** 2.) -. float_of_int(r)) <= 5.
 			)		
@@ -83,21 +84,25 @@ let liigutaServa(hx, hy) =
 						let jp2 = leiaJoonePikkus(keskX, keskY, float_of_int(!(!t1.x)), float_of_int(!(!t1.y))) in	(* pool servapikkust *)
 						(* kui hiire kaugus serva keskpunktist on väiksem kui pool servapikkust, siis muudame *)
 						if jp1 < jp2 then (
-    					(* TODO: horisontaalne ja vertikaalne on bugised! *)
   						if !(!t1.x) = !(!t2.x)
   							then (
   								let (a3, c3) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(hx), float_of_int(hy)) in
-									let x = (keskY -. c3) /. a3 in
-									let (e, f) = (x, keskY) in
+									let kX = float_of_int(!(!t1.x) + hx) /. 2. in
+									let kY = float_of_int(!(!t1.y) + hy) /. 2. in
+									let (a4, c4) = leiaRistuvSirge(a3, c3, kX, kY) in
+									let x = (keskY -. c4) /. a4 in
+									let (e, f) = (x, keskY) in	(* TODO: järgmised 3 rida korduvad 3 kohas *)
 									let r = sqrt ((float_of_int(hx) -. e) ** 2. +. (float_of_int(hy) -. f) ** 2.) in
     							let k = r -. leiaJoonePikkus(e, f, keskX, keskY) in		(* k = r - ringjoone keskpunkti kaugus serva keskpunktist *)
-									(*print_endline("Siin: " ^ string_of_float(r));*)
       						uuendaKaareAndmeid(!t1, !t2, int_of_float e, int_of_float f, int_of_float r, int_of_float k)
   							)
   						else if !(!t1.y) = !(!t2.y)
   							then (
   								let (a3, c3) = leiaSirge(float_of_int(!(!t1.x)), float_of_int(!(!t1.y)), float_of_int(hx), float_of_int(hy)) in
-  								let y = a3 *. keskX +. c3 in
+  								let kX = float_of_int(!(!t1.x) + hx) /. 2. in
+									let kY = float_of_int(!(!t1.y) + hy) /. 2. in
+									let (a4, c4) = leiaRistuvSirge(a3, c3, kX, kY) in
+									let y = a4 *. keskX +. c4 in
   								let (e, f) = (keskX, y) in
 									let r = sqrt ((float_of_int(hx) -. e) ** 2. +. (float_of_int(hy) -. f) ** 2.) in
     							let k = r -. leiaJoonePikkus(e, f, keskX, keskY) in		(* k = r - ringjoone keskpunkti kaugus serva keskpunktist *)
@@ -273,7 +278,7 @@ let looSlaidid(algtipp, tipud, servad) =
 	koondaYhteFaili(psFail);																	(* kirjutame kõik tekkinud PostScripti failid sinna kokku *)
 	let pdfTulemus = Sys.command("epstopdf " ^ psFail) in			(* teeme EPS failist PDF faili *)
 	
-	(*kustutaFail("temp.mp");*)																		(* kustutame tekkinud failid *)
+	kustutaFail("temp.mp");																		(* kustutame tekkinud failid *)
 	kustutaFail("temp.log");
 	kustutaFail(psFail);
 	
@@ -381,7 +386,7 @@ let kontrolliKaale(servad, kaaludega) =
 				)
 				| false -> (
 					let sobimatu = List.find (fun s -> match s.kaal with | Some k -> true | _ -> false) servad in
-  				failwith ("Graafi kõik servad peavad olema kaaludega." ^ "\nVigane serv: " ^ string_of_serv(sobimatu))
+  				failwith ("Graafi kõik servad peavad olema kaaludeta." ^ "\nVigane serv: " ^ string_of_serv(sobimatu))
 				)
   	with
   		| Not_found -> ();;
@@ -417,7 +422,7 @@ let kontrolliSidusust(algtipp, tipud, servad) =
 	nk2 := "";
 	i := Algus;
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud = false
-		then failwith("Graaf peab sidus olema.")
+		then failwith("Graaf peab sidus olema. Tippu " ^ (List.find (fun t -> !(t.tv) <> Vaadeldud) tipud).nimi ^ " algtipust ei pääse.")
 	else (
 		List.iter (fun t -> t.tv := Vaatlemata) tipud;
 		List.iter (fun s -> s.sv := Vaatlemata) servad;
@@ -425,16 +430,16 @@ let kontrolliSidusust(algtipp, tipud, servad) =
 
 (* funktsioon, mis kontrollib graafi sobivust *)
 let graafiKontroll(algtipp, tipud, servad, suunatus, kaaludega, hindadega, sidusus) =
-	match suunatus with
-		| None -> if samadSuunad(servad) = false then failwith("Graafis esineb nii suunatu kui mittesuunatud servi.")
-		| Some b -> kontrolliSuunatust(servad, b);
 	kontrolliKaale(servad, kaaludega);
 	kontrolliHindu(tipud, hindadega);
-	if sidusus then kontrolliSidusust(algtipp, tipud, servad);;
+	if sidusus then kontrolliSidusust(algtipp, tipud, servad);
+	match suunatus with
+		| None -> if samadSuunad(servad) = false then failwith("Graafis esineb nii suunatu kui mittesuunatud servi.")
+		| Some b -> kontrolliSuunatust(servad, b);;
 	(* TODO: kaalude märk (enamikul >= 0) ja tüklilisuse kontroll ka (topodel ei või üldse, FW-l ei või neg tsükleid) *)
 
 (* funktsioon, mis kontrollib graafi sobivust algoritmile *)
-let graafiKontroll(algtipp, tipud, servad) =
+let kontrolliGraafi(algtipp, tipud, servad) =
 	match !algo with 										(*algtipp, tipud, servad, suunad, 			kaalud, hinnad, sidus*)
 		| Laiuti -> 				graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
 		| SygavutiEes -> 		graafiKontroll (algtipp, tipud, servad, None, 				false, 	false, 	true)
@@ -453,7 +458,7 @@ let alusta(graaf, algtipuNimi) =
 	let tipud = graaf.tipud in
 	let servad = graaf.servad in
 	
-	graafiKontroll(algtipp, tipud, servad);
+	kontrolliGraafi(algtipp, tipud, servad);
 	let x = (if !algo = FloydWarshall then laiusLisa else 0) in
 	open_graph (" " ^ string_of_int(aknaLaius + x) ^ "x" ^ string_of_int(aknaKorgus + korgusLisa));
 	set_window_title ("Graafialgoritmid - " ^ string_of_algo(!algo));
@@ -461,17 +466,90 @@ let alusta(graaf, algtipuNimi) =
 		then algtipp.tv := Valitud; (* märgime algtipu valituks, et seda juba 1. slaidil kuvada *)
 	kuvaPilt(tipud, servad);
 	syndmused(algtipp, tipud, servad);;
+
+(* funktsioon, mis määrab algoritmi *)
+let m22raAlgo(algorida) =
+	let jupid = Str.split (Str.regexp " *: *") algorida in
+	let algoSone = List.nth jupid 1 in
+	algo := List.find (fun a -> string_of_algo(a) = algoSone) algoList;;
+
+(* funktsioon sõnest tipuandmete kättesaamiseks ja nende abil tipu loomiseks *)
+let looTippFailist(tipurida, hindadega) = 
+	let tipuJupid = Str.split (Str.regexp " *, *") tipurida in
+	let nimi = List.nth tipuJupid 0 in
+	let hind = ref(1 + Random.int 15) in			(* valime suvalise hinna lõigust [1, 15] *)
+	let x = ref(Random.int aknaLaius) in			(* valime suvalise x-koordinaadi poollõigust [0, aknaLaius) *)
+	let y = ref(Random.int aknaKorgus) in			(* valime suvalise y-koordinaadi poollõigust [0, aknaKorgus) *)
+	if List.length tipuJupid >= 3
+		then (
+			if (List.nth tipuJupid 1) <> "-" then x := int_of_string(List.nth tipuJupid 1);
+			if (List.nth tipuJupid 2) <> "-" then y := int_of_string(List.nth tipuJupid 2);
+		);
+	if hindadega && List.length tipuJupid = 4
+		then if (List.nth tipuJupid 3) <> "-" then hind := int_of_string(List.nth tipuJupid 3);
+	looTipp(nimi, !x, !y, if hindadega then Some(!hind) else None);;
+
+(* funktsioon sõnest servaandmete kättesaamiseks ja nende abil serva loomiseks *)
+let looServFailist(servarida, kaaludega, suundadega, tipud) = 
+	let servaJupid = Str.split (Str.regexp " *, *") servarida in
+	let t1nimi = List.nth servaJupid 0 in
+	let t2nimi = List.nth servaJupid 1 in
+	let kaal = ref(1 + Random.int 20) in			(* valime suvalise kaalu lõigust [1, 20] *)
+	if kaaludega && List.length servaJupid = 3
+		then if (List.nth servaJupid 2) <> "-" then kaal := int_of_string(List.nth servaJupid 2);
+	looServ((t1nimi, t2nimi, (if kaaludega then Some(!kaal) else None), (if suundadega then true else false)), tipud);;
+
+let sisendandmedFailist(fail) = 
+	let ic = open_in fail in
+	try
+		let algorida = input_line ic in
+		m22raAlgo(algorida);
+		let tippuderida = input_line ic in
+		let tippudeJupid = Str.split (Str.regexp " *, *") tippuderida in
+		let tippudeArv = int_of_string(List.nth (Str.split (Str.regexp " *: *") (List.nth tippudeJupid 0)) 1) in
+		let hindadega = if List.nth (Str.split (Str.regexp " *: *") (List.nth tippudeJupid 1)) 1 = "true" then true else false in
+		let servaderida = input_line ic in
+		let servadeJupid = Str.split (Str.regexp " *, *") servaderida in
+		let servadeArv = int_of_string(List.nth (Str.split (Str.regexp " *: *") (List.nth servadeJupid 0)) 1) in
+		let kaaludega = if List.nth (Str.split (Str.regexp " *: *") (List.nth servadeJupid 1)) 1 = "true" then true else false in
+		let suundadega = if List.nth (Str.split (Str.regexp " *: *") (List.nth servadeJupid 2)) 1 = "true" then true else false in
+		let tipud = ref([]) in
+		let servad = ref([]) in
+		Random.self_init();
+		for i = 0 to tippudeArv - 1
+		do
+			let tipurida = input_line ic in
+			let tipp = looTippFailist(tipurida, hindadega) in
+			tipud := !tipud @ [tipp]
+		done;
+		for i = 0 to servadeArv - 1
+		do
+			let servarida = input_line ic in
+			let serv = looServFailist(servarida, kaaludega, suundadega, !tipud) in
+			servad := !servad @ [serv]
+		done;
+		let algtipuNimi = (List.nth !tipud 0).nimi in
+		let graaf = {
+			tipud = !tipud;
+			servad = !servad;
+		} in
+		close_in ic;
+		(graaf, algtipuNimi);
+	with e -> failwith("Ei õnnestunud failist sisendandmeid lugeda.");;
+	(* TODO: täpsemad veateated *)
 	
 let main() =
-	
 	if Array.length Sys.argv > 1
-		then (); (* TODO! Sisendandmed failist. *)
-	
-	algo := Dijkstra;
-	let graaf = ntDijkstra1 in
-	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
-	
-	alusta(graaf, algtipuNimi);;
+		then (
+			let (graaf, algtipuNimi) = sisendandmedFailist(Sys.argv.(1)) in 
+			alusta(graaf, algtipuNimi)
+		)
+	else (
+  	algo := Dijkstra;
+  	let graaf = ntDijkstra1 in
+  	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
+		alusta(graaf, algtipuNimi)
+	);;
 
 		
 main();;

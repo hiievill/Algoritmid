@@ -1,0 +1,12 @@
+Algoritm: Eeldusgraaf
+Tippe: 5, hindadega: true
+Servi: 4, kaaludega: false, suundadega: true
+A
+B, 100, 300, 8
+C, -, -, 12
+D, 330, -, -
+E, -, 170
+A, B
+A, C, -
+C, D
+B, E

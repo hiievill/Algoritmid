@@ -28,14 +28,23 @@ Järgmine pole enamasti vajalik, ainult tagavaravariant juhuks, kui epstopdfi ab
 
 ### Programmi kasutamine
 
-1. Sisendandmeid (algoritm, graafi tipud ja kaared, algtipp) saab muuta mooduli Programm funktsioonis main
+1. Sisendandmeid (algoritm, graafi tipud ja kaared, algtipp) saab muuta mooduli Programm funktsioonis main või andes programmile parameetrina ette sisendfaili, kus on kirjeldatud sisendgraaf. Failis peavad olema graafi andmed kirjeldatud järgmisel kujul:
+	* 1. real: Algoritm: [Laiuti|SygavutiEes|SygavutiLopp|Prim|Kruskal|Dijkstra|FloydWarshall|TopoLopp|TopoKahn|Eeldusgraaf|Kosaraju]
+	* 2. real: Tippe: {tippude arv}, hindadega: [true|false]
+	* 3. real: Servi: {servade arv}, kaaludega: [true|false], suundadega: [true|false]
+	* järgneval m-l real, kus m on tippude arv: {tipu nimi} <, [{tipu x-koordinaat}|-], [{tipu y-koordinaat}|-] <, [{tipu hind}|-]> >
+	* järgneval n-l real, kus n on servade arv: {1. tipu nimi}, {2. tipu nimi} <, [{tipu kaal}|-]>
+	* tühikuid võib vahele jätta, kuid reavahetusi mitte. Komad, koolonid, tippude arv ja servade arv peavad kindlasti õiged olema.
+	* kui valikulised väljad (koordinaadid, hind, kaal) tühjaks jätta või sinna "-" kirjutada, valitakse suvaliselt sobiv arv
+	* algtippu nõudvate algoritmide puhul võetakse algtipuks esimene failis kirjeldatud tipp
+	* näide on failis Andmed.txt
 2. Minna kataloogi, kus asub Makefile
 3. Käsurealt 'make'
-4. Käsurealt Windowsis 'tulem.exe', Linuxis './tulem.exe' - käivitab programmi
+4. Käsurealt Windowsis 'tulem.exe <sisendfail>', Linuxis './tulem.exe <sisendfail>' - käivitab programmi
 	* klahv 'n' võimaldab slaidide haaval läbimängu teha
 	* klahv 's' teostab automaatselt terve läbimängu alates käesolevale järgnevast sammust, tekitab slaidid ning salvestab PDFina.
 	* klahv 'q' sulgeb programmi
 	* klahv 'f' sulgeb programmi veateatega (ajutiselt - q enne ei toiminud)
-5. Käsurealt 'make clean' - kustutab kõik programmi töö käigus tekkinud failid (NB! Kaasa arvatud tekkinud PDFi)
+5. Käsurealt 'make clean' - kustutab kõik programmi töö käigus tekkinud failid, kui programm ise seda ei teinud. Kustutatakse ka tekkinud PDF(id).
 
 

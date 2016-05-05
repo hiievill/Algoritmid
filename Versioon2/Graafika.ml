@@ -131,7 +131,7 @@ let looServ(servaandmed, tipud) =
 					then failwith("Kaal peab olema väiksem kui maksimaalne ja suurem kui minimaalne täisarv.")
 				else (
 					uuendaKaareAndmeid(t1, t2, 0, 0, 0, 0);
-  				Some {
+  				{
   					tipp1 = ref(t1);
   					tipp2 = ref(t2);
   					kaal = k;
@@ -146,13 +146,7 @@ let looServ(servaandmed, tipud) =
 		);;
 
 let rec looServad(servaandmeteList, tipud) =
-	match servaandmeteList with
-		| x::xs -> (
-			match looServ(x, tipud) with
-				| Some serv -> serv :: looServad(xs, tipud)
-				| None -> looServad(xs, tipud)
-		)
-		| [] -> [];;
+	List.map (fun sa -> looServ(sa, tipud)) servaandmeteList;;
 
 let kuvaTipp(tipp) = 
 	set_color (
@@ -182,32 +176,40 @@ let leiaKaareAndmed(tipp1, tipp2) =
 	let minY = float_of_int(min !(tipp1.y) !(tipp2.y)) in
 	let maxY = float_of_int(max !(tipp1.y) !(tipp2.y)) in
 	let (a, c) = leiaSirge(float_of_int(!(tipp1.x)), float_of_int(!(tipp1.y)), float_of_int(!(tipp2.x)), float_of_int(!(tipp2.y))) in
-	if a > 0. && a *. xr +. c > yr				(* tipud tõusval sirgel, ringi keskpunkt joonest all *)
+	if minX = maxX				(* tipud asuvad vertikaalselt *)
+		then (
+			let alfa = int_of_float(radiaanKraadideks(asin ((maxY -. yr) /. r))) in
+			let algusKraad = if xr < minX then 0 else 180 in	(* kui ringjoone keskpunkt on tippudest vasakul, siis 0, else 180 *)
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
+		)
+	else if minY = maxY		(* tipud asuvad horisontaalselt *)
+		then (
+			let alfa = int_of_float(radiaanKraadideks(asin ((maxX -. xr) /. r))) in
+			let algusKraad = if yr < minY then 90 else 270 in	(* kui ringjoone keskpunkt on tippudest all, siis 90, else 270 *)
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
+		)
+	else if a > 0. && a *. xr +. c > yr				(* tipud tõusval sirgel, ringi keskpunkt joonest all *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((xr -. maxX) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minY -. yr) /. r))) in
-			(*draw_arc (int_of_float(xr)) (int_of_float(yr)) (int_of_float(r)) (int_of_float(r)) (90 + alfa) (180 - beeta)*)
 			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (90 + alfa), (180 - beeta))
 		)
 	else if a > 0. && a *. xr +. c < yr		(* tipud tõusval sirgel, ringi keskpunkt joonest üleval *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((yr -. maxY) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minX -. xr) /. r))) in
-			(*draw_arc (int_of_float(xr)) (int_of_float(yr)) (int_of_float(r)) (int_of_float(r)) (270 + beeta) (360 - alfa)*)
 			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (270 + beeta), (360 - alfa))
 		)
 	else if a < 0. && a *. xr +. c < yr		(* tipud langeval sirgel, ringi keskpunkt joonest üleval *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((yr -. maxY) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((xr -. maxX) /. r))) in
-			(*draw_arc (int_of_float(xr)) (int_of_float(yr)) (int_of_float(r)) (int_of_float(r)) (180 + alfa) (270 - beeta)*)
 			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (180 + alfa), (270 - beeta))
 		)
 	else if a < 0. && a *. xr +. c > yr		(* tipud langeval sirgel, ringi keskpunkt joonest all *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((minY -. yr) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minX -. xr) /. r))) in
-			(*draw_arc (int_of_float(xr)) (int_of_float(yr)) (int_of_float(r)) (int_of_float(r)) (alfa) (90 - beeta)*)
 			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), alfa, (90 - beeta))
 		)
 	else (0, 0, 0, 0, 0, 0);; (* ei tohiks siia jõuda *)

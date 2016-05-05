@@ -25,6 +25,8 @@ let string_of_algo(algo) =
   	| Eeldusgraaf -> "Eeldusgraaf"
   	| Kosaraju -> "Kosaraju";;
 
+let algoList = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Kruskal; Dijkstra; FloydWarshall; TopoLopp; TopoKahn; Eeldusgraaf; Kosaraju];;
+
 type algoSamm = Algus
 	| EsimeneTipp
 	| ServaVaatlus
