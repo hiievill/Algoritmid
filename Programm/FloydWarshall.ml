@@ -1,11 +1,13 @@
+(* moodul FloydWarshall teostab sammsammulist Floyd-Warshalli algoritmi läbimängu *) 
+
 open Struktuurid;;
 open AlgoBaas;;
 
-let tabel = ref([||]);;
+let tabel = ref([||]);;	(* graafi servade külgnevusmaatriks *)
 
-let x = ref(-1);;		(* jooksev x *)
-let y = ref(-1);;		(* jooksev y *)
-let fiks = ref(-1);;	(* fikseeritud tulba ja veeru number *)
+let x = ref(-1);;				(* jooksev x *)
+let y = ref(-1);;				(* jooksev y *)
+let fiks = ref(-1);;		(* fikseeritud tulba ja veeru number *)
 
 (* funktsioon servadevahelise kauguse sõnena kuvamiseks. Kui teed ei leidu, kuvatakse "inf", vastasel korral tee pikkus *)
 let string_of_lahter(nr) =
@@ -32,6 +34,7 @@ let uuendaLoendureid() =
 		)
 	else y := !y + 1;;								(* vastasel korral lihtsalt suurendame y loendurit *)
 
+(* algoritmi algus, mille käigus luuakse servade külgnevusmaatriks *)
 let algus(tipud, servad) =
 	tekst := "Floyd-Warshalli algoritm alustab. Tekitame graafi servade külgnevusmaatriksi.";
 	let tippudeArv = List.length tipud in
@@ -54,6 +57,7 @@ let algus(tipud, servad) =
 	tabel := maatriks;
 	i := Fikseerimine;;
 
+(* veeru ja tulba fikseerimine *)
 let fikseerimine(tipud) =
 	x := 0;
 	y := -1;
@@ -63,6 +67,7 @@ let fikseerimine(tipud) =
 	tekst := !tekst ^ "\\n" ^ "Kui lahtris olev väärtus on suurem kui vastava valitud veeru ju tulba väärtuste summa, siis uuendame seda.";
 	i := LahtriVaatlus;;
 
+(* lahtri vaatlemine ja otsustamine, kas tema väärtust muuta või mitte *)
 let lahtriVaatlus(tipud) =
 	uuendaLoendureid();
 	while !x = !fiks || !y = !fiks
@@ -83,8 +88,6 @@ let lahtriVaatlus(tipud) =
 			)
 	)
 	else (
-		(*tekst := "Vaatleme lahtrit " ^ (List.nth tipud !x).nimi ^ (List.nth tipud !y).nimi;
-		tekst := !tekst ^ "\n" ^ "Fikseeritud: " ^ string_of_int(!fiks);*)
   	if !x = !y
   		then (
   			tekst := "Tipu kaugust iseendast ei uuenda.";
@@ -108,18 +111,20 @@ let lahtriVaatlus(tipud) =
   	)
 	);;
 
+(* lahtri väärtuse muutmine *)
 let lahtriMuutmine() =
 	!tabel.(!x).(!y) <- !tabel.(!fiks).(!y) + !tabel.(!x).(!fiks);
 	tekst := "Muudame lahtris olevat väärtust.";
 	i := LahtriVaatlus;;
 
+(* algoritmi lõpp *)
 let lopp() =
-	tekst := "Floyd-Warshalli algoritm lõpetab, olles leidnud kõikide tippude vähimad kaugused teineteisest.";
+	tekst := "Floyd-Warshalli algoritm lõpetab, olles leidnud kõikide tippude vähimad kaugused üksteisest.";
 	fiks := !fiks + 1;	(* kuvamise jaoks *)
 	AlgoBaas.lopp();;
 	
-
-let floydWarshall(tipud, servad) = 
+(* algoritmi samm *)
+let samm(tipud, servad) = 
 	match !i with
 		| Algus -> algus(tipud, servad)
 		| Fikseerimine -> fikseerimine(tipud)

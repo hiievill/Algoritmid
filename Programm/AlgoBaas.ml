@@ -1,18 +1,33 @@
+(* moodulis AlgoBaas on kõik funktsioonid ja muutujad, mida mitu algoritmi kasutavad, sh teksti- ja nimekirjaväljad, *)
+(* kaarte andmed ja nimekirjade sõnena esitamise funktsioonid. *)
+
 open Struktuurid;;
 
-(* siia kõik funktsioonid ja muutujad, mida mitu algoritmi kasutavad *)
+let algo = ref(Laiuti);;				(* läbimängitav algoritm *)
+let algoL2bi = ref(false);;			(* muutuja, mis kannab infot, kas algoritmi läbimäng on pooleli või läbi *)
+let i = ref(Algus);; 						(* loendur algoritmi sammude jaoks*)
+let sammuNr = ref(0);;					(* algoritmi sammude numbriline loendur *)
+let tekst = ref("");;						(* algoritmi sammudel kuvatav tekst *)
+let programmK2ib = ref(true);;	(* muutuja, mis kannab infot, kas programm käib või mitte (aken tuleks sulgeda) *)
 
-let i = ref(Algus);; (* counter algoritmi sammude jaoks*)
-
-let tekst = ref("");;	(* algoritmi sammudel kuvatav tekst *)
-
-let algo = ref(Laiuti);;
-
-let algoL2bi = ref(false);;
-
-let nk1 = ref("");;		(* graafi kohal kuvatavad nimekirjad *)
+let nk1 = ref("");;							(* graafi kohal kuvatavad nimekirjad *)
 let nk2 = ref("");;
 let nk3 = ref("");;
+let nk4 = ref("");;
+
+(* järgmised on mapid serva tippude nimed : int, hoiustamaks ringjoone võrrandit (x+a)^2 + (y+b)^2 = r^2 *)
+let kaareX : (string, int) Hashtbl.t = Hashtbl.create 10;; (* ringjoone keskpunkti x-koordinaat *)
+let kaareY : (string, int) Hashtbl.t = Hashtbl.create 10;; (* ringjoone keskpunkti y-koordinaat *)
+let kaareR : (string, int) Hashtbl.t = Hashtbl.create 10;; (* ringjoone raadius *)
+let kaareK : (string, int) Hashtbl.t = Hashtbl.create 10;; (* tippudevahelise lõigu keskpunkti minimaalne kaugus kaarest *)
+
+(* funktsioon, mis uuendab kaare kõiki andmeid *)
+let uuendaKaareAndmeid(tipp1, tipp2, x, y, r, k) =
+	let nimi = tipp1.nimi ^ ":" ^ tipp2.nimi in
+	Hashtbl.replace kaareX nimi x;
+	Hashtbl.replace kaareY nimi y;
+	Hashtbl.replace kaareR nimi r;
+	Hashtbl.replace kaareK nimi k;;
 
 (* funktsioon, mis leiab kaalutud graafil mingist servade hulgast lühima serva *)
 let leiaLyhimServ(servad) =
@@ -35,7 +50,7 @@ let string_of_toodeldudTipud(tipud) =
 let string_of_sej(servad) =
 	"Servade eelistusjärjekord: " ^ string_of_servad(servad);;
 	
-(*tagastab true, kui vastav tipp on vaadeldud*)
+(* funktsioon, mis tagastab, kas vastav tipp on vaadeldud *)
 let tippVaadeldud(tipp) =
 	!(tipp.tv) = Vaadeldud;;
 
@@ -53,15 +68,16 @@ let v2iksemaKaaluga serv1 serv2 =
 let sordiJ2rjekord(servad) =
 	List.sort v2iksemaKaaluga servad;;
 
-(* alguses refi täitmiseks *)
+(* tühi tipp alguses refi täitmiseks *)
 let tyhiTipp = {
 	nimi = "-";
 	x = ref(0);
 	y = ref(0);
 	tv = ref(Vaatlemata);
-	hind = None
+	hind = ref(None)
 };;
 
+(* kõikide algoritmide ühine lõpusamm *)
 let lopp() =
 	algoL2bi := true;
 	i := L2bi;;

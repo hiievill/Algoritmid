@@ -1,3 +1,5 @@
+(* moodulis Struktuuris on defineeritud tüübid tippude, servade, algoritmide, algoritmide sammude, algoritmi seisundite ja *)
+(* tipu/serva vaadeldavuse kujutamiseks. Siin on ka funktsioonid vastavate tüüpide sõnena kujutamiseks. *)
 
 type algoritm = Laiuti
 	| SygavutiEes
@@ -52,7 +54,10 @@ type algoSamm = Algus
 	| TeisedTipud
 	| Fikseerimine
 	| LahtriVaatlus
-	| LahtriMuutmine;;
+	| LahtriMuutmine
+	| ProjektiAeg
+	| TipuValik
+	| SygavutiL2bimine;;
 
 (* tähistab tipu/serva vaadeldavust, oluline kuvamisel värvi valikuks *)
 type vaadeldavus = Vaatlemata
@@ -74,7 +79,7 @@ type tipp = {
 	x : int ref;
 	y : int ref;
 	tv : vaadeldavus ref;
-	hind: int option
+	hind: int option ref;
 }
 
 let string_of_tipp(tipp) =

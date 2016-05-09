@@ -1,3 +1,5 @@
+(* moodul MetaPost tegeleb MetaPosti koodi genereerimisega ja tippude, servade ja muu kuvatava MetaPosti koodi lisamisega *)
+
 open Struktuurid;;
 open Graafika;;
 
@@ -48,9 +50,9 @@ let kaareTekst(nool, n1, n2, r, x, y, serv) =
 
 let servaTekst(serv) =
 	let nimi = !(serv.tipp1).nimi ^ ":" ^ !(serv.tipp2).nimi in
-	let r = Hashtbl.find kaareR nimi in
-	let x = Hashtbl.find kaareX nimi in
-	let y = Hashtbl.find kaareY nimi in
+	let r = Hashtbl.find AlgoBaas.kaareR nimi in
+	let x = Hashtbl.find AlgoBaas.kaareX nimi in
+	let y = Hashtbl.find AlgoBaas.kaareY nimi in
 	let nool = if serv.nool then "arrow" else "" in
 	if r = 0	(* sirge serv *)
 		then (
@@ -62,7 +64,7 @@ let servaTekst(serv) =
 			" withcolor " ^ string_of_vaadeldavus(!(serv.sv)) ^ "Serv;"
 		)
 	else (		(* kaardus serv *)
-		let (xr, yr, r1, r2, nurk1, nurk2) = leiaKaareAndmed(!(serv.tipp1), !(serv.tipp2)) in
+		let (xr, yr, r2, nurk1, nurk2) = leiaKaareAndmed(!(serv.tipp1), !(serv.tipp2)) in
 		let n1 = ymarda(float_of_int(nurk1) *. 8. /. 360.) in
 		let n2 = ymarda(float_of_int(nurk2) *. 8. /. 360.) in
 		kaareTekst(nool, n1, n2, r, x, y, serv) ^ kaareTekst(nool, n2, n1, r, x, y, serv)
@@ -105,12 +107,12 @@ let kaaludeTekst(servad) =
 		| Some k -> String.concat "\n" (List.map kaaluTekst servad) ^ "\n";;	(* kui on kaaludega, kuvame need *)
 
 let hinnaTekst(tipp) =
-	match tipp.hind with
+	match !(tipp.hind) with
 		| None -> ""
-		| Some h -> "label(\"" ^ string_of_int(h) ^ "\" infont defaultfont, (" ^ string_of_int(!(tipp.x)) ^ "u," ^ string_of_int(!(tipp.y) + tipuRaadius + 5) ^ "u)) scaled defaultscale withcolor black;"
+		| Some h -> "label(\"" ^ (if h = max_int then "inf" else string_of_int(h)) ^ "\" infont defaultfont, (" ^ string_of_int(!(tipp.x)) ^ "u," ^ string_of_int(!(tipp.y) + tipuRaadius + 5) ^ "u)) scaled defaultscale withcolor black;"
 
 let hindadeTekst(tipud) = 
-	match (List.hd tipud).hind with
+	match !((List.hd tipud).hind) with
 		| None -> ""																													(* kui on hindadeta graaf, tagastame tühisõne *)
 		| Some h ->	String.concat "\n" (List.map hinnaTekst tipud) ^ "\n";;		(* kui on hindadega graaf, kuvame need *)
 
@@ -123,7 +125,8 @@ let nimekirjadeTekst() =
 	let ak = aknaKorgus + korgusLisa in
 	"label.rt(\"" ^ att(!(AlgoBaas.nk1)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 60) ^ "u)) scaled defaultscale withcolor black;\n" ^
 	"label.rt(\"" ^ att(!(AlgoBaas.nk2)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 80) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 100) ^ "u)) scaled defaultscale withcolor black;\n";;
+	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 100) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!(AlgoBaas.nk4)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 120) ^ "u)) scaled defaultscale withcolor black;\n";;
 
 let tabeliTekst(tipud, servad) = 		(* TODO: koodikordus Graafika.kuvatabeliga, osa kokku võtta? *)
 	let tulem = ref("") in
@@ -243,10 +246,11 @@ let slaidiTekst(tipud, servad) =
 	"endfig;\n\n";;
 
 let failiAlgus(tipud) = (* TODO: siia noolte, kaalude jms arvutamine, et mitu korda ei peaks *)
-	"u := 0.35mm;\n" ^
+	"u := 0.2mm;\n" ^
 	"defaultscale := 1.0;\n" ^
 	"defaultfont := \"cmr10\";\n" ^ (* ptmr8r? *) 
 	"prologues := 3;\n" ^
+	"filenametemplate \"temp%c.mps\";\n" ^
 	"color VaatlemataPunkt, VaadeldavPunkt, ValitudPunkt, VaadeldudPunkt, SobimatuPunkt;\n" ^
 	"color VaatlemataServ, VaadeldavServ, ValitudServ, VaadeldudServ, SobimatuServ;\n" ^ 
 	

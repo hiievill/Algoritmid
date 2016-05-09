@@ -1,9 +1,11 @@
+(* moodul TopoKahn teostab sammsammulist läbimängu topoloogilise järjestuse leidmiseks Kahni algoritmiga *) 
+
 open Struktuurid;;
 open AlgoBaas;;
 
-let sisendastmed = Hashtbl.create 10;; (*sisuliselt map tipp.nimi : int *)
+let sisendastmed = Hashtbl.create 10;; 		(*sisuliselt map tipp.nimi : int *)
 
-let tekkinudJ2rjestus = ref([]);; (* siia tekkinud topoloogiline järjestus *)
+let tekkinudJ2rjestus = ref([]);; 				(* siia tekkinud topoloogiline järjestus *)
 
 (* funktsioon tippude sisendastmete sõnena esitamiseks *)
 let string_of_sisendastmed() =
@@ -14,9 +16,11 @@ let string_of_sisendastmed() =
 let string_of_topo() =
 	"Topoloogiline järjestus: " ^ string_of_tipud(!tekkinudJ2rjestus);;
 
-let uuendaSisendastet nr tipp = (*analoogiline fn-ga Dijkstra.lisaKaugus, kokku võtta?*)
+(* funktsioon sisendastme uuendamiseks Hashtblis *)
+let uuendaSisendastet nr tipp =
 	Hashtbl.replace sisendastmed tipp.nimi nr;;
 
+(* funktsioon tipu sisendastme leidmiseks *)
 let leiaSisendaste(tipp, servad) =
 	List.length (List.filter ((fun t s -> !(s.tipp2) = tipp) tipp) servad);;
 
@@ -29,11 +33,14 @@ let v2hendaSisendastet(serv) =
 
 (* valime suvaliselt tipu, millel on sisendaste 0 ning mis pole veel Vaadeldud.*)
 let valiTipp(tipud) : Struktuurid.tipp =
+	Random.self_init();
 	let nsat = List.filter (fun t -> Hashtbl.find sisendastmed t.nimi = 0 && !(t.tv) <> Vaadeldud) tipud in (*nullise sisendastmega tipud *)
 	if List.length nsat = 0 
 		then failwith("Pole ühtegi külastamata tippu, mille sisendaste oleks 0. Ei tohiks juhtuda.");
 	List.nth nsat (Random.int (List.length nsat));;
 
+(* funktsioon, mis juhul, kui serva lähtetipp on valitud, märgib serva vaadeldavaks, vähendab tema sisendastet ja *)
+(* märgib vaatlemata sihttipu vaadeldavaks*)
 let vaatleServa(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2; sv = v} -> (
@@ -45,36 +52,45 @@ let vaatleServa(serv) =
 				)
 		);;
 	
+(* funktsioon, mis märgib tipu vaadelduks ja lisab ta tekkinud järjestuse lõppu *)
 let lisaTipp(tipp) =
 	tipp.tv := Vaadeldud;
 	tekkinudJ2rjestus := !tekkinudJ2rjestus @ [tipp];;
 
+(* funktsioon, mis uuendab graafi kohal kuvatavaid nimekirju *)
 let lisatekst() =
 	nk1 := string_of_sisendastmed();
 	nk2 := string_of_topo();;
 
-let algus(tipud, servad) =
-	List.iter (fun t -> uuendaSisendastet (leiaSisendaste(t, servad)) t) tipud;
-	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab. ";
-	tekst := !tekst ^ "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
-	nk1 := string_of_sisendastmed();
+(* algoritmi algus *)
+let algus() =
 	Random.self_init();
-	i := ServaValik;;
+	tekst := "Kahni algoritm topoloogilise järjestuse leidmiseks alustab. ";
+	i := Vahe1;;
 
-(* õigupoolest tipu valik *)
-let servaValik(tipud) =
+(* paneme iga tipuga vastavusse tema sisendastme *)
+let vahe1(tipud, servad) =
+	List.iter (fun t -> uuendaSisendastet (leiaSisendaste(t, servad)) t) tipud;
+	tekst := "Määrame iga tipuga vastavusse temasse sisenevate servade arvu.";
+	nk1 := string_of_sisendastmed();
+	i := TipuValik;;
+
+(* suvalise sisendastemga 0 tipu valimine *)
+let tipuValik(tipud) =
 	tekst := "Valime suvaliselt ühe tipu, mille sisendaste on 0.";
 	lisatekst();
 	let valitudTipp = valiTipp(tipud) in
 	valitudTipp.tv := Valitud;
 	i := ServaVaatlus;;
 
+(* kõikide valitud tipust väljuvate servade vaatlemine ja sihttippude sisendastmete vähendamine *)
 let servaVaatlus(servad) =
 	List.iter vaatleServa servad;
 	tekst := "Vaatleme kõiki servi, mis valitud tipust väljuvad, ja vähendame sihttippude sisendastet 1 võrra.";
 	lisatekst();
 	i := ServaLisamine;;
 
+(* valitud tipu lisamine topoloogilisse järjestusse *)
 let servaLisamine(tipud, servad) =
 	List.iter (fun t -> if !(t.tv) = Valitud then lisaTipp t) tipud;
 	List.iter (fun t -> if !(t.tv) = Vaadeldav then t.tv := Vaatlemata) tipud;
@@ -85,17 +101,20 @@ let servaLisamine(tipud, servad) =
 	lisatekst();
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
 		then i := Lopp
-	else i := ServaValik;;
+	else i := TipuValik;;
 
+(* algoritmi lõpp *)
 let lopp() =
-	tekst := "Algoritm lõpetab, olles leidnud sunatud graafi topoloogilise järjestuse.";
+	tekst := "Kõik tipud on vaadeldud. Algoritm lõpetab, olles leidnud sunatud graafi topoloogilise järjestuse.";
 	lisatekst();
 	AlgoBaas.lopp();;
 
-let topoKahn(tipud, servad) = 
+(* algoritmi samm *)
+let samm(tipud, servad) = 
 	match !i with
-		| Algus -> algus(tipud, servad)
-		| ServaValik -> servaValik(tipud)
+		| Algus -> algus()
+		| Vahe1 -> vahe1(tipud, servad)
+		| TipuValik -> tipuValik(tipud)
 		| ServaVaatlus -> servaVaatlus(servad)
 		| ServaLisamine -> servaLisamine(tipud, servad)
 		| Lopp -> lopp()

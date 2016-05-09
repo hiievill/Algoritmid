@@ -1,13 +1,15 @@
+(* moodul Prim teostab sammsammulist Primi algoritmi läbimängu *) 
+
 open Struktuurid;;
 open AlgoBaas;;
 
-let lisatudTipp = ref(tyhiTipp);;
+let lisatudTipp = ref(tyhiTipp);;		(* lisatud tipp *)
 
-let sej = ref([]);;
+let sej = ref([]);;									(* servade eelistusjärjekord *)
 
 (* funktsioon, mis tagastab, kas serv on sobiv, st kui ta on suunatud, siis ega tema esimene tipp vaadeldud pole, kui aga *)
 (* mittesuunatud, siis ega mõlemad tipud vaadeldud pole *)
-let sobivJ2rgServ tipp serv = (* sarnane nagu Laiutis, aga mitte päris *)
+let sobivJ2rgServ tipp serv =
 	match serv with 
 		| {tipp1 = t1; tipp2 = t2; nool = n} ->
 			match n with
@@ -45,17 +47,20 @@ let lisaTipp(tipp) =
 	tipp.tv := Vaadeldud;
 	lisatudTipp := tipp;;
 
+(* algoritmi algus *)
 let algus(servad) =
-	tekst := "Primi algoritm alustab."; (* TODO: kas lõpetama peaks, sest kõik tipud on läbitud, või peaks viimase serv ka ära vaatama? *)
-	nk1 := string_of_sej(!sej);
+	tekst := "Primi algoritm alustab valitud tipust.";
+	(*nk1 := string_of_sej(!sej);*)
 	i := EsimeneTipp;;
 
+(* esimese tipu vaadelduks märkimine *)
 let esimeneTipp(algtipp, servad) =
 	lisaTipp(algtipp);
 	tekst := "Märgime esimese tipu külastatuks.";
 	nk1 := string_of_sej(!sej);
 	i := ServaVaatlus;;
 
+(* seda tippu teiste külastamata tippudega ühendavate servade leidmine, kaalude põhjal sortimine ja vaadeldavateks märkimine *)
 let servaVaatlus(servad) =
 	let js = leiaJ2rgServad(!lisatudTipp, servad) in				(* leiame servad, mis viivad sellest tipust külastamata tippu *)
 	List.iter vaatleServ js;																(* märgime need vaadeldavateks *)
@@ -67,6 +72,7 @@ let servaVaatlus(servad) =
 		then i := Lopp
 	else i := ServaValik;;																	(* vastasel juhul lähme järgmisi servi lisama *)
 
+(* lühima eelistusjärjekorras oleva serva valituks märkimine *)
 let servaValik() =
 	let lyhimServ = List.hd !sej in																			(* valime eelistusjärjekorrast lühima serva *)
 	valiServ(lyhimServ);																								(* märgime selle valituks *)
@@ -74,31 +80,36 @@ let servaValik() =
 	nk1 := string_of_sej(!sej);
 	i := ServaLisamine;;
 
+(* valitud serva lisamine, kui tema üks otstippe on külastamata, ja eelistusjärjekorrast eemaldamine *)
 let servaLisamine(algtipp, tipud, servad) =
 	let lisatavServ = List.hd !sej in
 	if !(!(lisatavServ.tipp1).tv) = Vaadeldud && !(!(lisatavServ.tipp2).tv) = Vaadeldud
 		then (	(* serv ühendab juba vaadeldud tippe -> muudame sobimatuks *)
 			lisatavServ.sv := Sobimatu;
-			tekst := "See serv ei sobi.";
+			tekst := "Seda serva ei lisa, sest see ühendab kahte külastatud tippu. Eemaldame serva eelistusjärjekorrast.";
+			sej := List.tl !sej;																							(* eemaldame järjekorrast üleliigsed servad *)
+			nk1 := string_of_sej(!sej);
+			if List.length !sej = 0																							(* kui enam servi lisada ei saa, siis lähme lõpule *)
+  			then i := Lopp
+			else i := ServaValik
 		)
 	else (		(* sobib, lisame *)
   	let lisatavTipp = List.find (fun t -> !(t.tv) = Valitud) tipud in
   	lisaTipp(lisatavTipp);																							(* märgime lisatava tipu vaadelduks *)
   	lisatavServ.sv := Vaadeldud;																				(* märgime lisatava serva vaadelduks *)
 		tekst := "Märgime valitud serva teise otstipu külastatuks ja eemaldame serva eelistusjärjekorrast.";
-	);
-	sej := List.tl !sej;																								(* eemaldame järjekorrast üleliigsed servad *)
-	nk1 := string_of_sej(!sej);
-	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud								(* kui kõik tipud on vaadeldud, lähme lõpule *)
-		then i := Lopp
-	else i := ServaVaatlus;;																						(* vastasel juhul lähme veel servi vaatlema *)
+		sej := List.tl !sej;																								(* eemaldame järjekorrast üleliigsed servad *)
+		nk1 := string_of_sej(!sej);
+		i := ServaVaatlus);;																						(* vastasel juhul lähme veel servi vaatlema *)
 
+(* algoritmi lõpp *)
 let lopp() =
-	tekst := "Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
+	tekst := "Servade eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
 	nk1 := string_of_sej(!sej);
 	AlgoBaas.lopp();;
 
-let prim(algtipp, tipud, servad) = 
+(* algoritmi samm *)
+let samm(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus(servad)
 		| EsimeneTipp -> esimeneTipp(algtipp, servad)

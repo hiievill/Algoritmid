@@ -1,23 +1,30 @@
+(* moodul Kosaraju teostab sammsammulist Kosaraju algoritmi läbimängu *) 
+
 open Struktuurid;;
 open AlgoBaas;;
 
 let sygavutiTipud = ref([]);;
-let komponendid = ref([]);; (* kõik sidusad komponendid. TODO: hoopis hulgana teha? *)
-let komponent = ref([]);; (* üks sidus komponent *)
+let komponendid = ref([]);; 		(* kõik sidusad komponendid. TODO: hoopis hulgana teha? *)
+let komponent = ref([]);; 			(* üks sidus komponent *)
 
 (* pööran servad vastupidi, st vahetan tipud ära *)
-let rec pooraServad(servad) =
-	match servad with
-		| [] -> ()
-		| x::xs -> (
-			match x with
-				| {tipp1 = t1; tipp2 = t2;} -> (
-					let t = !t1 in 
-					x.tipp1 := !t2;
-    			x.tipp2 := t;
-    			pooraServad(xs)
-				)
+let rec ps vanadAndmed serv =
+	match serv with
+		| {tipp1 = t1; tipp2 = t2;} -> (
+			let (vanaX, vanaY, vanaR, vanaK) = Hashtbl.find vanadAndmed (!t1.nimi ^ ":" ^ !t2.nimi) in
+			let t = !t1 in 
+			serv.tipp1 := !t2;
+			serv.tipp2 := t; 
+			(*muudaKaareAndmeid(!(x.tipp1), !(x.tipp2));*)
+			uuendaKaareAndmeid(!(serv.tipp1), !(serv.tipp2), vanaX, vanaY, vanaR, vanaK)
 		);;
+
+let pooraServad(servad) =
+	let vanadAndmed = Hashtbl.create 10 in
+	List.iter (fun s -> let n = !(s.tipp1).nimi ^ ":" ^ !(s.tipp2).nimi in Hashtbl.add vanadAndmed n 
+			(Hashtbl.find kaareX n, Hashtbl.find kaareY n, Hashtbl.find kaareR n, Hashtbl.find kaareX n)) servad;
+	List.iter (ps vanadAndmed) servad;;
+
 
 (* funktsioon sügavuti lõppjärjestuse sõnena esitamiseks *)
 let string_of_lopp(tipud) =
@@ -37,7 +44,7 @@ let string_of_komponendid(komponendid) =
 
 let algus(tipud, servad) =
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
-	tekst := "Kosaraju algoritm algustab.";
+	tekst := "Kosaraju algoritm algustab valitud tipust.";
 	i := Sygavuti;;
 
 (* läbime graafi sügavuti lõppjärjestuses. Kui mõni tipp jääb läbi käimata, siis mitu korda *)
@@ -58,6 +65,7 @@ let pooratudGraaf(tipud, servad) =
 	List.iter (fun t -> t.tv := Vaatlemata) tipud;
 	i := EsimeneTipp;;
 
+(* esimese komponenditu tipu valituks märkimine *)
 let esimeneTipp(tipud, servad) =
 	List.iter (fun t -> if !(t.tv) = Vaadeldud then t.tv := Sobimatu) tipud;
 	List.iter (fun s -> if !(s.sv) = Vaadeldud then s.sv := Sobimatu) servad;
@@ -69,12 +77,13 @@ let esimeneTipp(tipud, servad) =
 	nk3 := string_of_komponendid(!komponendid);
 	i := TeisedTipud;;
 
+(* valitud tipust alates graafi läbimine ja kõikide läbitud tippude ühendamine esimesega üheks komponendiks *)
 let teisedTipud(tipud, servad) =
 	let esimeneTipp = List.find (fun t -> !(t.tv) = Valitud) tipud in
 	i := Algus;
 	while !algoL2bi = false
 		do
-			Laiuti.laiuti(esimeneTipp, tipud, servad)	(* võiks ka sügavuti, aga pole vahet *)
+			Laiuti.samm(esimeneTipp, tipud, servad)
 		done;
 	algoL2bi := false;
 	List.iter (fun t -> if !(t.tv) = Valitud then t.tv := Vaadeldud) tipud;
@@ -82,12 +91,14 @@ let teisedTipud(tipud, servad) =
 	komponent := List.filter (fun t -> !(t.tv) = Vaadeldud) tipud;
 	komponendid := !komponendid @ [!komponent];
 	tekst := "Lisame temaga ühte sidususkomponenti kõik tipud, millesse saab temast ümberpööratud kaartega graafis jõuda.";
+	nk1 := string_of_tagurpidi(!sygavutiTipud);
 	nk2 := string_of_komponent(!komponent);
 	nk3 := string_of_komponendid(!komponendid);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud || !(t.tv) = Sobimatu) tipud
 		then i := Lopp
 	else i := EsimeneTipp;;
 
+(* algoritmi lõpp *)
 let lopp(tipud, servad) =
 	List.iter (fun t -> if !(t.tv) = Vaadeldud then t.tv := Sobimatu) tipud;
 	List.iter (fun s -> if !(s.sv) = Vaadeldud then s.sv := Sobimatu) servad;
@@ -97,7 +108,8 @@ let lopp(tipud, servad) =
 	nk3 := ""; 
 	AlgoBaas.lopp();;
 
-let kosaraju(algtipp, tipud, servad) = 
+(* algoritmi samm *)
+let samm(algtipp, tipud, servad) = 
 	match !i with
 		| Algus -> algus(tipud, servad)
 		| Sygavuti -> sygavuti(algtipp, tipud, servad)

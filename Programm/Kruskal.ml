@@ -1,9 +1,11 @@
+(* moodul Kruskal teostab sammsammulist Kruskali algoritmi läbimängu *) 
+
 open Struktuurid;;
 open AlgoBaas;;
 
-let hulgad = Hashtbl.create 10;; (* sisuliselt map tipp.nimi : tipp.nimi *)
+let hulgad = Hashtbl.create 10;; 	(* sisuliselt map tipp.nimi : tipp.nimi, tippude ja hulkade vastavuse hoiustamiseks *)
 
-let sej = ref([]);; (* servade eelistusjärjekord *)
+let sej = ref([]);; 							(* servade eelistusjärjekord *)
 
 (* funktsioon, mis määrab tippudele t1 ja t2 hulgad järgnevalt:*)
 (* kui mõlemal tipul on juba hulk, paneb kõikidele t2 hulgaga tippudele t1 hulga, et kõigil sama hulk oleks*)
@@ -71,44 +73,61 @@ let onSidus(tipud) =
 	let esimeseHulk = Hashtbl.find hulgad (List.hd tipud).nimi in
 	List.for_all (fun t -> Hashtbl.find hulgad t.nimi = esimeseHulk) tipud;;
 
-let algus(servad) =
-	(*AlgoBaas.graafiKontroll(servad, true, false, true);*)
+(* algoritmi algus *)
+let algus() =
+	tekst := "Kruskali algoritm alustab.";
+	i := Vahe1;;
+
+(* graafi servade eelistusjärjekorda lisamine *)
+let vahe1(tipud, servad) =
 	List.iter (fun s -> sej := !sej @ [s]) servad;
 	sej := sordiJ2rjekord(!sej);
-	tekst := "Kruskali algoritm alustab. Lisame kõik servad eelistusjärjekorda.";
+	tekst := "Lisame kõik servad eelistusjärjekorda.";
 	nk1 := string_of_sej(!sej);
-	i := ServaValik;;
+	if List.length !sej = 0
+		then (
+			List.iter (fun t -> Hashtbl.add hulgad t.nimi t.nimi) tipud;	(* lisame sellele ühele tipule ka hulga *)  
+			i := Lopp
+		)
+	else i := ServaValik;;
 
+(* eelistusjärjekorrast lühima serva eemaldamine ja koos vastavate vaatlemata tippudega valituks märkimine *)
 let servaValik(servad) =
 	match List.length !sej with																									(* servade eelistusjärjekorra pikkus *)
-		| 0 -> print_endline("Mingi viga, nii ei tohiks juhtuda.") 								(* TODO!! See kontroll varem.*)
+		| 0 -> failwith("Ühtegi serva pole eelistusjärjekorras, nii ei tohiks juhtuda.")
 		| _ -> valiServ(List.hd !sej);;																						(* lühim vaatlemata serv *)
 
+(* kaht külastatud tippu ühendava serva sobimatuks märkimine ja eelistusjärjekorrast eemaldamine *)
 let sobimatuServ(servad) =
 	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Sobimatu) servad; 		(* märgime serva sobimatuks *)
 	tekst := "See serv ühendab samas sidusas komponendis olevaid tippe, nii et seda me ei lisa. Eemaldame serva eelistusjärjekorrast.";
 	nk1 := string_of_sej(!sej);
-	i := ServaValik;;
+	if List.length !sej = 0
+		then i := Lopp
+	else i := ServaValik;;
 
+(* valitud serva vaadelduks märkimine ja eelistusjärjekorrast eemaldamine *)
 let servaLisamine(servad, tipud) =
 	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
 	muudaServa Valitud Vaadeldud lisatavServ; 																	(* märgime serva vaadelduks *)
 	tekst := "See serv ühendab eri sidusaid komponente olevaid tippe, nii et lisame selle ja eemaldame eelistusjärjekorrast.";
 	nk1 := string_of_sej(!sej);
-	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
+	if List.length !sej = 0
 		then i := Lopp
 	else i := ServaValik;;
 
+(* algoritmi lõpp *)
 let lopp(tipud) =
 	tekst := "Eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toese" ^ 
 			(if onSidus(tipud) then "puu." else "metsa.");
 	nk1 := string_of_sej(!sej);
 	AlgoBaas.lopp();;
 
-
-let kruskal(tipud, servad) = 
+(* algoritmi samm *)
+let samm(tipud, servad) = 
 	match !i with
-		| Algus -> algus(servad)
+		| Algus -> algus()
+		| Vahe1 -> vahe1(tipud, servad)
 		| ServaValik -> servaValik(servad)
 		| SobimatuServ -> sobimatuServ(servad)
 		| ServaLisamine -> servaLisamine(servad, tipud)

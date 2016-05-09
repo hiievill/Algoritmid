@@ -1,32 +1,40 @@
+(* moodul Graafika vastutab pildi kuvamise eest programmiaknas. Siin on funktsioonid tippude, servade, kaalude, tabeli,*)
+(* hindade jms kuvamiseks ning nende koordinaatide arvutamiseks. *)
+
 open Graphics;;
 open Struktuurid;;
+open AlgoBaas;;
 
 let aknaLaius = 600;;
 let aknaKorgus = 450;;
-let korgusLisa = 110;; 	(* nimekirjade kuvamiseks *)
+let korgusLisa = 130;; 	(* nimekirjade kuvamiseks *)
 let laiusLisa = 400;; 	(* Floyd-Warshalli tabeli kuvamiseks *)
 let tekstiLisa = 100;; 	(* slaididel pildi all teksti kuvamiseks *)
 
 let tipuRaadius = 20;;
 
-let nooleLaius = 7.;; (* õigupoolest pool laiust *)
+let nooleLaius = 7.;;		(* õigupoolest pool laiust *)
 let noolePikkus = 20.;;
 
 let jooneLaius = 3;;
 
-(* järgmised on mapid serva tippude nimed : int, hoiustamaks ringjoone võrrandit (x+a)^2 + (y+b)^2 = r^2 *)
-let kaareX = Hashtbl.create 10;;
-let kaareY = Hashtbl.create 10;;
-let kaareR = Hashtbl.create 10;;
-let kaareK = Hashtbl.create 10;; (* tippe ühendava lõigu keskpunkti minimaalne kaugus kaarest (90 kraadi all) *)
-
+(* funktsioon, mis teisendab radiaanid kraadideks *)
 let radiaanKraadideks(rad) =
 	let pi = 3.1415926535897 in
 	180. /. pi *. rad;;
 
+(* funktsioon, mis leiab sirge y=ax+c, millel asuvad tipud (x1;y1) ja (x2;y2), ja tagastab (a,c) *)
+let leiaSirge(x1, y1, x2, y2) =
+	let a = (y2 -. y1) /. (x2 -. x1) in
+	let c = (y1) -. a *. (x1) in
+	(a, c);;
+
+(* funktsioon, mis tagastab kahe punkti vahelise kauguse *)
+let leiaJoonePikkus(x1, y1, x2, y2) =
+	sqrt ((x1 -. x2) ** 2. +. (y1 -. y2) ** 2.);;
+
 (* funktsioon, mis tagastab kahe punkti koordinaadid, mis asuvad sirgel y=ax+c ning on samal sirgel asuvast punktist (x1, y1) kaugusel r*)
 let kaksPunkti(x1, y1, a, c, r) =
-	(* TODO: jätta? assert (abs(a *. x1 +. c - y) < 2.); *)
 	let ruutKordaja = a *. a +. 1. in
 	let lineaarKordaja = 2. *. (a *. (c -. y1) -. x1) in
 	let vabaliige = x1 ** 2. +. y1 ** 2. +. c ** 2. -. r ** 2. -. 2. *. y1 *. c in
@@ -35,10 +43,6 @@ let kaksPunkti(x1, y1, a, c, r) =
 	let e2 = ((-1.) *. (sqrt(lineaarKordaja ** 2. -. 4. *. ruutKordaja *. vabaliige) +. lineaarKordaja)) /. (2. *. ruutKordaja) in
 	let f2 = a *. e2 +. c in
 	((e1, f1), (e2, f2));;
-
-(* funktsioon, mis tagastab kahe punkti vahelise kauguse *)
-let leiaJoonePikkus(x1, y1, x2, y2) =
-	sqrt ((x1 -. x2) ** 2. +. (y1 -. y2) ** 2.);;
 
 
 (* leiame kaalu jaoks punkti (i, j) nii, et need oleks tippe tipp1 ja tipp2 ühendava serva keskpunktist 90 kraadi all kaugusel "kaugus" ning ei läheks akna äärtest välja *)
@@ -54,12 +58,10 @@ let leiaKaaluKoordinaadid(tipp1, tipp2, kaugus) =
 	let f = (y1 +. y2) /. 2. in 			(* serva keskpunkti y *)
 	let a = (y2 -. y1) /. (x2 -. x1) in 	(* serva tõus *)
 	let vahe = a *. k /. sqrt(a ** 2. +. 1.) in
-		(*if klauslid vajalikud, sest kui on horisontaalne või vertikaalne serv, siis a = 0 või +- inf ning asi ei töötaks *)
 	let imin = if x1 = x2 then (x1 -. k) else min (e -. vahe) (e +. vahe) in
 	let jmin = if y1 = y2 then (y1 -. k) else f +. (e -. imin) /. a in
 	let imax = if x1 = x2 then (x1 +. k) else max (e -. vahe) (e +. vahe) in
-	let jmax = if y1 = y2 then (y1 +. k) else f +. (e -. imax) /. a in (* jmax pole tingimata suurem kui jmin, aga kindlasti imax > imin *)
-	
+	let jmax = if y1 = y2 then (y1 +. k) else f +. (e -. imax) /. a in
 	if kaareKaugus <> 0
 		then (		(* valime selle punkti, mis on ringjoone keskpunktist kaugemal, et kaare juurde paigutuks *)
 			let xr = float_of_int(Hashtbl.find kaareX (!tipp1.nimi ^ ":" ^ !tipp2.nimi)) in
@@ -84,19 +86,13 @@ let leiaRistuvSirge(a, c, e, f) =
 let kaheTipuVahel(p, t1x, t2x) =
 	p > min t1x t2x && p < max t1x t2x;;
 
-(* funktsioon, mis uuendab kaare kõiki andmeid *)
-let uuendaKaareAndmeid(tipp1, tipp2, x, y, r, k) =
-	let nimi = tipp1.nimi ^ ":" ^ tipp2.nimi in
-	Hashtbl.replace kaareX nimi x;
-	Hashtbl.replace kaareY nimi y;
-	Hashtbl.replace kaareR nimi r;
-	Hashtbl.replace kaareK nimi k;;
-	
-
-(*TODO: kirjaaknaKorgust ka arvestada. NB! aknaLaius - tipuRaadius pole päris täpne, vaja kuidagi katsetamisega leida *)
+(* funktsioon, mis võtab argumendiks x-koordinaadi ja tagab, et see oleks pildi piirides *)
 let piiridesX(x) = if x < tipuRaadius then tipuRaadius else if x > aknaLaius - tipuRaadius then aknaLaius - tipuRaadius else x;;
+
+(* funktsioon, mis võtab argumendiks y-koordinaadi ja tagab, et see oleks pildi piirides *)
 let piiridesY(y) = if y < tipuRaadius then tipuRaadius else if y > aknaKorgus - tipuRaadius then aknaKorgus - tipuRaadius else y;;
 
+(* funktsioon tipu loomiseks *)
 let looTipp(tipuandmed) = 
 	match tipuandmed with
 		| (tipuNimi, tipuX, tipuY, tipuHind) -> {
@@ -104,29 +100,30 @@ let looTipp(tipuandmed) =
 			x = ref(piiridesX(tipuX));
 			y = ref(piiridesY(tipuY (*+ kirjaaknaKorgus*))); (* + kirjaaknaKorgus jätta või mitte? *)
 			tv = ref(Vaatlemata);
-			hind = tipuHind;
+			hind = ref(tipuHind);
 		};;
 
+(* funktsioon tippude loomiseks *)
 let looTipud(tipuandmeteList) =
 	if List.length tipuandmeteList = 0
 		then failwith("Graafis peab olema vähemalt üks tipp.");
 	List.map looTipp tipuandmeteList;;
 
+(* funktsioon, mis tagastab, kas nimi n ja ja tipu nimi langevad kokku *)
 let leiaVastavaNimegaTipp n tipp = (n = tipp.nimi);;
 
+(* funktsioon, mis tagastab, kas serva kaal on sobivates piirides ehk vahemikus (min_int, max_int) *)
 let sobivKaal(kaal) =
 	match kaal with
 		| None -> true
 		| Some k -> k < max_int && k > min_int;; 
 		(* TODO: tegelt peaks kuvamise kenaduse huvides ka 2-kohaliseks piirama? Või kaugust kaarest suurendama? *)
 	
+(* funktsioon serva loomiseks *)
 let looServ(servaandmed, tipud) =
-	(*TODO: peaks kontrollima ka seda, et sellist serva juba pole?*)
 	match servaandmed with
-		| (t1nimi, t2nimi, k, noolTipust) -> ( 
+		| (t1nimi, t2nimi, k, noolTipust) -> (
 			try
-				if t1nimi = t2nimi
-					then failwith("Tipust ei saa minna serva iseendasse."); (* TODO: või seda lubada? *)
 				let t1 = List.find (leiaVastavaNimegaTipp t1nimi) tipud in
 				let t2 = List.find (leiaVastavaNimegaTipp t2nimi) tipud in
 				if sobivKaal(k) = false
@@ -147,9 +144,17 @@ let looServ(servaandmed, tipud) =
 				)
 		);;
 
+(* funktsioon servade loomiseks *)
 let rec looServad(servaandmeteList, tipud) =
 	List.map (fun sa -> looServ(sa, tipud)) servaandmeteList;;
 
+(* funktsioon graafi loomiseks *)
+let looGraaf(tipud, servad) = {
+	tipud = tipud;
+	servad = servad;
+}
+
+(* funktsioon tipu kuvamiseks *)
 let kuvaTipp(tipp) = 
 	set_color (
 		match !(tipp.tv) with
@@ -161,12 +166,7 @@ let kuvaTipp(tipp) =
 	);
 	fill_circle !(tipp.x) !(tipp.y) tipuRaadius;;
 
-(* funktsioon, mis leiab sirge y=ax+c, millel asuvad tipud (x1;y1) ja (x2;y2), ja tagastab (a,c) *)
-let leiaSirge(x1, y1, x2, y2) =
-	let a = (y2 -. y1) /. (x2 -. x1) in
-	let c = (y1) -. a *. (x1) in
-	(a, c);;
-	
+(* funktsioon, mis tagastab kaare ringjoone x-koordinaadi, y-koordinaadi, raadiuse, algusnurga ja lõppnurga *)
 let leiaKaareAndmed(tipp1, tipp2) =
 	let nimi = tipp1.nimi ^ ":" ^ tipp2.nimi in
 	let xr = float_of_int(Hashtbl.find kaareX nimi) in
@@ -181,59 +181,63 @@ let leiaKaareAndmed(tipp1, tipp2) =
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((maxY -. yr) /. r))) in
 			let algusKraad = if xr < minX then 0 else 180 in	(* kui ringjoone keskpunkt on tippudest vasakul, siis 0, else 180 *)
-			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
 		)
 	else if minY = maxY		(* tipud asuvad horisontaalselt *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((maxX -. xr) /. r))) in
 			let algusKraad = if yr < minY then 90 else 270 in	(* kui ringjoone keskpunkt on tippudest all, siis 90, else 270 *)
-			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
 		)
 	else if a > 0. && a *. xr +. c > yr				(* tipud tõusval sirgel, ringi keskpunkt joonest all *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((xr -. maxX) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minY -. yr) /. r))) in
-			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (90 + alfa), (180 - beeta))
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), (90 + alfa), (180 - beeta))
 		)
 	else if a > 0. && a *. xr +. c < yr		(* tipud tõusval sirgel, ringi keskpunkt joonest üleval *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((yr -. maxY) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minX -. xr) /. r))) in
-			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (270 + beeta), (360 - alfa))
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), (270 + beeta), (360 - alfa))
 		)
 	else if a < 0. && a *. xr +. c < yr		(* tipud langeval sirgel, ringi keskpunkt joonest üleval *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((yr -. maxY) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((xr -. maxX) /. r))) in
-			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), (180 + alfa), (270 - beeta))
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), (180 + alfa), (270 - beeta))
 		)
 	else if a < 0. && a *. xr +. c > yr		(* tipud langeval sirgel, ringi keskpunkt joonest all *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((minY -. yr) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minX -. xr) /. r))) in
-			(int_of_float(xr), int_of_float(yr), int_of_float(r), int_of_float(r), alfa, (90 - beeta))
+			(int_of_float(xr), int_of_float(yr), int_of_float(r), alfa, (90 - beeta))
 		)
-	else (0, 0, 0, 0, 0, 0);; (* ei tohiks siia jõuda *)
+	else (0, 0, 0, 0, 0);; (* ei tohiks siia jõuda *)
 
+(* funktsioon kaardus serva kuvamiseks *)
 let kuvaKaar(tipp1, tipp2) =
-	let (xr, yr, r1, r2, nurk1, nurk2) = leiaKaareAndmed(tipp1, tipp2) in
-	draw_arc xr yr r1 r2 nurk1 nurk2;;
+	let (xr, yr, r, nurk1, nurk2) = leiaKaareAndmed(tipp1, tipp2) in
+	draw_arc xr yr r r nurk1 nurk2;;
 		
+(* funktsioon serva kuvamiseks *)
 let kuvaServ(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2; sv = v} -> (
-				if Hashtbl.find kaareR (!t1.nimi ^ ":" ^ !t2.nimi) = 0
-					then ( (*kui raadius on 0, siis järelikult sirgjoon, mitte kaar*)
-  					moveto !(!t1.x) !(!t1.y);
-  					lineto !(!t2.x) !(!t2.y)
-					 )
-				else kuvaKaar(!t1, !t2)
+			if Hashtbl.find kaareR (!t1.nimi ^ ":" ^ !t2.nimi) = 0
+				then ( (*kui raadius on 0, siis järelikult sirgjoon, mitte kaar*)
+					moveto !(!t1.x) !(!t1.y);
+					lineto !(!t2.x) !(!t2.y)
+				 )
+			else kuvaKaar(!t1, !t2)
 		);;
 		
+(* funktsioon tipu nime kuvamiseks *)
 let kuvaNimi(tipp) =
 	moveto (!(tipp.x)-3) (!(tipp.y)-7); (*TODO: panna mahalahutamine raadiusest sõltuma *)
 	draw_string tipp.nimi;;
 	
+(* funktsioon serva kaalu kuvamiseks *)
 let kuvaKaal(serv) =
 	match serv with
 		| {tipp1 = t1; tipp2 = t2; kaal = k; sv = v} -> (
@@ -255,7 +259,7 @@ let leiaNooleKoordinaadidSirge(serv) =
 	let x2 = float_of_int(!(!toTipp.x)) in
 	let y2 = float_of_int(!(!toTipp.y)) in
 	let tr = float_of_int(tipuRaadius) in
-	if x1 = x2 (* erijuht vertikaalse serva jaoks *)
+	if x1 = x2 			(* erijuht vertikaalse serva jaoks *)
 		then
 			let i = if kaheTipuVahel(y2 +. tr, y1, y2) then y2 +. tr else y2 -. tr in
 			let j = if kaheTipuVahel(y2 +. tr +. noolePikkus, y1, y2) then y2 +. tr +. noolePikkus else y2 -. tr -. noolePikkus in
@@ -288,7 +292,7 @@ let leiaNooleKoordinaadidKaar(serv) =
 	let y2 = float_of_int(Hashtbl.find kaareY nimi) in
 	let r2 = float_of_int(Hashtbl.find kaareR nimi) in
 	(* ringjoonte võrrandid: (x-x1)^2 + (y-y1)^2 = (r1)^2 ja (x-x2)^2 + (y-y2)^2 = (r2)^2 *)
-	(* ringjoonte lõikepunktide leidmine, allikas: http://math.stackexchange.com/a/256123 *)
+	(* ringjoonte lõikepunktide leidmine, vt: http://math.stackexchange.com/a/256123 *)
 	let v = ((r1 ** 2.) -. (r2 ** 2.)) -. ((x1 ** 2.) -. (x2 ** 2.)) -. ((y1 ** 2.) -. (y2 ** 2.)) in
 	(* a - ruutliikme kordaja, b - lineaarliikme kordaja, c - vabaliige *)
 	let a = ((x1 -. x2) /. (y2 -. y1)) ** 2. +. 1. in
@@ -316,10 +320,12 @@ let leiaNooleKoordinaadid(serv) =
 	let nimi = !(serv.tipp1).nimi ^ ":" ^ !(serv.tipp2).nimi in
 	if Hashtbl.find kaareR nimi = 0 then leiaNooleKoordinaadidSirge(serv) else leiaNooleKoordinaadidKaar(serv);;
 		
+(* funktsioon noole kuvamiseks *)
 let kuvaNool(serv) =
 	let (p1, p2, p3, p4, p5, p6) = leiaNooleKoordinaadid(serv) in
 	fill_poly [|p1, p2; p3, p4; p5, p6|];; 
 		
+(* funktsioon serva ja noole kuvamiseks *)
 let kuvaServJaNool(serv) =
 	set_color (
 		match !(serv.sv) with
@@ -332,53 +338,63 @@ let kuvaServJaNool(serv) =
 	kuvaServ(serv);
 	if serv.nool = true then kuvaNool(serv);;
 
+(* funktsioon tipu hinna kuvamiseks *)
 let kuvaHind(tipp) =
-	match tipp.hind with
+	match !(tipp.hind) with
 		| None -> ()
 		| Some h -> (
 			moveto (!(tipp.x) - 5) (!(tipp.y) + 20); (* TODO: 5 ja 20 suvalt võetud, panna sõltuma *)
-			draw_string (string_of_int(h))
+			draw_string (if h = max_int then "inf" else string_of_int(h))
 		);;
 		
+(* funktsioon tippude kuvamiseks *)
 let kuvaTipud(tipud) = 
 	List.iter kuvaTipp tipud;;
 	
+(* funktsioon tippude nimede kuvamiseks *)
 let kuvaNimed(tipud) =
 	set_color black;
 	List.iter kuvaNimi tipud;;
 	
+(* funktsioon servade kaalude kuvamiseks *)
 let kuvaKaalud(servad) =
 	set_color black;
 	List.iter kuvaKaal servad;;
 	
+(* funktsioon tippude hindade kuvamiseks *)
 let kuvaHinnad(tipud) =
 	set_color black;
 	List.iter kuvaHind tipud;;
 	
+(* funktsioon servade ja noolte kuvamiseks *)
 let kuvaServadJaNooled(servad) =
 	set_line_width jooneLaius;
 	List.iter kuvaServJaNool(servad);;
 
+(* funktsioon nimekirjade kuvamiseksgraafi kohal *)
 let kuvaNimekirjad() =
 	moveto 10 (aknaKorgus + korgusLisa - 60);
 	draw_string !AlgoBaas.nk1;
 	moveto 10 (aknaKorgus + korgusLisa - 80);
 	draw_string !AlgoBaas.nk2;
 	moveto 10 (aknaKorgus + korgusLisa - 100);
-	draw_string !AlgoBaas.nk3;;
+	draw_string !AlgoBaas.nk3;
+	moveto 10 (aknaKorgus + korgusLisa - 120);
+	draw_string !AlgoBaas.nk4;;
 	
+(* funktsioon algoritmi sammu kirjelduse väljaprinitmiseks *)
 let kuvaTekst() =
 	set_color black;
 	if !(AlgoBaas.tekst) <> ""
 		then print_endline(!(AlgoBaas.tekst) ^ "\n");;
 
+(* funktsioon Floyd-Warshalli tabeli kuvamiseks *)
 let kuvaTabel(tipud, servad) =
 	set_line_width 2;
-	(* TODO: tabeli algkoordinaadid tippude arvust sõltuma? *)
-	let xAlgus = aknaLaius + 10 in	(* x algkoordinaat - tabeli vasak ülemine nurk *)
-	let yAlgus = 400 in							(* y algkoordinaat *)
+	let xAlgus = aknaLaius + 10 in									(* x algkoordinaat - tabeli vasak ülemine nurk *)
+	let yAlgus = 400 in															(* y algkoordinaat *)
 	let tippudeArv = List.length tipud in
-	let a = 30 in (* väikse ruudu külje suurus NB! fill_rect alustab just vasakust alumisest nurgast *)
+	let a = 30 in 																	(* väikse ruudu külje suurus NB! fill_rect alustab vasakust alumisest nurgast *)
 	if !(FloydWarshall.fiks) >= 0 && !(FloydWarshall.fiks) < tippudeArv 
 		then (																				(* fikseeritud rea ja veeru kuvamine *)
 			set_color (rgb 253 253 122);
@@ -446,6 +462,7 @@ let kuvaTabel(tipud, servad) =
     	done
 		);;
 
+(* funktsioon pildi ümber kasti kuvamiseks *)
 let kuvaKast() =
 	set_color black;
 	set_line_width 2;
@@ -455,6 +472,7 @@ let kuvaKast() =
 	lineto aknaLaius 0;
 	lineto 0 0;;
 	
+(* põhiline funktsioon kogu pildi kuvamiseks *)
 let kuvaPilt(tipud, servad) =
 	clear_graph();
 	kuvaServadJaNooled(servad);
@@ -467,5 +485,3 @@ let kuvaPilt(tipud, servad) =
 		then kuvaTabel(tipud, servad);
 	kuvaKast();
 	kuvaTekst();;
-
-(*TODO: eraldi fn randomilt tippude loomiseks, ainult etteantud arvuga? *)
