@@ -128,10 +128,10 @@ let nimekirjadeTekst() =
 	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 100) ^ "u)) scaled defaultscale withcolor black;\n" ^
 	"label.rt(\"" ^ att(!(AlgoBaas.nk4)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 120) ^ "u)) scaled defaultscale withcolor black;\n";;
 
-let tabeliTekst(tipud, servad) = 		(* TODO: koodikordus Graafika.kuvatabeliga, osa kokku võtta? *)
-	let tulem = ref("") in
-	let xAlgus = Graafika.aknaLaius + 10 in	(* x algkoordinaat - tabeli vasak ülemine nurk *)
-	let yAlgus = 400 in							(* y algkoordinaat *)
+let tabeliTekst(tipud, servad) =
+	let tulem = ref("pickup pencircle scaled 1pt;\n") in
+	let xAlgus = Graafika.aknaLaius + 10 in					(* x algkoordinaat - tabeli vasak ülemine nurk *)
+	let yAlgus = 400 in															(* y algkoordinaat *)
 	let tippudeArv = List.length tipud in
 	let a = 30 in
 	if !(FloydWarshall.fiks) >= 0 && !(FloydWarshall.fiks) < tippudeArv 
@@ -229,7 +229,7 @@ let kastiTekstid() =
 	"draw (-" ^ string_of_int(lisa) ^ "u,-" ^ string_of_int(tl + lisa) ^ "u)--(" ^ 	(* ääred *)
 				string_of_int(al + lisa) ^ "u,-"  ^ string_of_int(tl + lisa) ^ "u)--(" ^ 
 				string_of_int(al + lisa) ^ "u," ^ string_of_int(ak + lisa) ^ "u)--(-" ^
-				string_of_int(lisa) ^ "," ^ string_of_int(ak + lisa) ^ "u)--cycle;\n";;
+				string_of_int(lisa) ^ "u," ^ string_of_int(ak + lisa) ^ "u)--cycle;\n";;
 	
 let slaidiTekst(tipud, servad) =
 	"beginfig(" ^ string_of_int(!nr) ^ ")\n" ^

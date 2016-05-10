@@ -8,8 +8,9 @@ clean:
 	rm -f $(TULEM)
 	rm -f *.cmi
 	rm -f *.cmo
-	rm -f *.log
-	rm -f *.pdf
-	rm -f *.mp*
-	rm -f temp.*
-	rm -f *.1
+	rm -f *.log		% kõikide failide puhul mpostiga tekkinud temp.log fail
+	rm -f *.pdf		% õnnestunud slaidide genereerimise korral tekkinud PDF failid
+	rm -f *.mp*		% kõikide variantide puhul tekkinud temp.mp ning .mps failid
+	rm -f temp.*	
+	rm -f *.1		% variant 1 puhul tekkinud temp.1 fail
+	rm -f *.tex		% variant 3 puhul tekkinud LaTeX failid

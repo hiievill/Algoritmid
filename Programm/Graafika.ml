@@ -23,7 +23,7 @@ let radiaanKraadideks(rad) =
 	let pi = 3.1415926535897 in
 	180. /. pi *. rad;;
 
-(* funktsioon, mis leiab sirge y=ax+c, millel asuvad tipud (x1;y1) ja (x2;y2), ja tagastab (a,c) *)
+(* funktsioon, mis leiab sirge y=ax+c, millel asuvad tipud (x1, y1) ja (x2, y2), ja tagastab (a,c) *)
 let leiaSirge(x1, y1, x2, y2) =
 	let a = (y2 -. y1) /. (x2 -. x1) in
 	let c = (y1) -. a *. (x1) in
@@ -189,7 +189,7 @@ let leiaKaareAndmed(tipp1, tipp2) =
 			let algusKraad = if yr < minY then 90 else 270 in	(* kui ringjoone keskpunkt on tippudest all, siis 90, else 270 *)
 			(int_of_float(xr), int_of_float(yr), int_of_float(r), (algusKraad - alfa), (algusKraad + alfa))
 		)
-	else if a > 0. && a *. xr +. c > yr				(* tipud tõusval sirgel, ringi keskpunkt joonest all *)
+	else if a > 0. && a *. xr +. c > yr		(* tipud tõusval sirgel, ringi keskpunkt joonest all *)
 		then (
 			let alfa = int_of_float(radiaanKraadideks(asin ((xr -. maxX) /. r))) in
 			let beeta = int_of_float(radiaanKraadideks(asin ((minY -. yr) /. r))) in

@@ -296,7 +296,7 @@ let teeKoondPDF() =
 	while !loendur < !(MetaPost.nr)														(* itereerime üle PostScripti failide *)
 	do
 		print_endline(string_of_int(!loendur) ^ "/" ^ string_of_int(!(MetaPost.nr) - 1));
-		let f = "temp." ^ string_of_int(!loendur) in
+		let f = "temp" ^ string_of_int(!loendur) ^ ".mps" in
 		teePDF(f, !loendur);																		(* teeme PostScripti failist PDFi *)
 		(*kustutaFail(f);																					(* kustutame PostScripti faili *)*)
 		loendur := !loendur + 1
@@ -323,15 +323,42 @@ let looPSfailid() =
 	let mpostTulemus = Sys.command("mpost temp.mp") in				
 	if mpostTulemus <> 0
 		(*then failwith("MetaPostist PostScriptiks tegemine ebaõnnestus.");	*)
-	then ();; 			(* TODO: kodeering korda saada ja eelnev rida tagasi sisse kommenteerida *)	
+	then ();; 			(* TODO: kodeering korda saada ja eelnev rida tagasi sisse kommenteerida *)
 	
-(* põhiline funktsioon slaidide loomiseks *)
-let looSlaidid(algtipp, tipud, servad) =
-	looMPfail("temp.mp", algtipp, tipud, servad);							(* tekitame MetaPosti faili *)
-	looPSfailid();																						(* tekitame MetaPosti failist PostScripti failid *)
+(* funktsioon, mis koostab ja tagastab LaTeXi teksti *)
+let latexiTekst() =
+	let mpsFailid = ref("") in
+	for i = 1 to !(MetaPost.nr) - 1
+	do
+		let f = "temp" ^ string_of_int(i) ^ ".mps" in
+		mpsFailid := !mpsFailid ^ "\n" ^ "\\includegraphics{" ^ f ^ "}"
+	done;
+	"\\documentclass{article}" ^ "\n" ^
+	"\\usepackage{graphicx}" ^ "\n" ^
+	"\\DeclareGraphicsRule{*}{mps}{*}{}" ^ "\n" ^
+	"\\begin{document}" ^ "\n" ^
+	!mpsFailid ^ "\n" ^
+	"\\end{document}";;
+
+(* koostame LaTeX faili ja teeme pdflatex abil sellest PDFi *)
+let variant3() =
+	let texFail = string_of_algo(!algo) ^ ".tex" in 
+	let oc = open_out texFail in
+	Printf.fprintf oc "%s" (latexiTekst());
+	close_out oc;
+	let texTulemus = Sys.command("pdflatex " ^ texFail) in
+	if texTulemus <> 0
+		then failwith("LaTeXist PDFi tegemine ebaõnnestus.");;
 	
-	(* proovime kõik tekkinud PostScripti failid üheks koondada ja sellest otse PDFi teha *)
-		
+(* teeme Postscripti failid ükshaaval PDFideks ja liidame PDFid kokku *)
+let variant2() =
+	let koondPDFTulemus = teeKoondPDF() in
+	if koondPDFTulemus <> 0
+		then failwith("KoondPDFi tegemine ebaõnnestus.");;
+
+(* proovime esmalt kõik tekkinud PostScripti failid üheks koondada ja sellest otse PDFi teha, ebaõnnestumise korral*)
+(* proovime varianti 2 *) 	
+let variant1() =		
 	let psFail = string_of_algo(!algo) ^ ".1" in 							(* tekitame ühe PostScripti faili *)
 	koondaYhteFaili(psFail);																	(* kirjutame kõik tekkinud PostScripti failid sinna kokku *)
 	let pdfTulemus = Sys.command("epstopdf " ^ psFail) in			(* teeme EPS failist PDF faili *)
@@ -340,18 +367,17 @@ let looSlaidid(algtipp, tipud, servad) =
 	kustutaFail("temp.log");
 	kustutaFail(psFail);*)
 	
-	(* kui ei õnnestunud, siis teeme Postscripti failid ükshaaval PDFideks ja liidame PDFid kokku *)
-	
 	if pdfTulemus <> 0
-		then (
-			let koondPDFTulemus = teeKoondPDF() in
-			if koondPDFTulemus <> 0
-				then failwith("KoondPDFi tegemine ebaõnnestus.")
-		);
-		
-	(*let koondPDFTulemus = teeKoondPDF() in
-	if koondPDFTulemus <> 0
-		then failwith("KoondPDFi tegemine ebaõnnestus.");*)
+		then variant2();;
+	
+(* põhiline funktsioon slaidide loomiseks *)
+let looSlaidid(algtipp, tipud, servad) =
+	looMPfail("temp.mp", algtipp, tipud, servad);							(* tekitame MetaPosti faili *)
+	looPSfailid();																						(* tekitame MetaPosti failist PostScripti failid *)
+	
+	(*variant1();*)				(* kõik PS failid kokku üheks, sellest PDF. Häda: slaidid jäävad nihkes *)
+	variant2();						(* igast PS failist eraldi PDF, need kokku liita. Häda: aeglane *)
+	(*variant3();*)				(* PS failid LaTeXisse. Häda: pilt ei kata tervet slaidi *)
 	
 	print_endline("\nPDF valmis.");
 	programmK2ib := false;;																		(* sulgeme akna *)
@@ -509,9 +535,8 @@ let graafiKontroll(algtipp, tipud, servad, suunatus, kaaludega, hindadega, sidus
 	match suunatus with
 		| None -> if samadSuunad(servad) = false then failwith("Graafis esineb nii suunatu kui mittesuunatud servi.")
 		| Some b -> kontrolliSuunatust(servad, b);;
-	(* TODO: tüklilisuse kontroll ka (topodel ei või üldse, FW-l ei või neg tsükleid) *)
 	
-(* funktsioon, mis kontrollib, et samanimelisi tippe ei esineks (*ning et tippude hinnad oleks lõigus [-99, 99]*) ning 
+(* funktsioon, mis kontrollib, et samanimelisi tippe ei esineks ning et tippude hinnad oleks positiivsed ning 
 tippude nimed oleks pikkusega 1 tähemärk *)
 let tippudeKontroll(tipud) =
 	for i = 0 to (List.length tipud) - 1
@@ -520,11 +545,11 @@ let tippudeKontroll(tipud) =
 		if List.length (List.filter (fun t -> t.nimi = nimi) tipud) > 1
 			then failwith("Tippu nimega " ^ nimi ^ " esineb mitu korda.")
 	done;
-	(*try
-		let sobimatuHinnaga = List.find (fun t -> match !(t.hind) with | None -> false | Some h -> h < (-99) || h > 99) tipud in
-		failwith("Tippude hinnad peavad jääma lõiku [-99, 99]. Vigane tipp: " ^ string_of_tipp(sobimatuHinnaga))
+	try
+		let sobimatuHinnaga = List.find (fun t -> match !(t.hind) with | None -> false | Some h -> h < 1) tipud in
+		failwith("Tippude hinnad peavad olema positiivsed. Vigane tipp: " ^ string_of_tipp(sobimatuHinnaga))
 	with
-		| Not_found -> ();*)
+		| Not_found -> ();
 	try
 		let sobimatuNimega = List.find (fun t -> String.length t.nimi > 1) tipud in
 		failwith("Tippude nimed ei või olla pikemad kui 1 tähemärk. Vigane tipp: " ^ string_of_tipp(sobimatuNimega))
@@ -585,7 +610,6 @@ let alusta(graaf, algtipuNimi) =
 	let algtipp = valiAlgtipp(algtipuNimi, graaf.tipud) in
 	let tipud = graaf.tipud in
 	let servad = graaf.servad in
-	
 	kontrolliGraafi(algtipp, tipud, servad);
 	let x = (if !algo = FloydWarshall then laiusLisa else 0) in
 	open_graph (" " ^ string_of_int(aknaLaius + x) ^ "x" ^ string_of_int(aknaKorgus + korgusLisa));
@@ -675,8 +699,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral määrame sisendandmed siin ise *)
-  	algo := Kosaraju;
-  	let graaf = ntKosaraju1 in
+  	algo := FloydWarshall;
+  	let graaf = ntFloydWarshall1 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 		alusta(graaf, algtipuNimi)
 	);;
