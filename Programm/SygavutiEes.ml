@@ -11,9 +11,10 @@ let algus() =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Magasin on tühi. Sügavuti eesjärjestuses läbimise algoritm lõpetab.";
+	tekst := "Magasin on tühi. Sügavuti eesjärjestuses läbimise algoritm lõpetab, olles leidnud sügavuti eesjärjestuses läbimise puu";
 	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
-	nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);
+	(*nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);*)
+	nk2 := string_of_j2rgmisedServad(!j2rgmisedServad);
 	AlgoBaas.lopp();;
 
 (* algoritmi samm *)

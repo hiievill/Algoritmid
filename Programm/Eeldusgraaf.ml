@@ -146,7 +146,7 @@ let tipuLisamineVL(tipud, servad) =
 
 (* kogu projekti varaseima lõpuaja arvutamine *)
 let projektiAeg(tipud) =
-	tekst := "Leiame kogu projekti varaseima lõpuaja, milleks on järglasteta tippude suurim varaseim lõpuaeg.";
+	tekst := "Leiame kogu projekti varaseima lõpuaja, milleks on tippude suurim varaseim lõpuaeg.";
 	nk3 := "Kogu projekti varaseim lõpuaeg: " ^ string_of_int(leiaSuurimVL(tipud));
 	i := Vahe2;;
 
@@ -186,35 +186,10 @@ let tipuLisamineHA(tipud, servad) =
 
 (* vaheteksti kuvamine *)
 let vahe3(tipud, servad) =
-	tekst := "Leiame kriitilise tee.";
+	tekst := "Leiame kriitilise tee, mis koosneb kriitilistest tippudest ehk sellistest tippudest, mille hiliseima algusaja ja hinna summa võrdub varaseima lõpuajaga.";
 	nk3 := string_of_hiliseimadAlgusajad(tipud);
 	nk4 := "";
 	i := Kriitiline;;
-
-(* esimese kriitilise tipu leidmine ja valituks märkimine *)
-(*let esimeneKriitiline(tipud) =
-	let kriitilineTipp = List.find (fun t -> Hashtbl.find ha t.nimi = 0) tipud in
-	kriitilineTipp.tv := Valitud;
-	kriitilineTee := [kriitilineTipp];
-	tekst := "Leiame esimese kriitilise tipu - sellise tipu, mille hiliseim algusaeg on 0.";
-	nk4 := string_of_kriitilineTee();
-	if List.length tipud = 1
-		then i := Lopp
-	else i := Kriitiline;;*)
-
-(* kriitilise serva ja vastava kriitilise tipu leidmine ja valituks märkimine *)
-(*let kriitiline(tipud, servad) =
-	let projektiAeg = leiaSuurimVL(tipud) in
-	let kriitilineServ = List.find (fun s -> !(!(s.tipp1).tv) = Valitud && !(!(s.tipp2).tv) <> Valitud && onKriitiline(!(s.tipp2))) servad in
-	let kriitilineTipp = !(kriitilineServ.tipp2) in
-	kriitilineServ.sv := Valitud;
-	kriitilineTipp.tv := Valitud;
-	kriitilineTee := !kriitilineTee @ [kriitilineTipp];
-	tekst := "Leiame järgmise kriitilise tipu - sellise tipu, mille hiliseima algusaja ja hinna summa on võrdne tema varaseima lõpetamisajaga.";
-	nk4 := string_of_kriitilineTee();
-	if Hashtbl.find vl kriitilineTipp.nimi = projektiAeg
-		then i := Lopp
-	else i := Kriitiline;;*)
 	
 let kriitiline(tipud, servad) =
 	List.iter (fun t -> if onKriitiline(t) then t.tv := Valitud) tipud;
@@ -226,7 +201,7 @@ let kriitiline(tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Kriitiline tee on leitud ja sellega on eldusgraafi analüüs lõppenud.";
+	tekst := "Kriitiline tee on leitud ja sellega on eeldusgraafi analüüs lõppenud.";
 	nk4 := string_of_kriitilineTee();
 	AlgoBaas.lopp();;
 
@@ -243,7 +218,6 @@ let samm(tipud, servad) =
 		| TipuValikHA -> tipuValikHA(tipud, servad)
 		| TipuLisamineHA -> tipuLisamineHA(tipud, servad)
 		| Vahe3 -> vahe3(tipud, servad)
-		(*| EsimeneKriitiline -> esimeneKriitiline(tipud)*)
 		| Kriitiline -> kriitiline(tipud, servad)
 		| Lopp -> lopp()
 		| _ -> ();;

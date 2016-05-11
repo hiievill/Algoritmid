@@ -58,15 +58,19 @@ let rec eemaldaKorduvadAlgusest(list) =
 let eemaldaKorduvadLopust(list) = List.rev (eemaldaKorduvadAlgusest(List.rev list));;
 
 (* funktsioon järgmiste tippude sõnena esitamiseks *)
-let string_of_j2rgmisedTipud(servad) = 
+(*let string_of_j2rgmisedTipud(servad) = 
 	let tipud =	List.map (fun s -> if !(!(s.tipp1).tv) = Vaatlemata then !(s.tipp1) else !(s.tipp2)) servad in
 	let unikaalsedTipud = eemaldaKorduvadLopust(tipud) in
-	"Järgmised tipud: " ^ string_of_tipud(unikaalsedTipud);;
+	"Järgmised tipud: " ^ string_of_tipud(unikaalsedTipud);;*)
+	
+let string_of_j2rgmisedServad(servad) =
+	"Järgmised servad: " ^ string_of_servad(servad);;
 
 (* funktsioon nimekirjade uuendamiseks *)
 let lisatekst() =
 	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
-	nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);;
+	(*nk2 := string_of_j2rgmisedTipud(!j2rgmisedServad);;*)
+	nk2 := string_of_j2rgmisedServad(!j2rgmisedServad);;
 
 (* algoritmi algus, mille käigus nullime ära töödeldud tipud (täidetud graafikontrollis) ja järgmised servad *)
 let algus() =
@@ -82,7 +86,8 @@ let esimeneTipp(algtipp, servad) =
 	let js = leiaJ2rgServad(algtipp, servad) in
 	j2rgmisedServad := (!j2rgmisedServad) @ js;
 	tekst := "Märgime esimese tipu külastatuks ja lisame " ^ (if !algo = Laiuti then "järjekorda" else "magasini") ^ 
-		" need tipud, kuhu äsja töödeldud tipust serv viib.";
+		(*" need tipud, kuhu äsja töödeldud tipust serv viib.";*)
+		" need servad/kaared, mis äsja töödeldud tipust väljuvad.";
 	lisatekst();
 	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
 		then i := Lopp
@@ -118,7 +123,7 @@ let servaLisamine(tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Järjekord on tühi. Laiuti läbimise algoritm lõpetab.";
+	tekst := "Järjekord on tühi. Laiuti läbimise algoritm lõpetab, olles leidnud laiuti läbimise puu";
 	lisatekst();
 	AlgoBaas.lopp();;
 

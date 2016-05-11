@@ -72,7 +72,8 @@ let string_of_vaadeldavadTipud(tipud) =
 let lisatekst() =
 	nk1 := string_of_toodeldudTipud(!toodeldudTipud);
 	nk2 := string_of_vaadeldavadTipud(!vaadeldavadTipud);
-	nk3 := Laiuti.string_of_j2rgmisedTipud(!j2rgmisedServad);;
+	(*nk3 := Laiuti.string_of_j2rgmisedTipud(!j2rgmisedServad);;*) (* TODO *)
+	nk3 := Laiuti.string_of_j2rgmisedServad(!j2rgmisedServad);;
 
 (* algoritmi algus *)
 let algus() =
@@ -138,7 +139,7 @@ let servaLisamine(algtipp, tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Magasin on tühi. Sügavuti lõppjärjestuses läbimise algoritm lõpetab.";
+	tekst := "Magasin on tühi. Sügavuti lõppjärjestuses läbimise algoritm lõpetab, olles leidnud sügavuti lõppjärjestuses läbimise puu.";
 	lisatekst();
 	AlgoBaas.lopp();;
 

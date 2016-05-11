@@ -70,7 +70,7 @@ let fikseerimine(tipud) =
 (* lahtri vaatlemine ja otsustamine, kas tema v‰‰rtust muuta vıi mitte *)
 let lahtriVaatlus(tipud) =
 	uuendaLoendureid();
-	while !x = !fiks || !y = !fiks
+	while !x = !fiks || !y = !fiks || !x = !y
 	do
 		uuendaLoendureid()
 	done;
@@ -88,27 +88,20 @@ let lahtriVaatlus(tipud) =
 			)
 	)
 	else (
-  	if !x = !y
-  		then (
-  			tekst := "Tipu kaugust iseendast ei uuenda.";
-				i := LahtriVaatlus
-  		)
-  	else (
-  		let senine = !tabel.(!x).(!y) in
-  		let uusX = !tabel.(!fiks).(!y) in
-  		let uusY = !tabel.(!x).(!fiks) in
-  		if uusX = max_int || uusY = max_int || uusX + uusY >= senine
-  			then (
-  				tekst := "Kuna " ^ string_of_lahter(uusX) ^ " + " ^ string_of_lahter(uusY) ^ " >= " ^ string_of_lahter(senine) ^
-  					", siis me lahtris olevat v‰‰rtust ei muuda.";
-						i := LahtriVaatlus
-  			)
-  			else (
-  				tekst := "Kuna " ^ string_of_lahter(uusX) ^ " + " ^ string_of_lahter(uusY) ^ " < " ^ string_of_lahter(senine) ^
-  				", siis uuendame lahtris olevat v‰‰rtust.";
-  				i := LahtriMuutmine
-  			)
-  	)
+		let senine = !tabel.(!x).(!y) in
+		let uusX = !tabel.(!fiks).(!y) in
+		let uusY = !tabel.(!x).(!fiks) in
+		if uusX = max_int || uusY = max_int || uusX + uusY >= senine
+			then (
+				tekst := "Kuna " ^ string_of_lahter(uusX) ^ " + " ^ string_of_lahter(uusY) ^ " >= " ^ string_of_lahter(senine) ^
+					", siis me lahtris olevat v‰‰rtust ei muuda.";
+					i := LahtriVaatlus
+			)
+			else (
+				tekst := "Kuna " ^ string_of_lahter(uusX) ^ " + " ^ string_of_lahter(uusY) ^ " < " ^ string_of_lahter(senine) ^
+				", siis uuendame lahtris olevat v‰‰rtust.";
+				i := LahtriMuutmine
+			)
 	);;
 
 (* lahtri v‰‰rtuse muutmine *)

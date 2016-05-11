@@ -269,7 +269,7 @@ let koondaYhteFaili(psFail) =
 	do
 		let f = "temp" ^ string_of_int(!loendur) ^ ".mps" in
 		kirjutaFaili(f, oc);
-		(*kustutaFail(f);*)
+		kustutaFail(f);
 		loendur := !loendur + 1
 	done;
 	close_out oc;;
@@ -699,8 +699,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral m‰‰rame sisendandmed siin ise *)
-  	algo := FloydWarshall;
-  	let graaf = ntFloydWarshall1 in
+  	algo := Dijkstra;
+  	let graaf = ntDijkstra2 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nıua *)
 		alusta(graaf, algtipuNimi)
 	);;

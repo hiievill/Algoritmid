@@ -7,11 +7,24 @@ let kaugused = Hashtbl.create 10;; 		(* sisuliselt map tipp.nimi : int *)
 
 let valitudTipp = ref(tyhiTipp);;			(* valitud tipp *)
 
+(* funktsioon, mis tagastab kahe tipu puhul -1, kui 1. kaugus on väiksem, 1, kui 2. kaugus on väiksem, 0 muudel juhtudel *)
+let v2iksemaKaugusega tipp1 tipp2 =
+	let k1 = Hashtbl.find kaugused tipp1.nimi in
+	let k2 = Hashtbl.find kaugused tipp2.nimi in
+	if k1 < k2 then -1 else if k1 > k2 then 1 else 0;; 
+
+(* funktsioon, mis sorteerib tippude listi kauguste põhjal algtipust *)
+let sordiTipud(tipud) =
+	List.sort v2iksemaKaugusega tipud;;
+
 (*funktsioon, mis tagastab sõnena kõikide mittevaadeldud tippude kaugused algtipust *)
 let string_of_mitteVaadelduteKaugused(tipud) =
-	let vaatlemataTipud = List.filter (fun t -> !(t.tv) <> Vaadeldud) tipud in	(* mittevaadeldud tipud *)
+	(*let vaatlemataTipud = List.filter (fun t -> !(t.tv) <> Vaadeldud) tipud in	(* mittevaadeldud tipud *)
 	let s = List.fold_left (fun a b -> a ^ ", " ^ b.nimi ^ ": " ^ (if Hashtbl.find kaugused b.nimi = max_int then "inf" else string_of_int(Hashtbl.find kaugused b.nimi))) "" vaatlemataTipud in
-	"Töötlemata tippude kaugused algtipust: [" ^ (if s = "" then "" else String.sub s 2 (String.length s - 2)) ^ "]";;
+	"Töötlemata tippude kaugused algtipust: [" ^ (if s = "" then "" else String.sub s 2 (String.length s - 2)) ^ "]";;*)
+	let vaadeldavadTipud = sordiTipud(List.filter (fun t -> !(t.tv) = Vaadeldav) tipud) in	(* mittevaadeldud tipud *)
+	let s = List.fold_left (fun a b -> a ^ ", " ^ b.nimi ^ ": " ^ (if Hashtbl.find kaugused b.nimi = max_int then "inf" else string_of_int(Hashtbl.find kaugused b.nimi))) "" vaadeldavadTipud in
+	"Tippude kauguste eelistusjärjekord: [" ^ (if s = "" then "" else String.sub s 2 (String.length s - 2)) ^ "]";;
 
 (*funktsioon, mis tagastab sõnena kõikide tippude kaugused algtipust *)
 let string_of_kaugused() =
@@ -36,7 +49,7 @@ let uuendaKaugust(serv) =
 			if uusKaugus < senineKaugus 
 				then (
 					lisaKaugus uusKaugus !t2;
-					!t2.hind := Some uusKaugus
+					(*!t2.hind := Some uusKaugus*)
 				)
 		)
 		| _ -> failwith("Serval puudub kaal. Seda et tohiks juhtuda.");;
@@ -78,7 +91,7 @@ let algus(algtipp, tipud, servad) =
 	List.iter (lisaKaugus max_int) tipud; 			(* paneme kõikidele tippudele algseks kauguseks algtipust suurima võimaliku *)
 	lisaKaugus 0 algtipp; 											(* ainult algtipule paneme kauguseks 0 *)
 	tekst := "Dijkstra algoritm alustab valitud algtipust. Määrame kõikidele tippudele kaugused algtipust: algtipule 0, kõikidele teistele lõpmatuse.";
-	List.iter (fun t -> t.hind := Some (Hashtbl.find kaugused t.nimi)) tipud;
+	(*List.iter (fun t -> t.hind := Some (Hashtbl.find kaugused t.nimi)) tipud;*)
 	nk1 := string_of_mitteVaadelduteKaugused(tipud);
 	valitudTipp := algtipp;
 	i := ServaLisamine;;
@@ -88,6 +101,7 @@ let servaLisamine(algtipp, tipud, servad) =
 	if !valitudTipp = algtipp																								(* kui valitud tipp on algtipp *)
 		then algtipp.tv := Vaadeldud																					(* märgime ta vaadelduks *)
 	else List.iter (fun s -> if !(s.sv) = Valitud then lisaServ(s)) servad; (* muidu märgime serva koos tipuga vaadelduks*)
+	!valitudTipp.hind := Some (Hashtbl.find kaugused !valitudTipp.nimi);
 	tekst := "Märgime valitud tipu vaadelduks.";
 	nk1 := string_of_mitteVaadelduteKaugused(tipud);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud										(* kui kõik tipu on vaadeldud, lähme lõpule *)
@@ -115,7 +129,7 @@ let servaValik(tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp(tipud) =
-	tekst := "Kõik tipud on töödeldud. Algoritm lõpetab, olles leidnud kõikide tippude vähima kauguse algtipust. Pildil on tekkinud kauguste puu.";
+	tekst := "Eelistusjärjekord sai tühjaks. Algoritm lõpetab, olles leidnud kõikide tippude vähima kauguse algtipust. Pildil on tekkinud kauguste puu.";
 	nk1 := string_of_kaugused();
 	AlgoBaas.lopp();;
 

@@ -40,7 +40,7 @@ let string_of_tipud(tipud) =
 (* funktsioon servade järjendi sõnena esitamiseks *)
 let string_of_servad(servad) =
 	"[" ^ String.concat ", " (List.map (fun s -> !(s.tipp1).nimi ^ !(s.tipp2).nimi ^ 
-		" (" ^ match s.kaal with | None -> "-" | Some k -> string_of_int(k) ^ ")") servad) ^ "]";;
+		match s.kaal with | None -> "" | Some k -> " (" ^ string_of_int(k) ^ ")") servad) ^ "]";;
 
 (* funktsioon külastatud tippude sõnena esitamiseks *)
 let string_of_toodeldudTipud(tipud) =
