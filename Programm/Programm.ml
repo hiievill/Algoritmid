@@ -232,24 +232,25 @@ let tagasisamm(tipud, servad) =
 	kuvaSeisund(tipud, servad);;
 
 (* failist sisu voogu lugemise funktsioon *)
-(* allikas: https://ocaml.org/learn/tutorials/if_statements_loops_and_recursion.html *)
-let read_whole_chan(chan) =
-  let buf = Buffer.create 4096 in
+(* allikas: https://ocaml.org/learn/tutorials/if_statements_loops_and_recursion.html - read_whole_chan *)
+let loeFailiSisu(ic) =
+  let puhver = Buffer.create 4096 in
   try
-    while true do
-      let rida = input_line(chan) in
-      Buffer.add_string buf rida;
-      Buffer.add_char buf '\n'
-    done;
+    while true 
+  		do
+        let rida = input_line(ic) in
+        Buffer.add_string puhver rida;
+        Buffer.add_char puhver '\n'
+      done;
     assert false
   with
-    End_of_file -> Buffer.contents buf;;
+    End_of_file -> Buffer.contents puhver;;
   
 (* funktsioon, mis loeb failist kogu sisu ja tagastab selle sõnena *)
 let failiSisu(fail) =
-  let chan = open_in fail in
-	let sisu = read_whole_chan chan in
-	close_in chan;
+  let ic = open_in fail in
+	let sisu = loeFailiSisu ic in
+	close_in ic;
 	sisu;;
 
 (* funktsioon, mis kirjutab faili sisu väljundvoogu (teise faili) *)
@@ -257,9 +258,23 @@ let kirjutaFaili(fail, oc) =
 	let sisu = failiSisu(fail) in
 	Printf.fprintf oc "%s" sisu;;
 
-(* funktsioon, mis kustutab antud faili *)
+(* funktsioon, mis kustutab antud faili, kui see leidub *)
 let kustutaFail(failinimi) =
-	Sys.remove(failinimi);;
+	if Sys.file_exists(failinimi) then Sys.remove(failinimi);;
+
+(* kustutame slaidide genereerimise käigus tekkinud failid *)
+let kustutaFailid() =
+	kustutaFail("temp.mp");
+	kustutaFail("temp.log");
+	for i = 1 to !(MetaPost.nr) - 1
+	do
+		let f = "temp" ^ string_of_int(i) ^ ".mps" in
+		kustutaFail(f);
+		let f2 = "temp" ^ string_of_int(i) ^ ".pdf" in
+		kustutaFail(f2)
+	done;
+	kustutaFail(string_of_algo(!algo) ^ ".log");
+	kustutaFail(string_of_algo(!algo) ^ ".aux");;
 
 (* funktsioon, mis kirjutab kõikide tekkinud failide (temp1.mps, temp2.mps jne) sisud kokku ühte faili psFail *)
 let koondaYhteFaili(psFail) =
@@ -269,7 +284,6 @@ let koondaYhteFaili(psFail) =
 	do
 		let f = "temp" ^ string_of_int(!loendur) ^ ".mps" in
 		kirjutaFaili(f, oc);
-		kustutaFail(f);
 		loendur := !loendur + 1
 	done;
 	close_out oc;;
@@ -279,7 +293,7 @@ let l2bim2ngSlaidideks(algtipp, tipud, servad, oc) =
 	while !algoL2bi = false
 	do
 		samm(algtipp, tipud, servad);
-		kuvaPilt(tipud, servad);
+		(*kuvaPilt(tipud, servad);*)
 		Printf.fprintf oc "%s" (MetaPost.slaidiTekst(tipud, servad));
 		MetaPost.nr := !(MetaPost.nr) + 1;
 	done;;
@@ -298,7 +312,7 @@ let teeKoondPDF() =
 		print_endline(string_of_int(!loendur) ^ "/" ^ string_of_int(!(MetaPost.nr) - 1));
 		let f = "temp" ^ string_of_int(!loendur) ^ ".mps" in
 		teePDF(f, !loendur);																		(* teeme PostScripti failist PDFi *)
-		(*kustutaFail(f);																					(* kustutame PostScripti faili *)*)
+		kustutaFail(f);																					(* kustutame PostScripti faili *)
 		loendur := !loendur + 1
 	done;
 	let pdfid = ref("") in
@@ -331,7 +345,7 @@ let latexiTekst() =
 	for i = 1 to !(MetaPost.nr) - 1
 	do
 		let f = "temp" ^ string_of_int(i) ^ ".mps" in
-		mpsFailid := !mpsFailid ^ "\n" ^ "\\includegraphics{" ^ f ^ "}"
+		mpsFailid := !mpsFailid ^ "\n" ^ "\\includegraphics[scale=" ^ (if !algo = FloydWarshall then "0.7" else "1") ^ "]{" ^ f ^ "}"
 	done;
 	"\\documentclass{article}" ^ "\n" ^
 	"\\usepackage{graphicx}" ^ "\n" ^
@@ -339,6 +353,12 @@ let latexiTekst() =
 	"\\begin{document}" ^ "\n" ^
 	!mpsFailid ^ "\n" ^
 	"\\end{document}";;
+
+(* teeme Postscripti failid ükshaaval PDFideks ja liidame PDFid kokku *)
+let variant2() =
+	let koondPDFTulemus = teeKoondPDF() in
+	if koondPDFTulemus <> 0
+		then failwith("KoondPDFi tegemine ebaõnnestus.");;
 
 (* koostame LaTeX faili ja teeme pdflatex abil sellest PDFi *)
 let variant3() =
@@ -348,13 +368,8 @@ let variant3() =
 	close_out oc;
 	let texTulemus = Sys.command("pdflatex " ^ texFail) in
 	if texTulemus <> 0
-		then failwith("LaTeXist PDFi tegemine ebaõnnestus.");;
-	
-(* teeme Postscripti failid ükshaaval PDFideks ja liidame PDFid kokku *)
-let variant2() =
-	let koondPDFTulemus = teeKoondPDF() in
-	if koondPDFTulemus <> 0
-		then failwith("KoondPDFi tegemine ebaõnnestus.");;
+		(*then failwith("LaTeXist PDFi tegemine ebaõnnestus.");;*)
+		then variant2();;
 
 (* proovime esmalt kõik tekkinud PostScripti failid üheks koondada ja sellest otse PDFi teha, ebaõnnestumise korral*)
 (* proovime varianti 2 *) 	
@@ -362,10 +377,7 @@ let variant1() =
 	let psFail = string_of_algo(!algo) ^ ".1" in 							(* tekitame ühe PostScripti faili *)
 	koondaYhteFaili(psFail);																	(* kirjutame kõik tekkinud PostScripti failid sinna kokku *)
 	let pdfTulemus = Sys.command("epstopdf " ^ psFail) in			(* teeme EPS failist PDF faili *)
-	
-	(*kustutaFail("temp.mp");																		(* kustutame tekkinud failid *)
-	kustutaFail("temp.log");
-	kustutaFail(psFail);*)
+	kustutaFail(psFail);
 	
 	if pdfTulemus <> 0
 		then variant2();;
@@ -376,8 +388,10 @@ let looSlaidid(algtipp, tipud, servad) =
 	looPSfailid();																						(* tekitame MetaPosti failist PostScripti failid *)
 	
 	(*variant1();*)				(* kõik PS failid kokku üheks, sellest PDF. Häda: slaidid jäävad nihkes *)
-	variant2();						(* igast PS failist eraldi PDF, need kokku liita. Häda: aeglane *)
-	(*variant3();*)				(* PS failid LaTeXisse. Häda: pilt ei kata tervet slaidi *)
+	(*variant2();*)						(* igast PS failist eraldi PDF, need kokku liita. Häda: aeglane *)
+	variant3();				(* PS failid LaTeXisse. Häda: pilt ei kata tervet slaidi *)
+	
+	kustutaFailid();																					(* kustutame slaidide genereerimise käigus tekkinud failid *)
 	
 	print_endline("\nPDF valmis.");
 	programmK2ib := false;;																		(* sulgeme akna *)
@@ -390,7 +404,6 @@ let klahvisyndmus(klahv, algtipp, tipud, servad) =
 		| 's' -> looSlaidid(algtipp, tipud, servad)
 		| 'n' -> samm(algtipp, tipud, servad)
 		| 'b' -> tagasisamm(tipud, servad)
-		| 'f' -> failwith("Lõpp.")
 		| _ -> ();;
 
 let hiirVajutatud = ref(false);;		(* bool - kas hiire kumbki klahv on alla vajutatud või mitte *)
@@ -551,8 +564,8 @@ let tippudeKontroll(tipud) =
 	with
 		| Not_found -> ();
 	try
-		let sobimatuNimega = List.find (fun t -> String.length t.nimi > 1) tipud in
-		failwith("Tippude nimed ei või olla pikemad kui 1 tähemärk. Vigane tipp: " ^ string_of_tipp(sobimatuNimega))
+		let sobimatuNimega = List.find (fun t -> String.length t.nimi <> 1) tipud in
+		failwith("Tippude nimed peavad olema pikkusega 1 tähemärk. Vigane tipp: " ^ string_of_tipp(sobimatuNimega))
 	with
 		| Not_found -> ();;
 
@@ -699,8 +712,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral määrame sisendandmed siin ise *)
-  	algo := Dijkstra;
-  	let graaf = ntDijkstra2 in
+  	algo := Kruskal;
+  	let graaf = ntKruskal1 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 		alusta(graaf, algtipuNimi)
 	);;

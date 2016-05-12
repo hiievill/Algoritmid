@@ -86,7 +86,7 @@ let esimeneTipp(algtipp, servad) =
 	algtipp.tv := Vaadeldav;																		(* märgime tipu vaadeldavaks *)
 	let vs = leiaVaatlemataServad(algtipp, servad) in 					(*sellest tipust väljuvad vaatlemata servad*)
 	j2rgmisedServad := vs @ !j2rgmisedServad;
-	tekst := "Vaatleme esimest tippu ja lisame selle töötlusmagasini. Lisame järgmiste tippude magasini need töötlemata tipud, kuhu äsja vaadeldud tipust serv viib.";
+	tekst := "Vaatleme esimest tippu ja lisame selle töötlusmagasini. Lisame järgmiste servade magasini kõik selle tipuga seotud servad.";
 	lisatekst();
 	if List.length vs = 0																				(* kui ühtegi vaatlemata serva ei välju, siis lähme töötlema *) 
 		then i := ServaValik
@@ -102,7 +102,7 @@ let servaVaatlus(servad) =
 	let vs = leiaVaatlemataServad(vaadeldavTipp, servad) in			(* sellest tipust väljuvad vaatlemata servad *)
 	j2rgmisedServad := List.tl !j2rgmisedServad;
 	j2rgmisedServad := vs @ !j2rgmisedServad;
-	tekst := "Vaatleme järgmiste tippude magasini pealmist tippu, eemaldame selle magasinist ja lisame töötlusmagasini. Lisame järgmiste tippude magasini need töötlemata tipud, kuhu äsja vaadeldud tipust serv viib.";
+	tekst := "Vaatleme järgmiste servade magasini pealmist serva, eemaldame selle magasinist ja lisame vastava tipu töötlusmagasini. Lisame järgmiste servade magasini selle tipuga seotud servad.";
 	lisatekst();
 	if List.length vs = 0																				(* kui ühtegi vaatlemata serva ei välju, siis lähme töötlema *)
 		then i := ServaValik

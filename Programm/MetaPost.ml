@@ -117,8 +117,26 @@ let hindadeTekst(tipud) =
 		| Some h ->	String.concat "\n" (List.map hinnaTekst tipud) ^ "\n";;		(* kui on hindadega graaf, kuvame need *)
 
 let kirjeldusTekst() =
+	let t1 = ref(!(AlgoBaas.tekst)) in
+	let t2 = ref("") in
+	let t3 = ref("") in
+	let rp = 75 in		(* rea pikkus *)
+	if String.length !t1 > rp
+		then (
+			let viimaneTyhik = String.rindex_from !t1 rp ' ' in		(* viimase tühiku indeks, mis asub enne 76. tähemärki *)
+			t2 := Str.string_after !t1 (viimaneTyhik + 1);
+			t1 := Str.string_before !t1 viimaneTyhik;
+			if String.length !t2 > rp
+				then (
+					let viimaneTyhik2 = String.rindex_from !t2 rp ' ' in		(* viimase tühiku indeks, mis asub enne 76. tähemärki *)
+    			t3 := Str.string_after !t2 (viimaneTyhik2 + 1);
+					t2 := Str.string_before !t2 viimaneTyhik2;
+				)
+		);
 	(* TODO: kui paigutus korda saab, siis peaks tegelikult olema (0, -tekstiLisa)u *)
-	"label.rt(\"" ^ att(!(AlgoBaas.tekst)) ^ "\" infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;
+	"label.rt(\"" ^ att(!t1) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 60) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!t2) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 40) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!t3) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20) ^ "u)) scaled defaultscale withcolor black;\n";;
 	(*"label.rt(textext (\"" ^ att(!(AlgoBaas.tekst)) ^ "\") infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;*)
 
 let nimekirjadeTekst() =
@@ -241,11 +259,11 @@ let slaidiTekst(tipud, servad) =
 		kaaludeTekst(servad) ^
 		hindadeTekst(tipud) ^
 		kirjeldusTekst() ^
-		nimekirjadeTekst() ^				(* TODO: kodeering/font korda ja need tagasi sisse *)
+		nimekirjadeTekst() ^
 		(if !(AlgoBaas.algo) = FloydWarshall then tabeliTekst(tipud, servad) else "") ^
 	"endfig;\n\n";;
 
-let failiAlgus(tipud) = (* TODO: siia noolte, kaalude jms arvutamine, et mitu korda ei peaks *)
+let failiAlgus(tipud) =
 	"u := 0.2mm;\n" ^
 	"defaultscale := 1.0;\n" ^
 	"defaultfont := \"cmr10\";\n" ^ (* ptmr8r? *) 

@@ -23,6 +23,7 @@ let samm(algtipp, tipud, servad) =
 		| Algus -> algus();
 		| EsimeneTipp -> Laiuti.esimeneTipp(algtipp, servad);
 		| ServaValik -> Laiuti.servaValik(servad);
+		| SobimatuServ -> Laiuti.sobimatuServ(servad);
 		| ServaLisamine -> Laiuti.servaLisamine(tipud, servad);
 		| Lopp -> lopp();
 		| _ -> ();;

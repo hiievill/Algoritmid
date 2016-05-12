@@ -41,12 +41,11 @@ Järgmine pole enamasti vajalik, ainult tagavaravariant juhuks, kui epstopdfi ab
 2. Minna kataloogi, kus asub Makefile
 3. Käsurealt 'make'
 4. Käsurealt Windowsis 'tulem.exe <sisendfail>', Linuxis './tulem.exe <sisendfail>' - käivitab programmi
-	* hiirega on võimalik tippe lohistada ja servade kumerust muuta
+	* hiirega kinni haarates ja lohistades on võimalik tippude asukohti muuta ja servi kumerdada
 	* klahv 'n' on läbimängul samm edasi
 	* klahv 'b' on läbimängul samm tagasi
 	* klahv 's' teostab automaatselt terve läbimängu alates käesolevale järgnevast sammust, tekitab slaidid ning salvestab PDFina.
 	* klahv 'q' sulgeb programmi
-	* klahv 'f' sulgeb programmi veateatega
-5. Käsurealt 'make clean' - kustutab kõik programmi töö käigus tekkinud failid, kui programm ise seda ei teinud. Kustutatakse ka tekkinud PDF(id).
+5. Käsurealt 'make clean' kustutab kõik programmi töö käigus tekkinud failid, kui programm ise seda ei teinud. Kustutatakse ka tekkinud PDF(id).
 
 

@@ -87,7 +87,7 @@ let esimeneTipp(algtipp, servad) =
 	j2rgmisedServad := (!j2rgmisedServad) @ js;
 	tekst := "Märgime esimese tipu külastatuks ja lisame " ^ (if !algo = Laiuti then "järjekorda" else "magasini") ^ 
 		(*" need tipud, kuhu äsja töödeldud tipust serv viib.";*)
-		" need servad/kaared, mis äsja töödeldud tipust väljuvad.";
+		" kõik selle tipuga seotud servad.";
 	lisatekst();
 	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
 		then i := Lopp
@@ -99,9 +99,20 @@ let servaValik(servad) =
 	j2rgmisedServad := List.tl !j2rgmisedServad;						(* eemaldame selle serva järgmiste servade järjekorrast *)
 	valiServ(lisatavServ);																	(* märgime serva ja vastava tipu valituks *)
 	tekst := "Valime " ^ (if !algo = Laiuti then "järjekorrast järgmise" else "magasinist pealmise") ^
-			" tipu ja eemaldame selle " ^ (if !algo = Laiuti then "järjekorrast." else "magasinist.");
+			" serva ja eemaldame selle " ^ (if !algo = Laiuti then "järjekorrast." else "magasinist.");
 	lisatekst();
-	i := ServaLisamine;;
+	if !(!(lisatavServ.tipp1).tv) = Vaadeldud && !(!(lisatavServ.tipp2).tv) = Vaadeldud
+		then i := SobimatuServ 
+	else i := ServaLisamine;;
+
+(* serva ei saa lisada, sest ühendab juba töödeldud tippe *)
+let sobimatuServ(servad) =
+	let sobimatuServ = List.find (fun s -> !(s.sv) = Valitud) servad in
+	sobimatuServ.sv := Sobimatu;
+	tekst := "Valitud serv ühendab juba töödeldud tippe, nii et ühtki tippu ei töötle.";
+	if List.length !j2rgmisedServad = 0
+		then i := Lopp
+	else i := ServaValik;;
 
 (* valitud serva ja vastava tipu vaadelduks märkimine ja järgmiste servade leidmine ja järjekorda/magasini lisamine *)
 let servaLisamine(tipud, servad) =
@@ -111,11 +122,11 @@ let servaLisamine(tipud, servad) =
 	let js = leiaJ2rgServad(lisatavTipp, servad) in 				(* leiame need servad, kuhu valitud tipust viib *)
 	j2rgmisedServad := if !algo = Laiuti then !j2rgmisedServad @ js else js @ !j2rgmisedServad; 						
 																													(* lisame need järgmiste servade järjekorra lõppu / magasini *)
-	j2rgmisedServad := eemalda(!j2rgmisedServad); 					(* eemaldame järgmiste servade järjekorrast / magasinist need 
+	(*j2rgmisedServad := eemalda(!j2rgmisedServad);*) 					(* eemaldame järgmiste servade järjekorrast / magasinist need 
 																														servad, mis ühendavad külastatud tippe *)
 	lisaServ(lisatavServ);																	(* märgime serva ja tema tipud vaadelduks *)
-	tekst := "Märgime selle tipu töödelduks ja lisame " ^ (if !algo = Laiuti then "järjekorra lõppu" else "magasini") ^ 
-		" need töötlemata tipud, kuhu äsja töödeldud tipust serv viib.";
+	tekst := "Märgime serva töötlemata otstipu töödelduks ja lisame " ^ (if !algo = Laiuti then "järjekorra lõppu" else "magasini") ^ 
+		" äsja töödeldud tipuga seotud servad.";
 	lisatekst();
 	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
 		then i := Lopp
@@ -123,7 +134,7 @@ let servaLisamine(tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Järjekord on tühi. Laiuti läbimise algoritm lõpetab, olles leidnud laiuti läbimise puu";
+	tekst := "Järjekord on tühi. Laiuti läbimise algoritm lõpetab, olles leidnud laiuti läbimise puu.";
 	lisatekst();
 	AlgoBaas.lopp();;
 
@@ -133,6 +144,7 @@ let samm(algtipp, tipud, servad) =
 		| Algus -> algus();
 		| EsimeneTipp -> esimeneTipp(algtipp, servad);
 		| ServaValik -> servaValik(servad);
+		| SobimatuServ -> sobimatuServ(servad);
 		| ServaLisamine -> servaLisamine(tipud, servad);
 		| Lopp -> lopp();
 		| _ -> ();;

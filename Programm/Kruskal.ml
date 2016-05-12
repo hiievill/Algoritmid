@@ -7,36 +7,11 @@ let hulgad = Hashtbl.create 10;; 	(* sisuliselt map tipp.nimi : tipp.nimi, tippu
 
 let sej = ref([]);; 							(* servade eelistusjärjekord *)
 
-(* funktsioon, mis määrab tippudele t1 ja t2 hulgad järgnevalt:*)
-(* kui mõlemal tipul on juba hulk, paneb kõikidele t2 hulgaga tippudele t1 hulga, et kõigil sama hulk oleks*)
-(* kui ühel neist on hulk, teisel mitte, määrab hulgata tipule hulgaga tipu hulga*)
-(* kui kummalgi pole hulka, siis määrab mõlemale uue hulga, milleks on t1 nimi*)
+(* funktsioon, mis määrab igale t2 hulgaga tipule t1 hulga, et kõigil sama hulk oleks*)
 let lisaHulka(t1, t2) =
-	if !(t1.tv) = Vaadeldud && !(t2.tv) = Vaadeldud
-		then (
-			let hulk1 = Hashtbl.find hulgad t1.nimi in
-			let hulk2 = Hashtbl.find hulgad t2.nimi in
-			Hashtbl.iter (fun k v -> if v = hulk2 then Hashtbl.replace hulgad k hulk1) hulgad
-		)
-	else if !(t1.tv) = Vaadeldud 
-		then (
-  		let hulk = Hashtbl.find hulgad t1.nimi in
-  		Hashtbl.add hulgad t2.nimi hulk;
-  	)
-  else if !(t2.tv) = Vaadeldud 
-		then (
-			let hulk = Hashtbl.find hulgad t2.nimi in
-			Hashtbl.add hulgad t1.nimi hulk;
-  	)
-  else (
-		Hashtbl.add hulgad t1.nimi t1.nimi;
-		Hashtbl.add hulgad t2.nimi t1.nimi;
-	);;
-
-(* funktsioon, mis tagastab, kas tippude t1 ja t2 vahelise serva lisamine tekitaks tsükli (kuuluvad samasse sidusasse*)
-(* komponenti), st kas mõlemad tipud on vaadeldud ning kuuluvad ühte hulka (puusse) *)
-let tekitabTsykli(t1, t2) =
-	!(t1.tv) = Vaadeldud && !(t2.tv) = Vaadeldud && Hashtbl.find hulgad t1.nimi = Hashtbl.find hulgad t2.nimi
+	let hulk1 = Hashtbl.find hulgad t1.nimi in
+	let hulk2 = Hashtbl.find hulgad t2.nimi in
+	Hashtbl.iter (fun k v -> if v = hulk2 then Hashtbl.replace hulgad k hulk1) hulgad;;
 
 (* funkstioon, mis märgib serva ja tema tipud valituks ning määrab, kas serva lisada või mitte*)
 let valiServ(serv) =
@@ -45,7 +20,7 @@ let valiServ(serv) =
 			v := Valitud;
 			tekst := "Valime väikseima kaaluga vaatlemata serva.";
 			nk1 := string_of_sej(!sej);
-			if tekitabTsykli(!t1, !t2)
+			if Hashtbl.find hulgad !t1.nimi = Hashtbl.find hulgad !t2.nimi (*tekitabTsykli(!t1, !t2)*)
 				then
 					i := SobimatuServ
 			else (
@@ -80,9 +55,11 @@ let algus() =
 
 (* graafi servade eelistusjärjekorda lisamine *)
 let vahe1(tipud, servad) =
+	List.iter (fun t -> t.tv := Vaadeldud) tipud;						(* märgime kõik tipud vaadelduteks *)
+	List.iter (fun t -> Hashtbl.add hulgad t.nimi t.nimi) tipud;		(* lisame igale tipule oma hulga *)
 	List.iter (fun s -> sej := !sej @ [s]) servad;
 	sej := sordiJ2rjekord(!sej);
-	tekst := "Lisame kõik servad eelistusjärjekorda.";
+	tekst := "Lisame kõik servad eelistusjärjekorda. Koostatav graafi toes koosneb alguses ainult ühetipulistest puudest.";
 	nk1 := string_of_sej(!sej);
 	if List.length !sej = 0
 		then (
@@ -118,7 +95,7 @@ let servaLisamine(servad, tipud) =
 
 (* algoritmi lõpp *)
 let lopp(tipud) =
-	tekst := "Eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toese" ^ 
+	tekst := "Eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toes" ^ 
 			(if onSidus(tipud) then "puu." else "metsa.");
 	nk1 := string_of_sej(!sej);
 	AlgoBaas.lopp();;

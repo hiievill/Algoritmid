@@ -9,7 +9,7 @@ let aknaLaius = 600;;
 let aknaKorgus = 450;;
 let korgusLisa = 130;; 	(* nimekirjade kuvamiseks *)
 let laiusLisa = 400;; 	(* Floyd-Warshalli tabeli kuvamiseks *)
-let tekstiLisa = 100;; 	(* slaididel pildi all teksti kuvamiseks *)
+let tekstiLisa = 110;; 	(* slaididel pildi all teksti kuvamiseks *)
 
 let tipuRaadius = 20;;
 

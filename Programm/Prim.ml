@@ -104,7 +104,7 @@ let servaLisamine(algtipp, tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Servade eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toesepuu.";
+	tekst := "Servade eelistusjärjekord on tühi. Algoritm lõpetab, olles leidnud minimaalse toespuu.";
 	nk1 := string_of_sej(!sej);
 	AlgoBaas.lopp();;
 
