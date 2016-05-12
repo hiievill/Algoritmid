@@ -73,7 +73,7 @@ let servaTekst(serv) =
 	);;
 
 let servadeTekst(servad) = 
-	"pickup pencircle scaled " ^ string_of_int(jooneLaius) ^ "pt;\n" ^
+	"pickup pencircle scaled " ^ string_of_int(jooneLaius - 1) ^ "pt;\n" ^
 	String.concat "\n" (List.map servaTekst servad) ^ "\n";;
 
 let nooleTekst(serv) =
@@ -133,7 +133,6 @@ let kirjeldusTekst() =
 					t2 := Str.string_before !t2 viimaneTyhik2;
 				)
 		);
-	(* TODO: kui paigutus korda saab, siis peaks tegelikult olema (0, -tekstiLisa)u *)
 	"label.rt(\"" ^ att(!t1) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 60) ^ "u)) scaled defaultscale withcolor black;\n" ^
 	"label.rt(\"" ^ att(!t2) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 40) ^ "u)) scaled defaultscale withcolor black;\n" ^
 	"label.rt(\"" ^ att(!t3) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20) ^ "u)) scaled defaultscale withcolor black;\n";;

@@ -5,7 +5,7 @@ open Graphics;;
 open Struktuurid;;
 open AlgoBaas;;
 
-let aknaLaius = 600;;
+let aknaLaius = 900;;
 let aknaKorgus = 450;;
 let korgusLisa = 130;; 	(* nimekirjade kuvamiseks *)
 let laiusLisa = 400;; 	(* Floyd-Warshalli tabeli kuvamiseks *)

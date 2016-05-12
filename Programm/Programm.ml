@@ -322,7 +322,8 @@ let teeKoondPDF() =
 		let f = " temp" ^ string_of_int(!loendur) ^ ".pdf" in		(* kogume kõik tekkinud PDF failide nimed sõneks kokku *)
 		pdfid := !pdfid ^ f;
 		loendur := !loendur + 1
-	done;																											(* liidame kõik PDF failid üheks PDF failiks *)
+	done;
+	print_endline("PDFi koostamine.");												(* liidame kõik PDF failid üheks PDF failiks *)
 	Sys.command("pdftk " ^ !pdfid ^ " cat output " ^ string_of_algo(!algo) ^ ".pdf");;
 
 (* loome faili ja kirjutame sinna MetaPosti koodi *)
@@ -388,8 +389,8 @@ let looSlaidid(algtipp, tipud, servad) =
 	looPSfailid();																						(* tekitame MetaPosti failist PostScripti failid *)
 	
 	(*variant1();*)				(* kõik PS failid kokku üheks, sellest PDF. Häda: slaidid jäävad nihkes *)
-	(*variant2();*)						(* igast PS failist eraldi PDF, need kokku liita. Häda: aeglane *)
-	variant3();				(* PS failid LaTeXisse. Häda: pilt ei kata tervet slaidi *)
+	variant2();						(* igast PS failist eraldi PDF, need kokku liita. Häda: aeglane *)
+	(*variant3();*)				(* PS failid LaTeXisse. Häda: pilt ei kata tervet slaidi *)
 	
 	kustutaFailid();																					(* kustutame slaidide genereerimise käigus tekkinud failid *)
 	
@@ -712,8 +713,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral määrame sisendandmed siin ise *)
-  	algo := Kruskal;
-  	let graaf = ntKruskal1 in
+  	algo := Dijkstra;
+  	let graaf = ntDijkstra3 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 		alusta(graaf, algtipuNimi)
 	);;

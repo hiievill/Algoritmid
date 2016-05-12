@@ -1,0 +1,13 @@
+Algoritm: Prim
+Tippe: 5, hindadega: false
+Servi: 5, kaaludega: true, suundadega: false
+A
+B, -, -
+C, 150, -
+D, -, 372
+E, 450, 285
+A, E
+B, C, -
+B, E, -
+E, D, 8
+A, C, 15
