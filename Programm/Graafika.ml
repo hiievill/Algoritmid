@@ -382,7 +382,7 @@ let kuvaNimekirjad() =
 	moveto 10 (aknaKorgus + korgusLisa - 120);
 	draw_string !AlgoBaas.nk4;;
 	
-(* funktsioon algoritmi sammu kirjelduse väljaprinitmiseks *)
+(* funktsioon algoritmi sammu kirjelduse väljaprintmiseks *)
 let kuvaTekst() =
 	set_color black;
 	if !(AlgoBaas.tekst) <> ""

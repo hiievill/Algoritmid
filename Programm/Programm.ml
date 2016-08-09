@@ -177,7 +177,16 @@ let kuvaSeisund(tipud, servad) =
 			with e -> Kosaraju.pooraServad(servad)
 		);
 	List.iter (fun s -> s.sv := Hashtbl.find (seisund.servavaadeldavused) (!(s.tipp1).nimi ^ ":" ^ !(s.tipp2).nimi)) servad;
-	tekst := if (match !sammudKokku with | None -> false | Some s -> !sammuNr = s) then "" else seisund.tekst;
+	if (match !sammudKokku with | None -> false | Some s -> !sammuNr = s)
+		then (
+			if !prindiLoppTekst
+				then (
+					tekst := seisund.tekst;
+					prindiLoppTekst := false
+				)
+			else tekst := ""
+		)
+	else tekst := seisund.tekst;
 	nk1 := seisund.nk1;
 	nk2 := seisund.nk2;
 	nk3 := seisund.nk3;
@@ -229,6 +238,8 @@ let samm(algtipp, tipud, servad) =
 let tagasisamm(tipud, servad) =
 	if !sammuNr > 0
 		then sammuNr := !sammuNr - 1;
+	if !prindiLoppTekst = false
+		then prindiLoppTekst := true;
 	kuvaSeisund(tipud, servad);;
 
 (* failist sisu voogu lugemise funktsioon *)
@@ -290,10 +301,9 @@ let koondaYhteFaili(psFail) =
 
 (* funktsioon, mis teostab algoritmi läbimängu ja kirjutab slaidide sisu MetaPosti faili *)
 let l2bim2ngSlaidideks(algtipp, tipud, servad, oc) =
-	while !algoL2bi = false
+	while !algoL2bi = false || (match !sammudKokku with | None -> false | Some sk -> !sammuNr < sk)
 	do
 		samm(algtipp, tipud, servad);
-		(*kuvaPilt(tipud, servad);*)
 		Printf.fprintf oc "%s" (MetaPost.slaidiTekst(tipud, servad));
 		MetaPost.nr := !(MetaPost.nr) + 1;
 	done;;
@@ -306,6 +316,7 @@ let teePDF(fail, loendur) =
 
 (* funktsioon, mis teeb PostScripti failidest PDF failid ja liidab need üheks PDF failiks kokku *)
 let teeKoondPDF() =
+	print_endline(string_of_int(!(MetaPost.nr)));
 	let loendur = ref(1) in
 	while !loendur < !(MetaPost.nr)														(* itereerime üle PostScripti failide *)
 	do
@@ -547,7 +558,7 @@ let graafiKontroll(algtipp, tipud, servad, suunatus, kaaludega, hindadega, sidus
 	kontrolliHindu(tipud, hindadega);
 	if sidusus then kontrolliSidusust(algtipp, tipud, servad);
 	match suunatus with
-		| None -> if samadSuunad(servad) = false then failwith("Graafis esineb nii suunatu kui mittesuunatud servi.")
+		| None -> if samadSuunad(servad) = false then failwith("Graafis esineb nii suunatud kui mittesuunatud servi.")
 		| Some b -> kontrolliSuunatust(servad, b);;
 	
 (* funktsioon, mis kontrollib, et samanimelisi tippe ei esineks ning et tippude hinnad oleks positiivsed ning 
@@ -619,6 +630,36 @@ let algtipugaAlgoritm() =
 	let algtipugaAlgoritmid = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Dijkstra; TopoLopp; Kosaraju]  in
 	List.mem !algo algtipugaAlgoritmid;;
 
+(* funktsioon, mis tagastab listi kõikidest topeltservadest (igast topeltservast ühe serva) *)
+let rec leiaTopeltServad(servad) =
+	match servad with
+		| [] -> []
+		| x::xs -> (
+			match x with
+				| {tipp1 = t1; tipp2 = t2;} -> if List.exists (fun s -> !(s.tipp1).nimi = !t2.nimi && !(s.tipp2).nimi = !t1.nimi) xs then x :: leiaTopeltServad xs else leiaTopeltServad xs 
+		);;
+
+let kumerdaTopeltServa servad serv1 =
+	let serv2 = List.find (fun s -> !(serv1.tipp1).nimi = !(s.tipp2).nimi && !(serv1.tipp2).nimi = !(s.tipp1).nimi) servad in
+	liigutatavServ := Some serv1;
+	let (a, c) = leiaSirge(float_of_int(!(!(serv1.tipp1).x)), float_of_int(!(!(serv1.tipp1).y)), float_of_int(!(!(serv1.tipp2).x)), float_of_int(!(!(serv1.tipp2).y))) in
+	let keskX = float_of_int(!(!(serv1.tipp1).x) + !(!(serv1.tipp2).x)) /. 2. in
+	let keskY = float_of_int(!(!(serv1.tipp1).y) + !(!(serv1.tipp2).y)) /. 2. in
+	let (a2, c2) = leiaRistuvSirge(a, c, keskX, keskY) in
+		(* kümnega jagamine omavoliline. Igatahes vaja jagada vähemalt kahega *)
+	let r = leiaJoonePikkus(float_of_int(!(!(serv1.tipp1).x)), float_of_int(!(!(serv1.tipp1).y)), float_of_int(!(!(serv1.tipp2).x)), float_of_int(!(!(serv1.tipp2).y))) /. 10. in
+	let ((e1, f1), (e2, f2)) = kaksPunkti(keskX, keskY, a2, c2, r) in
+	liigutaServa(int_of_float(e1), int_of_float(f1));
+	liigutatavServ := Some serv2;
+	liigutaServa(int_of_float(e2), int_of_float(f2));
+	liigutatavServ := None;;
+
+(* kui graafis esineb topeltservi, siis kuvatakse need kohe alguses kumerdatult *)
+let kumerdaTopeltServad(tipud, servad) =
+	let ts = leiaTopeltServad(servad) in
+	List.iter (kumerdaTopeltServa servad) ts;;
+	
+
 (* programmi algustoimingud *)
 let alusta(graaf, algtipuNimi) =
 	let algtipp = valiAlgtipp(algtipuNimi, graaf.tipud) in
@@ -630,6 +671,7 @@ let alusta(graaf, algtipuNimi) =
 	set_window_title ("Graafialgoritmid - " ^ string_of_algo(!algo));
 	if algtipugaAlgoritm()
 		then algtipp.tv := Valitud; (* märgime algtipu valituks, et seda juba 1. slaidil kuvada *)
+	kumerdaTopeltServad(tipud, servad);
 	kuvaPilt(tipud, servad);
 	lisaSeisund(tipud, servad);
 	syndmused(algtipp, tipud, servad);;
@@ -713,8 +755,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral määrame sisendandmed siin ise *)
-  	algo := Dijkstra;
-  	let graaf = ntDijkstra3 in
+  	algo := Kosaraju;
+  	let graaf = ntKosaraju1 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 		alusta(graaf, algtipuNimi)
 	);;

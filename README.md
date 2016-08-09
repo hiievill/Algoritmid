@@ -19,8 +19,6 @@ Ainult läbimängu tegemiseks piisab eelnevatest, slaidide tekitamiseks on lisak
 		1) sudo apt-get install texlive-binaries
 		2) mpost: sudo apt-get install texlive-metapost
 		3) epstopdf: sudo apt-get install texlive-font-utils
-		
-Järgmine pole enamasti vajalik, ainult tagavaravariant juhuks, kui epstopdfi abil slaidide tekitamine ei õnnestu. Sel juhul ei koondata kõiki EPS faile üheks kokku ega tee sellest PDFi, vaid tehakse igast PostScripti failist eraldi PDF ja liidetakse need kokku.
 	
 4. PDF toolkit:
 	* Windows: https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/

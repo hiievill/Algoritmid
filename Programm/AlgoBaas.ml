@@ -15,6 +15,8 @@ let nk2 = ref("");;
 let nk3 = ref("");;
 let nk4 = ref("");;
 
+let prindiLoppTekst = ref(true);;	(* kas klahvidega "n" ja "b" läbi mängides viimast teksi printida või mitte *)
+
 (* järgmised on mapid serva tippude nimed : int, hoiustamaks ringjoone võrrandit (x+a)^2 + (y+b)^2 = r^2 *)
 let kaareX : (string, int) Hashtbl.t = Hashtbl.create 10;; (* ringjoone keskpunkti x-koordinaat *)
 let kaareY : (string, int) Hashtbl.t = Hashtbl.create 10;; (* ringjoone keskpunkti y-koordinaat *)
@@ -80,4 +82,5 @@ let tyhiTipp = {
 (* kõikide algoritmide ühine lõpusamm *)
 let lopp() =
 	algoL2bi := true;
+	prindiLoppTekst := false;
 	i := L2bi;;

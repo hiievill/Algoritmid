@@ -137,6 +137,8 @@ let kirjeldusTekst() =
 	"label.rt(\"" ^ att(!t2) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 40) ^ "u)) scaled defaultscale withcolor black;\n" ^
 	"label.rt(\"" ^ att(!t3) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20) ^ "u)) scaled defaultscale withcolor black;\n";;
 	(*"label.rt(textext (\"" ^ att(!(AlgoBaas.tekst)) ^ "\") infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;*)
+	(*"label.rt(textext (\"" ^ att(!(AlgoBaas.tekst)) ^ "\"), (10u,10u)) scaled defaultscale withcolor black;\n";;*)
+	(*"label.rt(btex " ^ att(!(AlgoBaas.tekst)) ^ " etex, (10u,10u)) scaled defaultscale withcolor black;\n";;*)
 
 let nimekirjadeTekst() =
 	let ak = aknaKorgus + korgusLisa in
@@ -263,9 +265,11 @@ let slaidiTekst(tipud, servad) =
 	"endfig;\n\n";;
 
 let failiAlgus(tipud) =
+	"input latexmp;\n" ^
+	"setupLaTeXMP (packages=\"fontenc[T1], inputenc[ansinew,utf8], babel[estonian], times, huge\");\n" ^
 	"u := 0.2mm;\n" ^
 	"defaultscale := 1.0;\n" ^
-	"defaultfont := \"cmr10\";\n" ^ (* ptmr8r? *) 
+	"defaultfont := \"ptmr8r\";\n" ^ (* ptmr8r? cmr10? *) 
 	"prologues := 3;\n" ^
 	"filenametemplate \"temp%c.mps\";\n" ^
 	"color VaatlemataPunkt, VaadeldavPunkt, ValitudPunkt, VaadeldudPunkt, SobimatuPunkt;\n" ^
