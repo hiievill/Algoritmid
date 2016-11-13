@@ -16,13 +16,15 @@ let l2biSygavuti(algtipp, tipud, servad) =
 			i := Algus;	(* läbime graafi sügavuti lõppjärjestuses alates tipust esimeneTipp *)
 			algoL2bi := false;
 			SygavutiLopp.toodeldudTipud := [];
+			(*print_endline(!esimeneTipp.nimi);*)
 			while !algoL2bi = false
 				do
-					SygavutiLopp.samm(!esimeneTipp, tipud, servad)									(*läbime sügavuti*)
+					SygavutiLopp.samm(!esimeneTipp, tipud, servad)									(* läbime sügavuti *)
 				done;
-  		sygavutiTipud := !sygavutiTipud @ !(SygavutiLopp.toodeldudTipud); 	(*lisame järjestusse*)
+  		sygavutiTipud := !sygavutiTipud @ !(SygavutiLopp.toodeldudTipud); 	(* lisame järjestusse *)
+			(*print_endline(string_of_tipud(!sygavutiTipud));*)
   		if List.exists (fun t -> !(t.tv) = Vaatlemata) tipud 								(* kui leidub veel vaatlemata tippe *)
-  			then esimeneTipp := TopoKahn.valiTipp(tipud) 											(* määrame uue algtipu (sisendastmega 0) *)
+				then esimeneTipp := TopoKahn.valiTipp(tipud)
   	done;
 		algoL2bi := false;
 		nk2 := "";
@@ -32,7 +34,7 @@ let l2biSygavuti(algtipp, tipud, servad) =
 (* algoritmi algus, mille käigus määrame igale tipule sügavuti läbimise jaoks sisendastme *)
 let algus(tipud, servad) =
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
-	tekst := "Algoritm opoloogilise järjestuse leidmiseks lõppjärjestuse kaudu alustab valitud tipust. ";
+	tekst := "Algoritm topoloogilise järjestuse leidmiseks lõppjärjestuse kaudu alustab valitud tipust. ";
 	i := SygavutiL2bimine;;
 
 (* graafi sügavuti lõppjärjestuses läbimine ja tekkinud järjestuse saamine *)

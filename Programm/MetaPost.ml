@@ -109,7 +109,7 @@ let kaaludeTekst(servad) =
 let hinnaTekst(tipp) =
 	match !(tipp.hind) with
 		| None -> ""
-		| Some h -> "label(\"" ^ (if h = max_int then "inf" else string_of_int(h)) ^ "\" infont defaultfont, (" ^ string_of_int(!(tipp.x)) ^ "u," ^ string_of_int(!(tipp.y) + tipuRaadius + 5) ^ "u)) scaled defaultscale withcolor black;"
+		| Some h -> "label(\"" ^ (if h = max_int then "inf" else string_of_int(h)) ^ "\" infont defaultfont, (" ^ string_of_int(!(tipp.x)) ^ "u," ^ string_of_int(!(tipp.y) + tipuRaadius + 10) ^ "u)) scaled defaultscale withcolor black;"
 
 let hindadeTekst(tipud) = 
 	match !((List.hd tipud).hind) with

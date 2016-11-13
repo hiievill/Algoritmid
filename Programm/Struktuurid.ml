@@ -105,6 +105,7 @@ type graaf = {
 type seisund = {
 	tipuvaadeldavused : (string, vaadeldavus) Hashtbl.t;
 	servavaadeldavused : (string, vaadeldavus) Hashtbl.t;
+	hinnad : (string, int option) Hashtbl.t;
 	tekst : string;
 	nk1 : string;
 	nk2 : string;

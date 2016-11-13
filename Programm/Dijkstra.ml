@@ -13,18 +13,23 @@ let v2iksemaKaugusega tipp1 tipp2 =
 	let k2 = Hashtbl.find kaugused tipp2.nimi in
 	if k1 < k2 then -1 else if k1 > k2 then 1 else 0;; 
 
+let v2iksemaKaugusega serv1 serv2 =
+	let k1 = (match serv1.kaal with | Some k -> k | None -> 0) + Hashtbl.find kaugused !(serv1.tipp2).nimi in
+	let k2 = (match serv2.kaal with | Some k -> k | None -> 0) + Hashtbl.find kaugused !(serv2.tipp2).nimi in
+	if k1 < k2 then -1 else if k1 > k2 then 1 else 0;; 
+
 (* funktsioon, mis sorteerib tippude listi kauguste põhjal algtipust *)
 let sordiTipud(tipud) =
 	List.sort v2iksemaKaugusega tipud;;
 
+let sordiServad(servad) =
+	List.sort v2iksemaKaugusega servad;;
+
 (*funktsioon, mis tagastab sõnena kõikide mittevaadeldud tippude kaugused algtipust *)
-let string_of_mitteVaadelduteKaugused(tipud) =
-	(*let vaatlemataTipud = List.filter (fun t -> !(t.tv) <> Vaadeldud) tipud in	(* mittevaadeldud tipud *)
-	let s = List.fold_left (fun a b -> a ^ ", " ^ b.nimi ^ ": " ^ (if Hashtbl.find kaugused b.nimi = max_int then "inf" else string_of_int(Hashtbl.find kaugused b.nimi))) "" vaatlemataTipud in
-	"Töötlemata tippude kaugused algtipust: [" ^ (if s = "" then "" else String.sub s 2 (String.length s - 2)) ^ "]";;*)
-	let vaadeldavadTipud = sordiTipud(List.filter (fun t -> !(t.tv) = Vaadeldav) tipud) in	(* mittevaadeldud tipud *)
-	let s = List.fold_left (fun a b -> a ^ ", " ^ b.nimi ^ ": " ^ (if Hashtbl.find kaugused b.nimi = max_int then "inf" else string_of_int(Hashtbl.find kaugused b.nimi))) "" vaadeldavadTipud in
-	"Tippude kauguste eelistusjärjekord: [" ^ (if s = "" then "" else String.sub s 2 (String.length s - 2)) ^ "]";;
+let string_of_vaadeldavateKaugused(servad) =
+	let vaadeldavadServad = sordiServad(List.filter (fun s -> !(s.sv) = Vaadeldav) servad) in
+	let s = List.fold_left (fun a b -> a ^ ", " ^ !(b.tipp1).nimi ^ !(b.tipp2).nimi ^ ": " ^ string_of_int((match b.kaal with | Some k -> k | None -> 0) + Hashtbl.find kaugused !(b.tipp1).nimi)) "" vaadeldavadServad in
+	"Servade eelistusjärjekord: [" ^ (if s = "" then "" else String.sub s 2 (String.length s - 2)) ^ "]";;
 
 (*funktsioon, mis tagastab sõnena kõikide tippude kaugused algtipust *)
 let string_of_kaugused() =
@@ -92,7 +97,7 @@ let algus(algtipp, tipud, servad) =
 	lisaKaugus 0 algtipp; 											(* ainult algtipule paneme kauguseks 0 *)
 	tekst := "Dijkstra algoritm alustab valitud algtipust. Määrame kõikidele tippudele kaugused algtipust: algtipule 0, kõikidele teistele lõpmatuse.";
 	(*List.iter (fun t -> t.hind := Some (Hashtbl.find kaugused t.nimi)) tipud;*)
-	nk1 := string_of_mitteVaadelduteKaugused(tipud);
+	nk1 := string_of_vaadeldavateKaugused(servad);
 	valitudTipp := algtipp;
 	i := ServaLisamine;;
 
@@ -102,19 +107,19 @@ let servaLisamine(algtipp, tipud, servad) =
 		then algtipp.tv := Vaadeldud																					(* märgime ta vaadelduks *)
 	else List.iter (fun s -> if !(s.sv) = Valitud then lisaServ(s)) servad; (* muidu märgime serva koos tipuga vaadelduks*)
 	!valitudTipp.hind := Some (Hashtbl.find kaugused !valitudTipp.nimi);
-	tekst := "Märgime valitud tipu vaadelduks.";
-	nk1 := string_of_mitteVaadelduteKaugused(tipud);
+	tekst := "Märgime valitud " ^ (if !valitudTipp = algtipp then "tipu" else "serva ja selle sihttipu") ^ " vaadelduks.";
+	nk1 := string_of_vaadeldavateKaugused(servad);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud										(* kui kõik tipu on vaadeldud, lähme lõpule *)
   		then i := Lopp
 	else i := ServaVaatlus;;																								(* vastasel juhul lähme tippude kaugusi uuendama *)
 
 (* äsja vaadeldud tipust väljuvate servade leidmine, vaadeldavateks märkimine ja nende sihttippude kauguste uuendamine *)
-let servaVaatlus(tipud, servad) =
+let servaVaatlus(servad) =
   	let vaadeldavadServad = leiaV2ljuvadServad(!valitudTipp, servad) in		(* leiame äsja külastatud tipust väljuvad servad *)
   	List.iter vaatleServa vaadeldavadServad;															(* märgime need vaadeldavateks *)
   	List.iter uuendaKaugust vaadeldavadServad;														(* uuendame nende 2. tippude kaugusi algtipust *)
   	tekst := "Vaatleme äsja vaadeldud tipust väljuvaid servi ning uuendame servade sihttippude kaugusi, kui need on senisest väiksemad.";
-		nk1 := string_of_mitteVaadelduteKaugused(tipud);
+		nk1 := string_of_vaadeldavateKaugused(servad);
   	i := ServaValik;;
 
 (* algtipule lähima külastamata tipu ja vastava serva leidmine ja valituks märkimine *)
@@ -123,8 +128,8 @@ let servaValik(tipud, servad) =
 	let s = List.find (vastavServ t) servad in																		(* ja talle vastava serva *)
 	valiServ(s);																																	(* märgime serva ja tipu valituks *)
 	valitudTipp := t;
-	tekst := "Valime algtipule lähima külastamata tipu.";
-	nk1 := string_of_mitteVaadelduteKaugused(tipud);
+	tekst := "Valime eelistusjärjekorrast serva, mille sihttipu kaugus algtipust on vähim.";
+	nk1 := string_of_vaadeldavateKaugused(servad);
 	i := ServaLisamine;;
 
 (* algoritmi lõpp *)
@@ -137,7 +142,7 @@ let lopp(tipud) =
 let samm(algtipp, tipud, servad) =
 	match !i with
 		| Algus -> algus(algtipp, tipud, servad)
-		| ServaVaatlus -> servaVaatlus(tipud, servad)
+		| ServaVaatlus -> servaVaatlus(servad)
 		| ServaLisamine -> servaLisamine(algtipp, tipud, servad)
 		| ServaValik -> servaValik(tipud, servad)
 		| Lopp -> lopp(tipud)

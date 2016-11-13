@@ -170,6 +170,7 @@ let sammudKokku = ref(None);;
 let kuvaSeisund(tipud, servad) = 
 	let seisund = Hashtbl.find seisundid !sammuNr in
 	List.iter (fun t -> t.tv := Hashtbl.find (seisund.tipuvaadeldavused) t.nimi) tipud;
+	List.iter (fun t -> t.hind := Hashtbl.find (seisund.hinnad) t.nimi) tipud;
 	if !algo = Kosaraju && (!sammuNr = 2 || !sammuNr = 3)
 		then (
 			try
@@ -196,11 +197,14 @@ let kuvaSeisund(tipud, servad) =
 let lisaSeisund(tipud, servad) =
 	let tv = Hashtbl.create 10 in	(* tippude vaadeldavused *)
 	let sv = Hashtbl.create 10 in	(* servade vaadeldavused *)
+	let h = Hashtbl.create 10 in (* tippude hinnad *)
 	List.iter (fun t -> Hashtbl.replace tv t.nimi !(t.tv)) tipud;
 	List.iter (fun s -> Hashtbl.replace sv (!(s.tipp1).nimi ^ ":" ^ !(s.tipp2).nimi) !(s.sv)) servad;
+	List.iter (fun t -> Hashtbl.replace h t.nimi !(t.hind)) tipud;
 	let seisund = {
 		tipuvaadeldavused = tv;
 		servavaadeldavused = sv;
+		hinnad = h;
   	tekst = !tekst;
   	nk1 = !nk1;
   	nk2 = !nk2;
@@ -603,7 +607,7 @@ let servadeKontroll(servad) =
 		)
 	done;
 	try
-		let sobimatu = List.find (fun s -> match s.kaal with | None -> false | Some k -> k < (-99) || k > 99) servad in
+		let sobimatu = List.find (fun s -> match s.kaal with | None -> false | Some k -> k < (-99) || k > 999) servad in
 		failwith("Graafi kaalud peavad j‰‰ma lıiku [-99, 99]. Vigane serv: " ^ string_of_serv(sobimatu))
 	with
 		| Not_found -> ();;
@@ -755,8 +759,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral m‰‰rame sisendandmed siin ise *)
-  	algo := Kosaraju;
-  	let graaf = ntKosaraju1 in
+  	algo := Dijkstra;
+  	let graaf = ntDijkstra2 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nıua *)
 		alusta(graaf, algtipuNimi)
 	);;
