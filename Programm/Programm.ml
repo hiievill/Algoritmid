@@ -760,7 +760,7 @@ let main() =
 		)
 	else (																(* vastasel korral m‰‰rame sisendandmed siin ise *)
   	algo := Dijkstra;
-  	let graaf = ntDijkstra2 in
+  	let graaf = ntDijkstra3 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nıua *)
 		alusta(graaf, algtipuNimi)
 	);;
