@@ -126,7 +126,7 @@ let servaLisamine(tipud, servad) =
 																														servad, mis ühendavad külastatud tippe *)
 	lisaServ(lisatavServ);																	(* märgime serva ja tema tipud vaadelduks *)
 	tekst := "Märgime serva töötlemata otstipu töödelduks ja lisame " ^ (if !algo = Laiuti then "järjekorra lõppu" else "magasini") ^ 
-		" äsja töödeldud tipuga seotud servad.";
+		" äsja töödeldud tipuga seotud servad, mille teine tipp on külastamata.";
 	lisatekst();
 	if List.length !j2rgmisedServad = 0											(* kui järgmiste servade järjekord on tühi, lähme lõpule *)
 		then i := Lopp

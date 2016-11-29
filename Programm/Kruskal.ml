@@ -87,7 +87,7 @@ let sobimatuServ(servad) =
 let servaLisamine(servad, tipud) =
 	let lisatavServ = List.find (fun s -> !(s.sv) = Valitud) servad in
 	muudaServa Valitud Vaadeldud lisatavServ; 																	(* märgime serva vaadelduks *)
-	tekst := "See serv ühendab eri sidusaid komponente olevaid tippe, nii et lisame selle ja eemaldame eelistusjärjekorrast.";
+	tekst := "See serv ühendab eri sidusates komponentides olevaid tippe, nii et lisame selle ja eemaldame eelistusjärjekorrast.";
 	nk1 := string_of_sej(!sej);
 	if List.length !sej = 0
 		then i := Lopp

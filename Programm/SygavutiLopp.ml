@@ -62,7 +62,10 @@ let valiTipp(tipp, servad) =
 (* funktsioon, mis märgib tipu ja talle vastava serva vaadelduks *)
 let lisaTipp(tipp, servad) =
 	tipp.tv := Vaadeldud;
-	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;;
+	j2rgmisedServad := List.filter (fun s -> !(s.tipp1) != tipp) !j2rgmisedServad;
+	(*List.iter (fun s -> if !(s.tipp1) = tipp && !(s.sv) != Vaadeldud then s.sv := Sobimatu) servad;*)
+	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;
+	List.iter (fun s -> if !(s.sv) != Vaadeldud && !(!(s.tipp1).tv) = Vaadeldud && !(!(s.tipp2).tv) = Vaadeldud then s.sv := Sobimatu) servad;;
 
 (* funktsioon töötlusjärjekorra sõnena esitamiseks *)
 let string_of_vaadeldavadTipud(tipud) = 
@@ -115,7 +118,7 @@ let servaValik(algtipp, servad) =
 		then t.tv := Valitud
 	else valiTipp(t, servad);
 	vaadeldavadTipud := List.tl !vaadeldavadTipud;
-	tekst := "Kõik tipud, kuhu sellest tipust edasi pääseb, on töödeldud, nii et valime selle.";
+	tekst := "Kõik tipud, kuhu sellest tipust edasi pääseb, on läbitud, nii et valime selle.";
 	lisatekst();
 	i := ServaLisamine;;
 
@@ -139,7 +142,7 @@ let servaLisamine(algtipp, tipud, servad) =
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Magasin on tühi. Sügavuti lõppjärjestuses läbimise algoritm lõpetab, olles leidnud sügavuti lõppjärjestuses läbimise puu.";
+	tekst := "Magasin on tühi. Sügavuti lõppjärjestuses läbimise algoritm lõpetab, olles leidnud sügavuti läbimise puu.";
 	lisatekst();
 	AlgoBaas.lopp();;
 

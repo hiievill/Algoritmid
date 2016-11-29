@@ -162,7 +162,7 @@ let kuvaTipp(tipp) =
 			| Vaadeldav -> rgb 253 253 122
 			| Valitud -> rgb 253 159 37
 			| Vaadeldud -> rgb 22 137 9
-			| Sobimatu -> rgb 148 148 148
+			| Sobimatu -> rgb 200 200 200
 	);
 	fill_circle !(tipp.x) !(tipp.y) tipuRaadius;;
 
@@ -333,7 +333,7 @@ let kuvaServJaNool(serv) =
 			| Vaadeldav -> rgb 240 240 3
 			| Valitud -> rgb 253 144 1
 			| Vaadeldud -> rgb 78 247 59
-			| Sobimatu -> rgb 67 67 67
+			| Sobimatu -> rgb 170 170 170
 	);
 	kuvaServ(serv);
 	if serv.nool = true then kuvaNool(serv);;
