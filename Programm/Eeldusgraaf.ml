@@ -8,7 +8,7 @@ let ha = Hashtbl.create 10;; 							(* tippude hiliseimad algusajad *)
 
 let v2ljundastmed = Hashtbl.create 10;;		(* tippude väljundastmed *)
 
-let kriitilineTee = ref([]);;							(* kriitiline tee *)
+let kriitilisedTeed = ref([]);;							(* kriitilised teed *)
 
 (* funktsioon, mis tagastab tipu vahetud eellased *)
 let leiaTipuEellased(tipp, servad) =
@@ -89,8 +89,9 @@ let string_of_tagurpidiTopo() =
 	"Tagurpidi topoloogiline järjestus: [" ^ String.concat ", " (List.map (fun t -> t.nimi) (List.rev !(TopoKahn.tekkinudJ2rjestus))) ^ "]";;
 
 (* funktsioon kriitilise tee sõnena esitamiseks *)
-let string_of_kriitilineTee()=
-	"Kriitiline tee: " ^ string_of_tipud(!kriitilineTee);;
+let string_of_kriitilisedTeed() =
+	let s = List.fold_left (fun acc tee -> acc ^ ", " ^string_of_tipud(tee)) "" !kriitilisedTeed in
+	"Kriitilised teed: [" ^ String.sub s 2 (String.length s - 2) ^ "]";;
 
 (* algoritmi algus *)
 let algus() =
@@ -181,28 +182,42 @@ let tipuLisamineHA(tipud, servad) =
 	nk3 := string_of_tagurpidiTopo();
 	nk4 := string_of_hiliseimadAlgusajad(tipud);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud) tipud
-		then i := Vahe3
+		then i := KriitilisedTipud
 	else i := TipuValikHA;;
 
-(* vaheteksti kuvamine *)
-let vahe3(tipud, servad) =
-	tekst := "Leiame kriitilise tee, mis koosneb kriitilistest tippudest ehk sellistest tippudest, mille hiliseima algusaja ja hinna summa võrdub varaseima lõpuajaga.";
+(* funktsioon, mis leiab ühele kriitilisele järgnevate kriitiliste tippude listi *)
+let leiaJ2rgmisedKriitilised(tipp, tipud, servad) =
+	let j2rgServad = List.filter (fun s -> !(s.tipp1) = tipp && !(s.sv) = Valitud) servad in
+	List.map (fun s -> !(s.tipp2)) j2rgServad;;
+		
+let rec leiaTeed(tipp, tipud, servad) =
+	let j2rgmisedKriitilised = leiaJ2rgmisedKriitilised(tipp, tipud, servad) in
+	if (List.length j2rgmisedKriitilised = 0)
+		then [[tipp]]
+	else List.map (fun tee -> tipp::tee) (List.concat (List.map (fun t -> leiaTeed(t, tipud, servad)) j2rgmisedKriitilised));;
+
+let leiaKriitilisedTeed(tipud, servad) =
+	let kriitilisedAlgustipud = List.filter (fun t -> Hashtbl.find ha t.nimi = 0 && onKriitiline(t)) tipud in
+	List.concat (List.map (fun t -> leiaTeed(t, tipud, servad)) kriitilisedAlgustipud);;	
+	
+let kriitilisedTipud(tipud, servad) =
+	List.iter (fun t -> if onKriitiline(t) then t.tv := Valitud) tipud;
+	tekst := "Leiame kõik kriitilised tipud - sellised tipud, mille hiliseima algusaja ja hinna summa võrdub varaseima lõpuajaga.";
 	nk3 := string_of_hiliseimadAlgusajad(tipud);
 	nk4 := "";
-	i := Kriitiline;;
+	i := KriitilisedServad;;
 	
-let kriitiline(tipud, servad) =
-	List.iter (fun t -> if onKriitiline(t) then t.tv := Valitud) tipud;
-	List.iter (fun s -> if onKriitiline(!(s.tipp1)) && onKriitiline(!(s.tipp2)) then s.sv := Valitud) servad;
-	tekst := "Leiame kõik kriitilised tipud ja nende kaudu moodustuva kriitilise tee.";
-	kriitilineTee := List.filter (fun t -> !(t.tv) = Valitud) tipud;
-	nk4 := string_of_kriitilineTee();
+let kriitilisedServad(tipud, servad) =
+	List.iter (fun s -> if Hashtbl.find vl !(s.tipp1).nimi = Hashtbl.find ha !(s.tipp2).nimi then s.sv := Valitud) servad;
+	tekst := "Leiame kõik kriitiliste tippude kaudu moodustuva kriitilised teed.";
+	kriitilisedTeed := leiaKriitilisedTeed(tipud, servad);
+	nk4 := string_of_kriitilisedTeed();
 	i := Lopp;;
 
 (* algoritmi lõpp *)
 let lopp() =
-	tekst := "Kriitiline tee on leitud ja sellega on eeldusgraafi analüüs lõppenud.";
-	nk4 := string_of_kriitilineTee();
+	tekst := "Kriitilised teed on leitud ja sellega on eeldusgraafi analüüs lõppenud.";
+	nk4 := string_of_kriitilisedTeed();
 	AlgoBaas.lopp();;
 
 (* algoritmi samm *)
@@ -217,7 +232,7 @@ let samm(tipud, servad) =
 		| Vahe2 -> vahe2(tipud, servad)
 		| TipuValikHA -> tipuValikHA(tipud, servad)
 		| TipuLisamineHA -> tipuLisamineHA(tipud, servad)
-		| Vahe3 -> vahe3(tipud, servad)
-		| Kriitiline -> kriitiline(tipud, servad)
+		| KriitilisedTipud -> kriitilisedTipud(tipud, servad)
+		| KriitilisedServad -> kriitilisedServad(tipud, servad)
 		| Lopp -> lopp()
 		| _ -> ();;

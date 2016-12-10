@@ -41,7 +41,6 @@ type algoSamm = Algus
 	| Topo
 	| Vahe1
 	| Vahe2
-	| Vahe3
 	| TipuValikVL
 	| TipuLisamineVL
 	| TipuValikHA
@@ -49,7 +48,8 @@ type algoSamm = Algus
 	| SobimatuServ
 	| Tagurpidi
 	| EsimeneKriitiline
-	| Kriitiline
+	| KriitilisedTipud
+	| KriitilisedServad
 	| EsimeseTipuLisamine
 	| TeisedTipud
 	| Fikseerimine
@@ -110,5 +110,6 @@ type seisund = {
 	nk1 : string;
 	nk2 : string;
 	nk3 : string;
+	nk4 : string;
 }
 

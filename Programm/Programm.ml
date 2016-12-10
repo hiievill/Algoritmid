@@ -191,6 +191,7 @@ let kuvaSeisund(tipud, servad) =
 	nk1 := seisund.nk1;
 	nk2 := seisund.nk2;
 	nk3 := seisund.nk3;
+	nk4 := seisund.nk4;
 	kuvaPilt(tipud, servad);;
 
 (* sammu lisamine seisundina *)
@@ -209,6 +210,7 @@ let lisaSeisund(tipud, servad) =
   	nk1 = !nk1;
   	nk2 = !nk2;
   	nk3 = !nk3;
+		nk4 = !nk4;
 	} in Hashtbl.replace seisundid !sammuNr seisund;;
 
 (* algoritmi edasisamm *)
@@ -759,8 +761,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral määrame sisendandmed siin ise *)
-  	algo := Dijkstra;
-  	let graaf = ntDijkstra4 in
+  	algo := Eeldusgraaf;
+  	let graaf = ntEeldusgraaf7 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 		alusta(graaf, algtipuNimi)
 	);;

@@ -490,6 +490,84 @@ let sidusKaaludetaSuundadega4servad = looServad([
 		("O", "F", None, true);
 	], sidusKaaludetaSuundadega4tipud);;
 
+let eeldus5tipud = looTipud([
+		("A", 100, 300, Some(1));
+		("B", 100, 200, Some(1));
+		("C", 200, 400, Some(1));
+		("D", 200, 300, Some(1));
+		("E", 200, 200, Some(1));
+		("F", 300, 300, Some(1));
+		("G", 300, 200, Some(1));
+	]);;
+
+let eeldus5servad = looServad([
+		("A", "C", None, true);
+		("A", "D", None, true);
+		("A", "E", None, true);
+		("B", "C", None, true);
+		("B", "D", None, true);
+		("B", "E", None, true);
+		("C", "F", None, true);
+		("C", "G", None, true);
+		("D", "F", None, true);
+		("D", "G", None, true);
+		("E", "F", None, true);
+		("E", "G", None, true);
+	], eeldus5tipud);;
+
+let eeldus6tipud = looTipud([
+		("A", 50, 200, Some(1));
+		("B", 125, 300, Some(1));
+		("C", 200, 300, Some(1));
+		("D", 162, 100, Some(2));
+		("E", 275, 200, Some(1));
+		("F", 350, 300, Some(1));
+		("G", 425, 300, Some(1));
+		("H", 388, 200, Some(1));
+		("I", 388, 100, Some(1));
+		("J", 500, 200, Some(1));
+		("K", 575, 200, Some(1));
+		("L", 575, 100, Some(3));
+	]);;
+
+let eeldus6servad = looServad([
+		("A", "B", None, true);
+		("A", "D", None, true);
+		("C", "E", None, true);
+		("B", "C", None, true);
+		("D", "E", None, true);
+		("E", "F", None, true);
+		("E", "H", None, true);
+		("E", "I", None, true);
+		("F", "G", None, true);
+		("I", "L", None, true);
+		("G", "J", None, true);
+		("H", "J", None, true);
+		("I", "J", None, true);
+		("J", "K", None, true);
+	], eeldus6tipud);;
+
+let eeldus7tipud = looTipud([
+		("A", 100, 300, Some(1));
+		("B", 200, 400, Some(3));
+		("C", 200, 200, Some(1));
+		("D", 300, 300, Some(1));
+		("E", 400, 400, Some(1));
+		("F", 400, 200, Some(2));
+		("G", 500, 300, Some(1));
+		("H", 600, 400, Some(4));
+		("I", 600, 200, Some(2));
+	]);;
+
+let eeldus7servad = looServad([
+		("A", "B", None, true);
+		("A", "C", None, true);
+		("D", "E", None, true);
+		("D", "F", None, true);
+		("E", "G", None, true);
+		("F", "G", None, true);
+	], eeldus7tipud);;
+
 let sidusKaaludetaSuundadeta = looGraaf(sidusKaaludetaSuundadetatipud, sidusKaaludetaSuundadetaservad);;
 
 let sidusKaaludetaSuundadeta2 = looGraaf(sidusKaaludetaSuundadeta2tipud, sidusKaaludetaSuundadeta2servad);;
@@ -606,6 +684,9 @@ let ntEeldusgraaf1 = sidusKaaludetaSuundadegaHindadega;;
 let ntEeldusgraaf2 = sidusKaaludetaSuundadegaHindadega2;;
 let ntEeldusgraaf3 = sidusKaaludetaSuundadegaHindadega3;;
 let ntEeldusgraaf4 = sidusKaaludetaSuundadegaHindadega4;;
+let ntEeldusgraaf5 = looGraaf(eeldus5tipud, eeldus5servad);;
+let ntEeldusgraaf6 = looGraaf(eeldus6tipud, eeldus6servad);;
+let ntEeldusgraaf7 = looGraaf(eeldus7tipud, eeldus7servad);;
 
 let ntKosaraju1 = mitteSidusKaaludetaSuundadega3;;
 let ntKosaraju2 = mitteSidusKaaludetaSuundadega;;	(* iga tipp eraldi komponent *)
