@@ -232,9 +232,9 @@ let samm(algtipp, tipud, servad) =
     		| Dijkstra -> Dijkstra.samm(algtipp, tipud, servad)
     		| FloydWarshall -> FloydWarshall.samm(tipud, servad)
     		| TopoKahn -> TopoKahn.samm(tipud, servad)
-    		| TopoLopp -> TopoLopp.samm(algtipp, tipud, servad)
+    		| TopoLopp -> TopoLopp.samm(tipud, servad)
     		| Eeldusgraaf -> Eeldusgraaf.samm(tipud, servad)
-    		| Kosaraju -> Kosaraju.samm(algtipp, tipud, servad)
+    		| Kosaraju -> Kosaraju.samm(tipud, servad)
 		);
 		kuvaPilt(tipud, servad);
 		lisaSeisund(tipud, servad)
@@ -633,7 +633,7 @@ let kontrolliGraafi(algtipp, tipud, servad) =
 
 (* funktsioon, mis tagastab, kas tegu on algtippu nõudva algoritmiga *)
 let algtipugaAlgoritm() =
-	let algtipugaAlgoritmid = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Dijkstra; TopoLopp; Kosaraju]  in
+	let algtipugaAlgoritmid = [Laiuti; SygavutiEes; SygavutiLopp; Prim; Dijkstra]  in
 	List.mem !algo algtipugaAlgoritmid;;
 
 (* funktsioon, mis tagastab listi kõikidest topeltservadest (igast topeltservast ühe serva) *)
@@ -761,8 +761,8 @@ let main() =
 			alusta(graaf, algtipuNimi)
 		)
 	else (																(* vastasel korral määrame sisendandmed siin ise *)
-  	algo := Eeldusgraaf;
-  	let graaf = ntEeldusgraaf7 in
+  	algo := Dijkstra;
+  	let graaf = ntDijkstra3 in
   	let algtipuNimi = "A" in						(* peab olema ka siis, kui algoritm algtippu ei nõua *)
 		alusta(graaf, algtipuNimi)
 	);;

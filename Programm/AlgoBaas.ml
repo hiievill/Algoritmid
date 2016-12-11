@@ -70,6 +70,14 @@ let v2iksemaKaaluga serv1 serv2 =
 let sordiJ2rjekord(servad) =
 	List.sort v2iksemaKaaluga servad;;
 
+(* funktsioon, mis tagastab kahe tipu puhul -1, kui 1. nimi on eespool, 1, kui 2. nimi on eespool, 0 muudel juhtudel *)
+let v2iksemaNimegaTipud tipp1 tipp2 =
+	if tipp1.nimi < tipp2.nimi then -1 else if tipp1.nimi > tipp2.nimi then 1 else 0;;
+
+(* funktsioon, mis sorteerib tippude listi tähestikuliselt *)
+let sordiTipud(tipud) =
+	List.sort v2iksemaNimegaTipud tipud;;
+
 (* tühi tipp alguses refi täitmiseks *)
 let tyhiTipp = {
 	nimi = "-";

@@ -65,7 +65,8 @@ let lisaTipp(tipp, servad) =
 	j2rgmisedServad := List.filter (fun s -> !(s.tipp1) != tipp) !j2rgmisedServad;
 	(*List.iter (fun s -> if !(s.tipp1) = tipp && !(s.sv) != Vaadeldud then s.sv := Sobimatu) servad;*)
 	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;
-	List.iter (fun s -> if !(s.sv) != Vaadeldud && !(!(s.tipp1).tv) = Vaadeldud && !(!(s.tipp2).tv) = Vaadeldud then s.sv := Sobimatu) servad;;
+	List.iter (fun s -> if !(s.sv) <> Vaadeldud && (!(!(s.tipp1).tv) = Vaadeldud || !(!(s.tipp1).tv) = Vaadeldav) && !(!(s.tipp2).tv) = Vaadeldud then s.sv := Sobimatu) servad;
+	j2rgmisedServad := List.filter (fun s -> !(s.sv) = Vaatlemata) !j2rgmisedServad;; (* eemaldame need servad, mis vahepeal sobimatuks muutusid *)
 
 (* funktsioon töötlusjärjekorra sõnena esitamiseks *)
 let string_of_vaadeldavadTipud(tipud) = 
@@ -127,7 +128,7 @@ let servaLisamine(algtipp, tipud, servad) =
 	let t = List.find (fun t -> !(t.tv) = Valitud) tipud in
 	toodeldudTipud := !toodeldudTipud @ [t];
 	lisaTipp(t, servad);
-	tekst := "Töötleme selle tipu ja pöördume tagasi.";
+	tekst := "Töötleme selle tipu ja pöördume tagasi. Eemaldame magasinist sellised servad, mille sihttipp on äsja töödeldud tipp.";
 	lisatekst();
 	if t = algtipp
 		then

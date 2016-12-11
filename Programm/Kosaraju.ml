@@ -33,10 +33,6 @@ let string_of_lopp(tipud) =
 (* funktsioon tagurpidi sügavuti lõppjärjestuse sõnena esitamiseks *)
 let string_of_tagurpidi(tipud) =
 	"Tagurpidi lõppjärjestus: "  ^ string_of_tipud(tipud);;		(* NB! mitte List.rev, selle pöörasin juba ringi *)
-	
-(* funktsioon ühe tugevalt sidusa komponendi sõnena esitamiseks *)
-let string_of_komponent(tipud) =
-	"Tugevalt sidus komponent: " ^ string_of_tipud(tipud);;
 
 (* funktsioon tugevalt sidusate komponentide sõnena esitamiseks *)
 let string_of_komponendid(komponendid) =
@@ -44,12 +40,12 @@ let string_of_komponendid(komponendid) =
 
 let algus(tipud, servad) =
 	List.iter (fun t -> TopoKahn.uuendaSisendastet (TopoKahn.leiaSisendaste(t, servad)) t) tipud;
-	tekst := "Kosaraju algoritm algustab valitud tipust.";
+	tekst := "Kosaraju algoritm alustab.";
 	i := Sygavuti;;
 
 (* läbime graafi sügavuti lõppjärjestuses. Kui mõni tipp jääb läbi käimata, siis mitu korda *)
-let sygavuti(algtipp, tipud, servad) =
-	sygavutiTipud := TopoLopp.l2biSygavuti(algtipp, tipud, servad);				(* läbime graafi sügavuti lõppjärjestuses *)
+let sygavuti(tipud, servad) =
+	sygavutiTipud := TopoLopp.l2biSygavuti(tipud, servad);				(* läbime graafi sügavuti lõppjärjestuses *)
 	tekst := "Läbime graafi sügavuti lõppjärjestuses ja kirjutame välja tekkinud lõppjärjestuse.";
 	nk1 := string_of_lopp(!sygavutiTipud);
 	i := PooratudGraaf;;
@@ -73,8 +69,7 @@ let esimeneTipp(tipud, servad) =
 	esimeneTipp.tv := Valitud;
 	tekst := "Valime tagurpidi lõppjärjestusest esimese tipu, mis pole veel üheski komponendis.";
 	nk1 := string_of_tagurpidi(!sygavutiTipud);
-	nk2 := string_of_komponent(!komponent);
-	nk3 := string_of_komponendid(!komponendid);
+	nk2 := string_of_komponendid(!komponendid);
 	i := TeisedTipud;;
 
 (* valitud tipust alates graafi läbimine ja kõikide läbitud tippude ühendamine esimesega üheks komponendiks *)
@@ -90,10 +85,9 @@ let teisedTipud(tipud, servad) =
 	List.iter (fun s -> if !(s.sv) = Valitud then s.sv := Vaadeldud) servad;
 	komponent := List.filter (fun t -> !(t.tv) = Vaadeldud) tipud;
 	komponendid := !komponendid @ [!komponent];
-	tekst := "Lisame temaga ühte sidususkomponenti kõik tipud, millesse saab temast ümberpööratud kaartega graafis jõuda.";
+	tekst := "Lisame temaga ühte sidususkomponenti kõik tipud, millesse saab temast ümberpööratud kaartega graafis jõuda ega kuulu veel ühtegi komponenti.";
 	nk1 := string_of_tagurpidi(!sygavutiTipud);
-	nk2 := string_of_komponent(!komponent);
-	nk3 := string_of_komponendid(!komponendid);
+	nk2 := string_of_komponendid(!komponendid);
 	if List.for_all (fun t -> !(t.tv) = Vaadeldud || !(t.tv) = Sobimatu) tipud
 		then i := Lopp
 	else i := EsimeneTipp;;
@@ -102,6 +96,7 @@ let teisedTipud(tipud, servad) =
 let lopp(tipud, servad) =
 	List.iter (fun t -> if !(t.tv) = Vaadeldud then t.tv := Sobimatu) tipud;
 	List.iter (fun s -> if !(s.sv) = Vaadeldud then s.sv := Sobimatu) servad;
+	pooraServad(servad);
 	tekst := "Kõik tipud on vaadeldud. Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid.";
 	nk1 := string_of_komponendid(!komponendid);
 	nk2 := "";
@@ -109,10 +104,10 @@ let lopp(tipud, servad) =
 	AlgoBaas.lopp();;
 
 (* algoritmi samm *)
-let samm(algtipp, tipud, servad) = 
+let samm(tipud, servad) = 
 	match !i with
 		| Algus -> algus(tipud, servad)
-		| Sygavuti -> sygavuti(algtipp, tipud, servad)
+		| Sygavuti -> sygavuti(tipud, servad)
 		| PooratudGraaf -> pooratudGraaf(tipud, servad)
 		| EsimeneTipp -> esimeneTipp(tipud, servad)
 		| TeisedTipud -> teisedTipud(tipud, servad)

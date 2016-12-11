@@ -7,22 +7,21 @@ let sygavutiTipud = ref([]);;
 
 (* funktsioon, mis läbib graafi sügavuti lõppjärjestuses seni, kuni kõik tipud on külastatud, alustades vajadused nullise *)
 (* sisendastmega tippudest uuesti. Vajalik Kosaraju ja TopoLopp jaoks. Tagastatakse tekkinud järjestus *)
-let l2biSygavuti(algtipp, tipud, servad) =
+let l2biSygavuti(tipud, servad) =
 	let sygavutiTipud = ref([]) in
-	let esimeneTipp = ref(algtipp) in
-	!esimeneTipp.tv := Vaatlemata;	(* ühe tipuga juhuks, muidu ei tööta (sest alguses märkisime algtipu juba valituks) *)
+	let esimeneTipp = ref(TopoKahn.valiTipp(tipud)) in
+	(*let esimeneTipp = ref(algtipp) in*)
+	(*!esimeneTipp.tv := Vaatlemata;*)	(* ühe tipuga juhuks, muidu ei tööta (sest alguses märkisime algtipu juba valituks) *)
 	while List.exists (fun t -> !(t.tv) = Vaatlemata) tipud (* kuniks leidub veel vaatlemata tippe *)
 		do
 			i := Algus;	(* läbime graafi sügavuti lõppjärjestuses alates tipust esimeneTipp *)
 			algoL2bi := false;
 			SygavutiLopp.toodeldudTipud := [];
-			(*print_endline(!esimeneTipp.nimi);*)
 			while !algoL2bi = false
 				do
 					SygavutiLopp.samm(!esimeneTipp, tipud, servad)									(* läbime sügavuti *)
 				done;
   		sygavutiTipud := !sygavutiTipud @ !(SygavutiLopp.toodeldudTipud); 	(* lisame järjestusse *)
-			(*print_endline(string_of_tipud(!sygavutiTipud));*)
   		if List.exists (fun t -> !(t.tv) = Vaatlemata) tipud 								(* kui leidub veel vaatlemata tippe *)
 				then esimeneTipp := TopoKahn.valiTipp(tipud)
   	done;
@@ -38,8 +37,8 @@ let algus(tipud, servad) =
 	i := SygavutiL2bimine;;
 
 (* graafi sügavuti lõppjärjestuses läbimine ja tekkinud järjestuse saamine *)
-let sygavutiL2bimine(algtipp, tipud, servad) =	
-	sygavutiTipud := l2biSygavuti(algtipp, tipud, servad);
+let sygavutiL2bimine(tipud, servad) =	
+	sygavutiTipud := l2biSygavuti(tipud, servad);
 	nk1 := "Lõppjärjestus: " ^ string_of_tipud(!sygavutiTipud);
 	nk2 := "";
 	tekst := "Läbime graafi sügavuti lõppjärjestuses.";
@@ -60,10 +59,10 @@ let lopp() =
 	AlgoBaas.lopp();;
 
 (* algoritmi samm *)
-let samm(algtipp, tipud, servad) = 
+let samm(tipud, servad) = 
 	match !i with
 		| Algus -> algus(tipud, servad);
-		| SygavutiL2bimine -> sygavutiL2bimine(algtipp, tipud, servad);
+		| SygavutiL2bimine -> sygavutiL2bimine(tipud, servad);
 		| Tagurpidi -> tagurpidi();
 		| Lopp -> lopp();
 		| _ -> ();;

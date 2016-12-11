@@ -7,18 +7,10 @@ let kaugused = Hashtbl.create 10;; 		(* sisuliselt map tipp.nimi : int *)
 
 let valitudTipp = ref(tyhiTipp);;			(* valitud tipp *)
 
-(* funktsioon, mis tagastab kahe tipu puhul -1, kui 1. nimi on eespool, 1, kui 2. nimi on eespool, 0 muudel juhtudel *)
-let v2iksemaNimegaTipud tipp1 tipp2 =
-	if tipp1.nimi < tipp2.nimi then -1 else if tipp1.nimi > tipp2.nimi then 1 else 0;;
-
 let v2iksemaKaugusegaServad serv1 serv2 =
 	let k1 = (match serv1.kaal with | Some k -> k | None -> 0) + Hashtbl.find kaugused !(serv1.tipp1).nimi in
 	let k2 = (match serv2.kaal with | Some k -> k | None -> 0) + Hashtbl.find kaugused !(serv2.tipp1).nimi in
 	if k1 < k2 then -1 else if k1 > k2 then 1 else 0;; 
-
-(* funktsioon, mis sorteerib tippude listi tähestikuliselt *)
-let sordiTipud(tipud) =
-	List.sort v2iksemaNimegaTipud tipud;;
 
 let sordiServad(servad) =
 	List.sort v2iksemaKaugusegaServad servad;;
@@ -92,15 +84,18 @@ let vastavServ tipp serv =
 		| Some k -> !(serv.tipp2) = tipp && Hashtbl.find kaugused !(serv.tipp1).nimi + k = Hashtbl.find kaugused tipp.nimi;;
 
 (* algoritmi algus, mille käigus määratakse kõikidele tippudele kaugused algtipust *)
-let algus(algtipp, tipud, servad) =
+let algus() =
+	tekst := "Dijkstra algoritm alustab valitud algtipust.";
+	i := Vahe1;;
+
+let vahe1(algtipp, tipud, servad) =
+	valitudTipp := algtipp;
 	List.iter (lisaKaugus max_int) tipud; 			(* paneme kõikidele tippudele algseks kauguseks algtipust suurima võimaliku *)
 	lisaKaugus 0 algtipp; 											(* ainult algtipule paneme kauguseks 0 *)
-	tekst := "Dijkstra algoritm alustab valitud algtipust. Määrame kõikidele tippudele kaugused algtipust: algtipule 0, kõikidele teistele lõpmatuse.
-		Eelistusjärjekorras hoiame vaadeldavaid servi, mille sihttipp on külastamata, järjestades need sihttipu kauguse põhjal algtipust selle serva kaudu.";
+	tekst := "Määrame algtipule kauguse 0, teistele lõpmatuse. Eelistusjärjekorras hoiame vaadeldavaid servi, mille sihttipp on külastamata, järjestades need sihttipu kauguse põhjal algtipust selle serva kaudu.";
 	(*List.iter (fun t -> t.hind := Some (Hashtbl.find kaugused t.nimi)) tipud;*)
 	nk1 := string_of_kaugused(tipud);
 	nk2 := string_of_vaadeldavateKaugused(servad);
-	valitudTipp := algtipp;
 	i := ServaLisamine;;
 
 (* valitud tipu ja vastava serva vaadelduks märkimine *)
@@ -148,7 +143,8 @@ let lopp(tipud, servad) =
 (* algoritmi samm *)
 let samm(algtipp, tipud, servad) =
 	match !i with
-		| Algus -> algus(algtipp, tipud, servad)
+		| Algus -> algus()
+		| Vahe1 -> vahe1(algtipp, tipud, servad)
 		| ServaVaatlus -> servaVaatlus(tipud, servad)
 		| ServaLisamine -> servaLisamine(algtipp, tipud, servad)
 		| ServaValik -> servaValik(tipud, servad)
