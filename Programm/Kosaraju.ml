@@ -97,7 +97,7 @@ let lopp(tipud, servad) =
 	List.iter (fun t -> if !(t.tv) = Vaadeldud then t.tv := Sobimatu) tipud;
 	List.iter (fun s -> if !(s.sv) = Vaadeldud then s.sv := Sobimatu) servad;
 	pooraServad(servad);
-	tekst := "Kõik tipud on vaadeldud. Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid.";
+	tekst := "Kõik tipud on vaadeldud. Kosaraju algoritm lõpetab, olles leidnud graafi tugevalt sidusad komponendid. Komponendid on esitatud topoloogilises järjestuses.";
 	nk1 := string_of_komponendid(!komponendid);
 	nk2 := "";
 	nk3 := ""; 
