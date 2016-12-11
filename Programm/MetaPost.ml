@@ -25,6 +25,9 @@ let v2rviTeisendus(v2rv) =
 let vStr(v1, v2, v3) =
 	"(" ^ v2rviTeisendus(v1) ^ ", " ^ v2rviTeisendus(v2) ^ ", " ^ v2rviTeisendus(v3) ^ ")";;
 
+let kirjeldusBase = 2;;
+let nimekirjaBase = 2;;
+
 let tipuDef(tipp) =
 	tipp.nimi ^ " := (" ^ string_of_int(!(tipp.x)) ^ "u," ^ string_of_int(!(tipp.y)) ^ "u);";;
 
@@ -133,19 +136,19 @@ let kirjeldusTekst() =
 					t2 := Str.string_before !t2 viimaneTyhik2;
 				)
 		);
-	"label.rt(\"" ^ att(!t1) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 60) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!t2) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 40) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!t3) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20) ^ "u)) scaled defaultscale withcolor black;\n";;
+	"label.rt(\"" ^ att(!t1) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20*(3+kirjeldusBase)) ^ "u)) scaled 1.5 withcolor black;\n" ^
+	"label.rt(\"" ^ att(!t2) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20*(2+kirjeldusBase)) ^ "u)) scaled 1.5 withcolor black;\n" ^
+	"label.rt(\"" ^ att(!t3) ^ "\" infont defaultfont, (10u,-" ^ string_of_int(tekstiLisa - 20*(1+kirjeldusBase)) ^ "u)) scaled 1.5 withcolor black;\n";;
 	(*"label.rt(textext (\"" ^ att(!(AlgoBaas.tekst)) ^ "\") infont defaultfont, (10u,10u)) scaled defaultscale withcolor black;\n";;*)
 	(*"label.rt(textext (\"" ^ att(!(AlgoBaas.tekst)) ^ "\"), (10u,10u)) scaled defaultscale withcolor black;\n";;*)
 	(*"label.rt(btex " ^ att(!(AlgoBaas.tekst)) ^ " etex, (10u,10u)) scaled defaultscale withcolor black;\n";;*)
 
 let nimekirjadeTekst() =
 	let ak = aknaKorgus + korgusLisa in
-	"label.rt(\"" ^ att(!(AlgoBaas.nk1)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 60) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!(AlgoBaas.nk2)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 80) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 100) ^ "u)) scaled defaultscale withcolor black;\n" ^
-	"label.rt(\"" ^ att(!(AlgoBaas.nk4)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 120) ^ "u)) scaled defaultscale withcolor black;\n";;
+	"label.rt(\"" ^ att(!(AlgoBaas.nk1)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 20*(1+nimekirjaBase)) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!(AlgoBaas.nk2)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 20*(2+nimekirjaBase)) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!(AlgoBaas.nk3)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 20*(3+nimekirjaBase)) ^ "u)) scaled defaultscale withcolor black;\n" ^
+	"label.rt(\"" ^ att(!(AlgoBaas.nk4)) ^ "\" infont defaultfont, (20u," ^ string_of_int(ak - 20*(4+nimekirjaBase)) ^ "u)) scaled defaultscale withcolor black;\n";;
 
 let tabeliTekst(tipud, servad) =
 	let tulem = ref("pickup pencircle scaled 1pt;\n") in
@@ -219,19 +222,19 @@ let tabeliTekst(tipud, servad) =
 	(* tabel ise *)
 	if !(FloydWarshall.tabel) <> [||]
 		then (
-    	let x = ref(xAlgus + a + 5) in
-    	let y = ref(yAlgus - 2 * a + 5) in
+    	let x = ref(xAlgus + a + 15) in
+    	let y = ref(yAlgus - 2 * a + 3) in
     	for i = 0 to (tippudeArv - 1)
     	do
     		for j = 0 to (tippudeArv - 1)
     		do
     			let kaal = !(FloydWarshall.tabel).(i).(j) in
-					tulem := !tulem ^ "label.urt(\"" ^ FloydWarshall.string_of_lahter(kaal) ^ "\" infont defaultfont, (" ^ string_of_int(!x) ^ "u," ^ 
+					tulem := !tulem ^ "label.top(\"" ^ FloydWarshall.string_of_lahter(kaal) ^ "\" infont defaultfont, (" ^ string_of_int(!x) ^ "u," ^ 
 							string_of_int(!y) ^ "u)) scaled defaultscale withcolor black;\n";
     			x := !x + a
     		done;
     		y := !y - a;
-    		x := xAlgus + a + 5
+    		x := xAlgus + a + 15
     	done
 		);
 	!tulem;;
